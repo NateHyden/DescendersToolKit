@@ -77,5 +77,7 @@ A feature-rich MelonLoader mod menu for Descenders, built with HarmonyLib and Un
 This mod is for single-player and private sessions. Use responsibly. Not affiliated with RageSquid or No More Robots.
 
 ---
+Contact me on Discord for support or feature requests
+https://discord.gg/z33SugWM
 
 *Built by Natehyden*
