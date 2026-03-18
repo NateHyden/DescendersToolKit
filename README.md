@@ -29,7 +29,7 @@ A feature-rich MelonLoader mod menu for Descenders, built with HarmonyLib and Un
 
 ## Requirements
 
-- [MelonLoader](https://melonwiki.xyz/) 0.5.7 or newer
+- [MelonLoader](https://melonwiki.xyz/) 0.5.7 
 - Descenders (Steam) — tested on Unity 2017.4.40f1
 
 ---
