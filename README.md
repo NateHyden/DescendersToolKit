@@ -78,6 +78,6 @@ This mod is for single-player and private sessions. Use responsibly. Not affilia
 
 ---
 Contact me on Discord for support or feature requests
-https://discord.gg/z33SugWM
+https://discord.gg/rHvCrBdqaR
 
 *Built by Natehyden*
