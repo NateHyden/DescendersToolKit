@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+using MelonLoader;
 using UnityEngine;
 
 namespace DescendersModMenu.Mods
@@ -25,6 +25,9 @@ namespace DescendersModMenu.Mods
         // This works for all camera modes since every BikeCamera has a CameraAngle reference
         public static void Apply()
         {
+
+            try
+            {
             BikeCamera[] cameras = GameObject.FindObjectsOfType<BikeCamera>();
             if ((object)cameras == null || cameras.Length == 0) return;
 
@@ -52,6 +55,9 @@ namespace DescendersModMenu.Mods
                     break;
                 }
             }
+            }
+            catch (System.Exception ex) { MelonLogger.Error("FOV.Apply: " + ex.Message); }
+        
         }
     }
 }

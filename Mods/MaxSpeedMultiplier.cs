@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using MelonLoader;
 using UnityEngine;
 
@@ -72,6 +72,9 @@ namespace DescendersModMenu.Mods
 
         public static void Apply()
         {
+
+            try
+            {
             GameObject player = GameObject.Find("Player_Human");
             if ((object)player == null)
             {
@@ -93,6 +96,9 @@ namespace DescendersModMenu.Mods
             float newValue = _originalValue / multiplier;
             field.SetValue(vehicle, newValue);
             MelonLogger.Msg("MaxSpeed: Level " + Level + " drag -> " + newValue);
+            }
+            catch (System.Exception ex) { MelonLogger.Error("MaxSpeedMultiplier.Apply: " + ex.Message); }
+        
         }
     }
 }

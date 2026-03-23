@@ -135,7 +135,7 @@ namespace DescendersModMenu.Mods
                             null
                         );
                         if ((object)resetMethod != null)
-                            resetMethod.Invoke(vehicle, new object[] { true });
+                            resetMethod.Invoke(vehicle, new object[] { false });
                     }
                     catch { }
 

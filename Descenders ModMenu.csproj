@@ -97,7 +97,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BikeStats\BikeStatsData.cs" />
-    <Compile Include="BikeStats\StatsManager.cs" />
     <Compile Include="Data\GameRefs.cs" />
     <Compile Include="Mods\BikeSwitcher.cs" />
     <Compile Include="Mods\ESP.cs" />
@@ -105,15 +104,23 @@
     <Compile Include="Mods\LandingImpact.cs" />
     <Compile Include="Mods\MaxSpeedMultiplier.cs" />
     <Compile Include="Mods\Acceleration.cs" />
+    <Compile Include="Mods\Movement.cs" />
     <Compile Include="Mods\NoBail.cs" />
     <Compile Include="Mods\NoSpeedCap.cs" />
     <Compile Include="Mods\SceneDumper.cs" />
+    <Compile Include="Mods\ScoreManager.cs" />
+    <Compile Include="Mods\SlowMotion.cs" />
     <Compile Include="Mods\SpeedWatcher.cs" />
+    <Compile Include="BikeStats\StatsManager.cs" />
     <Compile Include="Mods\TeleportToPlayer.cs" />
+    <Compile Include="Mods\UnlockAll.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ModEntry.cs" />
     <Compile Include="UI\Page2UI.cs" />
     <Compile Include="UI\Page3UI.cs" />
+    <Compile Include="UI\Page4UI.cs" />
+    <Compile Include="UI\Page5UI.cs" />
+    <Compile Include="UI\Page6UI.cs" />
     <Compile Include="UI\UIHelpers.cs" />
     <Compile Include="UI\MenuWindow.cs" />
     <Compile Include="UI\MenuUI.cs" />

@@ -11,11 +11,13 @@ namespace DescendersModMenu.UI
         private static Text accelVal, msVal, landVal, bailVal, bikeVal, fovVal;
         private static Image accelBar, msBar, landBar, fovBar;
         private static Image bailTrack; private static RectTransform bailKnob;
+        private static Text slowVal;
+        private static Image slowTrack; private static RectTransform slowKnob;
         private static Image capBg, capBdr; private static Text capTxt;
 
-        private static GameObject pg1, pg2, pg3, botBar;
-        private static Text[] tabTx = new Text[3];
-        private static GameObject[] tabLn = new GameObject[3];
+        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, botBar;
+        private static Text[] tabTx = new Text[6];
+        private static GameObject[] tabLn = new GameObject[6];
         private static int cur = 1;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
@@ -70,7 +72,7 @@ namespace DescendersModMenu.UI
                 trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
                 trt.offsetMin = new Vector2(18, 0); trt.offsetMax = new Vector2(-100, 0);
 
-                var by = UIHelpers.Txt("By", hdr.transform, "v1.0 \u2014 Natehyden", 10,
+                var by = UIHelpers.Txt("By", hdr.transform, "v1.2.0 \u2014 Natehyden", 10,
                     FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
                 var brt = UIHelpers.RT(by.gameObject);
                 brt.anchorMin = Vector2.zero; brt.anchorMax = Vector2.one;
@@ -91,9 +93,9 @@ namespace DescendersModMenu.UI
                 tblrt.anchorMin = new Vector2(0, 0); tblrt.anchorMax = new Vector2(1, 0);
                 tblrt.pivot = new Vector2(.5f, 0); tblrt.sizeDelta = new Vector2(0, 1); tblrt.anchoredPosition = Vector2.zero;
 
-                string[] names = { "Stats", "ESP", "Tools" };
-                float[] anch = { 0f, .333f, .666f, 1f };
-                for (int i = 0; i < 3; i++)
+                string[] names = { "Stats", "ESP", "Tools", "Unlock", "Score", "Move" };
+                float[] anch = { 0f, .1667f, .3333f, .5f, .6667f, .8333f, 1f };
+                for (int i = 0; i < 6; i++)
                 {
                     int pi = i + 1;
                     var t = UIHelpers.Obj("T" + i, tb.transform);
@@ -133,6 +135,15 @@ namespace DescendersModMenu.UI
 
                 pg3 = UIHelpers.Obj("P3", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg3));
                 Page3UI.CreatePage(pg3.transform);
+
+                pg4 = UIHelpers.Obj("P4", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg4));
+                Page4UI.CreatePage(pg4.transform);
+
+                pg5 = UIHelpers.Obj("P5", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg5));
+                Page5UI.CreatePage(pg5.transform);
+
+                pg6 = UIHelpers.Obj("P6", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg6));
+                Page6UI.CreatePage(pg6.transform);
 
                 // ── Bottom bar ──────────────────────────────────────────
                 botBar = UIHelpers.Obj("Bot", win.transform);
@@ -261,6 +272,15 @@ namespace DescendersModMenu.UI
             fvle.preferredWidth = 26; fvle.preferredHeight = 20; fvle.flexibleHeight = 0;
             UIHelpers.SmallBtn(fr.transform, "-", () => { FOV.Decrease(); RefreshAll(); });
             UIHelpers.SmallBtn(fr.transform, "+", () => { FOV.Increase(); RefreshAll(); });
+
+            // Slow Motion
+            var smr = UIHelpers.StatRow("Slow Motion", p);
+            slowVal = UIHelpers.Txt("SMV", smr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+            var smvle = slowVal.gameObject.AddComponent<LayoutElement>();
+            smvle.preferredWidth = 28; smvle.preferredHeight = 18; smvle.flexibleHeight = 0;
+            UIHelpers.Toggle(smr.transform, "SMT", () => { SlowMotion.Toggle(); RefreshAll(); }, out slowTrack, out slowKnob);
+            var smHint = UIHelpers.Txt("SMH", smr.transform, "F2", 10, FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
+            smHint.gameObject.AddComponent<LayoutElement>().preferredWidth = 22;
         }
 
         // =====================================================================
@@ -285,8 +305,11 @@ namespace DescendersModMenu.UI
             if (pg1) pg1.SetActive(cur == 1);
             if (pg2) pg2.SetActive(cur == 2);
             if (pg3) pg3.SetActive(cur == 3);
+            if (pg4) pg4.SetActive(cur == 4);
+            if (pg5) pg5.SetActive(cur == 5);
+            if (pg6) pg6.SetActive(cur == 6);
             if (botBar) botBar.SetActive(cur == 1);
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 6; i++)
             {
                 bool on = (i + 1) == cur;
                 if (tabTx[i]) tabTx[i].color = on ? UIHelpers.Accent : UIHelpers.TextDim;
@@ -331,6 +354,10 @@ namespace DescendersModMenu.UI
 
             if (fovVal) fovVal.text = FOV.DisplayValue;
             UIHelpers.SetBar(fovBar, (FOV.Level - 1) / 9f);
+
+            bool slow = SlowMotion.Enabled;
+            if (slowVal) { slowVal.text = slow ? "ON" : "OFF"; slowVal.color = slow ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(slowTrack, slowKnob, slow);
         }
     }
 }

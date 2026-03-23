@@ -13,7 +13,10 @@ namespace DescendersModMenu.UI
 
         public static GameObject CreatePage(Transform parent)
         {
-            var pg = UIHelpers.Obj("P2R", parent);
+            GameObject pg = null;
+            try
+            {
+            pg = UIHelpers.Obj("P2R", parent);
             UIHelpers.Fill(UIHelpers.RT(pg));
             var vlg = pg.AddComponent<VerticalLayoutGroup>();
             vlg.spacing = UIHelpers.RowGap;
@@ -64,6 +67,9 @@ namespace DescendersModMenu.UI
             UIHelpers.ActionBtn(sr.transform, "Scan", () => TeleportUI.Scan());
 
             RefreshTexts();
+
+            }
+            catch (System.Exception ex) { MelonLogger.Error("Page2UI.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 

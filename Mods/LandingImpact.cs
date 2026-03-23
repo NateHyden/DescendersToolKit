@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
@@ -78,35 +78,24 @@ namespace DescendersModMenu.Mods
 
         public static void Apply()
         {
-            GameObject player = GameObject.Find("Player_Human");
-            if ((object)player == null)
+            try
             {
-                MelonLogger.Warning("[LandingImpact] Player_Human not found.");
-                return;
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) { MelonLogger.Warning("[LandingImpact] Player_Human not found."); return; }
+                Vehicle vehicle = player.GetComponent<Vehicle>();
+                if ((object)vehicle == null) { MelonLogger.Warning("[LandingImpact] Vehicle not found."); return; }
+                FieldInfo field = FindImpactScaleField(vehicle);
+                if ((object)field == null) return;
+                if (_originalImpactScale < 0f)
+                {
+                    _originalImpactScale = (float)field.GetValue(vehicle);
+                    MelonLogger.Msg("[LandingImpact] Captured default: " + _originalImpactScale);
+                }
+                float newValue = _originalImpactScale / Level;
+                field.SetValue(vehicle, newValue);
+                MelonLogger.Msg("[LandingImpact] Impact scale " + _originalImpactScale + " -> " + newValue + " (Level " + Level + ")");
             }
-
-            Vehicle vehicle = player.GetComponent<Vehicle>();
-            if ((object)vehicle == null)
-            {
-                MelonLogger.Warning("[LandingImpact] Vehicle not found.");
-                return;
-            }
-
-            FieldInfo field = FindImpactScaleField(vehicle);
-            if ((object)field == null)
-                return;
-
-            if (_originalImpactScale < 0f)
-            {
-                _originalImpactScale = (float)field.GetValue(vehicle);
-                MelonLogger.Msg("[LandingImpact] Captured default: " + _originalImpactScale);
-            }
-
-            float newValue = _originalImpactScale / Level;
-            field.SetValue(vehicle, newValue);
-
-            MelonLogger.Msg("[LandingImpact] Impact scale " + _originalImpactScale +
-                            " -> " + newValue + " (Level " + Level + ")");
+            catch (System.Exception ex) { MelonLogger.Error("[LandingImpact] Apply: " + ex.Message); }
         }
 
         public static void Prefix(PlayerInfoImpact __instance, ref float __0)

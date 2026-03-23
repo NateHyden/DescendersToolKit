@@ -1,4 +1,4 @@
-﻿using MelonLoader;
+using MelonLoader;
 using UnityEngine;
 
 namespace DescendersModMenu.Mods
@@ -23,19 +23,15 @@ namespace DescendersModMenu.Mods
 
         public static void Apply()
         {
-            GameObject playerInfoObject = GameObject.Find("PlayerInfo_Human");
-            if (playerInfoObject == null)
+            try
             {
-                return;
+                GameObject playerInfoObject = GameObject.Find("PlayerInfo_Human");
+                if (playerInfoObject == null) return;
+                PlayerInfoImpact playerInfo = playerInfoObject.GetComponent<PlayerInfoImpact>();
+                if (playerInfo == null) return;
+                playerInfo.Nobail(Enabled);
             }
-
-            PlayerInfoImpact playerInfo = playerInfoObject.GetComponent<PlayerInfoImpact>();
-            if (playerInfo == null)
-            {
-                return;
-            }
-
-            playerInfo.Nobail(Enabled);
+            catch (System.Exception ex) { MelonLogger.Error("NoBail.Apply: " + ex.Message); }
         }
     }
 }

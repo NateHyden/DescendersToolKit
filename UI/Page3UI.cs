@@ -1,4 +1,5 @@
 using DescendersModMenu.Mods;
+using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -8,7 +9,10 @@ namespace DescendersModMenu.UI
     {
         public static GameObject CreatePage(Transform parent)
         {
-            var pg = UIHelpers.Obj("P3R", parent);
+            GameObject pg = null;
+            try
+            {
+            pg = UIHelpers.Obj("P3R", parent);
             UIHelpers.Fill(UIHelpers.RT(pg));
             var vlg = pg.AddComponent<VerticalLayoutGroup>();
             vlg.spacing = UIHelpers.RowGap;
@@ -39,6 +43,9 @@ namespace DescendersModMenu.UI
             UIHelpers.HotkeyRow(pg.transform, "Dump scene to desktop", "F12");
             UIHelpers.HotkeyRow(pg.transform, "Speed watcher (hold)",  "F10");
 
+
+            }
+            catch (System.Exception ex) { MelonLogger.Error("Page3UI.CreatePage: " + ex.Message); return null; }
             return pg;
         }
     }
