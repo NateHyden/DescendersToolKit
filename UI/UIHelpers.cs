@@ -7,39 +7,39 @@ namespace DescendersModMenu.UI
     {
         // ── Solid Carbon palette ────────────────────────────────────────────
 
-        public static readonly Color WinOuter    = new Color(0.102f, 0.102f, 0.118f, 0.97f);
-        public static readonly Color WinPanel    = new Color(0.133f, 0.133f, 0.149f, 1f);
-        public static readonly Color WinBorder   = new Color(0.200f, 0.200f, 0.220f, 1f);
-        public static readonly Color HeaderBg    = new Color(0.149f, 0.149f, 0.169f, 1f);
-        public static readonly Color RowBg       = new Color(0.165f, 0.165f, 0.184f, 1f);
-        public static readonly Color RowBorder   = new Color(0.220f, 0.220f, 0.243f, 1f);
-        public static readonly Color BtnBg       = new Color(0.200f, 0.200f, 0.220f, 1f);
+        public static readonly Color WinOuter = new Color(0.102f, 0.102f, 0.118f, 0.97f);
+        public static readonly Color WinPanel = new Color(0.133f, 0.133f, 0.149f, 1f);
+        public static readonly Color WinBorder = new Color(0.200f, 0.200f, 0.220f, 1f);
+        public static readonly Color HeaderBg = new Color(0.149f, 0.149f, 0.169f, 1f);
+        public static readonly Color RowBg = new Color(0.165f, 0.165f, 0.184f, 1f);
+        public static readonly Color RowBorder = new Color(0.220f, 0.220f, 0.243f, 1f);
+        public static readonly Color BtnBg = new Color(0.200f, 0.200f, 0.220f, 1f);
 
-        public static readonly Color Accent      = new Color(0.910f, 0.627f, 0.220f, 1f);
-        public static readonly Color AccentDim   = new Color(0.910f, 0.627f, 0.220f, 0.10f);
-        public static readonly Color AccentBdr   = new Color(0.910f, 0.627f, 0.220f, 0.30f);
+        public static readonly Color Accent = new Color(0.910f, 0.627f, 0.220f, 1f);
+        public static readonly Color AccentDim = new Color(0.910f, 0.627f, 0.220f, 0.10f);
+        public static readonly Color AccentBdr = new Color(0.910f, 0.627f, 0.220f, 0.30f);
 
-        public static readonly Color TextLight   = new Color(0.800f, 0.800f, 0.800f, 1f);
-        public static readonly Color TextMid     = new Color(0.600f, 0.600f, 0.600f, 1f);
-        public static readonly Color TextDim     = new Color(0.400f, 0.400f, 0.400f, 1f);
-        public static readonly Color BtnText     = new Color(0.533f, 0.533f, 0.533f, 1f);
+        public static readonly Color TextLight = new Color(0.800f, 0.800f, 0.800f, 1f);
+        public static readonly Color TextMid = new Color(0.600f, 0.600f, 0.600f, 1f);
+        public static readonly Color TextDim = new Color(0.400f, 0.400f, 0.400f, 1f);
+        public static readonly Color BtnText = new Color(0.533f, 0.533f, 0.533f, 1f);
 
-        public static readonly Color OnColor     = new Color(0.306f, 0.765f, 0.431f, 1f);
-        public static readonly Color OnBg        = new Color(0.306f, 0.765f, 0.431f, 0.15f);
-        public static readonly Color OnBdr       = new Color(0.306f, 0.765f, 0.431f, 0.40f);
-        public static readonly Color OffColor    = new Color(0.973f, 0.443f, 0.443f, 1f);
+        public static readonly Color OnColor = new Color(0.306f, 0.765f, 0.431f, 1f);
+        public static readonly Color OnBg = new Color(0.306f, 0.765f, 0.431f, 0.15f);
+        public static readonly Color OnBdr = new Color(0.306f, 0.765f, 0.431f, 0.40f);
+        public static readonly Color OffColor = new Color(0.973f, 0.443f, 0.443f, 1f);
 
         public static readonly Color TogOffTrack = RowBorder;
-        public static readonly Color TogOnTrack  = Accent;
-        public static readonly Color TogKnobOn   = new Color(0.867f, 0.867f, 0.867f, 1f);
-        public static readonly Color TogKnobOff  = new Color(0.600f, 0.600f, 0.600f, 1f);
+        public static readonly Color TogOnTrack = Accent;
+        public static readonly Color TogKnobOn = new Color(0.867f, 0.867f, 0.867f, 1f);
+        public static readonly Color TogKnobOff = new Color(0.600f, 0.600f, 0.600f, 1f);
 
-        public static readonly Color BarBg       = RowBorder;
-        public static readonly Color BarFill     = Accent;
+        public static readonly Color BarBg = RowBorder;
+        public static readonly Color BarFill = Accent;
 
         // ── Layout ──────────────────────────────────────────────────────────
 
-        public const float WinW = 490f, WinH = 520f;
+        public const float WinW = 700f, WinH = 620f;
         public const float HeaderH = 48f, TabH = 36f;
         public const float RowH = 42f, RowGap = 5f, RowPad = 14f, ContentPad = 14f;
         public const float BottomH = 42f;
@@ -66,10 +66,10 @@ namespace DescendersModMenu.UI
                 for (int x = 0; x < w; x++)
                 {
                     float dx = 0, dy = 0;
-                    if      (x < r     && y < r)     { dx = r - x;       dy = r - y; }
-                    else if (x > w-r-1 && y < r)     { dx = x-(w-r-1);   dy = r - y; }
-                    else if (x < r     && y > h-r-1) { dx = r - x;       dy = y-(h-r-1); }
-                    else if (x > w-r-1 && y > h-r-1) { dx = x-(w-r-1);   dy = y-(h-r-1); }
+                    if (x < r && y < r) { dx = r - x; dy = r - y; }
+                    else if (x > w - r - 1 && y < r) { dx = x - (w - r - 1); dy = r - y; }
+                    else if (x < r && y > h - r - 1) { dx = r - x; dy = y - (h - r - 1); }
+                    else if (x > w - r - 1 && y > h - r - 1) { dx = x - (w - r - 1); dy = y - (h - r - 1); }
                     float d = Mathf.Sqrt(dx * dx + dy * dy);
                     if (d > r + 0.5f)
                         px[y * w + x] = clr;
@@ -93,12 +93,12 @@ namespace DescendersModMenu.UI
         // Larger textures with bigger radii for visible rounding
         private static Sprite _rowSp, _btnSp, _winSp, _togSp, _knobSp, _barSp;
 
-        public static Sprite RowSp  { get { if (_rowSp  == null) _rowSp  = RoundSprite(64, 12, Color.white); return _rowSp; } }
-        public static Sprite BtnSp  { get { if (_btnSp  == null) _btnSp  = RoundSprite(48, 8,  Color.white); return _btnSp; } }
-        public static Sprite WinSp  { get { if (_winSp  == null) _winSp  = RoundSprite(64, 14, Color.white); return _winSp; } }
-        public static Sprite TogSp  { get { if (_togSp  == null) _togSp  = RoundSprite(36, 18, Color.white); return _togSp; } }  // pill shape
+        public static Sprite RowSp { get { if (_rowSp == null) _rowSp = RoundSprite(64, 12, Color.white); return _rowSp; } }
+        public static Sprite BtnSp { get { if (_btnSp == null) _btnSp = RoundSprite(48, 8, Color.white); return _btnSp; } }
+        public static Sprite WinSp { get { if (_winSp == null) _winSp = RoundSprite(64, 14, Color.white); return _winSp; } }
+        public static Sprite TogSp { get { if (_togSp == null) _togSp = RoundSprite(36, 18, Color.white); return _togSp; } }  // pill shape
         public static Sprite KnobSp { get { if (_knobSp == null) _knobSp = RoundSprite(28, 14, Color.white); return _knobSp; } } // circle
-        public static Sprite BarSp  { get { if (_barSp  == null) _barSp  = RoundSprite(16, 3,  Color.white); return _barSp; } }  // thin rounded
+        public static Sprite BarSp { get { if (_barSp == null) _barSp = RoundSprite(16, 3, Color.white); return _barSp; } }  // thin rounded
 
         // ── Core helpers ────────────────────────────────────────────────────
 

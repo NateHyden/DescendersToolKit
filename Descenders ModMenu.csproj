@@ -99,8 +99,12 @@
     <Compile Include="BikeStats\BikeStatsData.cs" />
     <Compile Include="Data\GameRefs.cs" />
     <Compile Include="Mods\BikeSwitcher.cs" />
+    <Compile Include="Mods\CutBrakes.cs" />
+    <Compile Include="Mods\DiagnosticsManager.cs" />
     <Compile Include="Mods\ESP.cs" />
     <Compile Include="Mods\Fov.cs" />
+    <Compile Include="Mods\GameModifiers.cs" />
+    <Compile Include="Mods\Gravity.cs" />
     <Compile Include="Mods\LandingImpact.cs" />
     <Compile Include="Mods\MaxSpeedMultiplier.cs" />
     <Compile Include="Mods\Acceleration.cs" />
@@ -112,7 +116,11 @@
     <Compile Include="Mods\SlowMotion.cs" />
     <Compile Include="Mods\SpeedWatcher.cs" />
     <Compile Include="BikeStats\StatsManager.cs" />
+    <Compile Include="Mods\Suspension.cs" />
+    <Compile Include="Mods\TeleportToCheckpoint.cs" />
     <Compile Include="Mods\TeleportToPlayer.cs" />
+    <Compile Include="Mods\TimeOfDay.cs" />
+    <Compile Include="Mods\TopSpeed.cs" />
     <Compile Include="Mods\UnlockAll.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ModEntry.cs" />
@@ -121,6 +129,9 @@
     <Compile Include="UI\Page4UI.cs" />
     <Compile Include="UI\Page5UI.cs" />
     <Compile Include="UI\Page6UI.cs" />
+    <Compile Include="UI\Page7UI.cs" />
+    <Compile Include="UI\Page8UI.cs" />
+    <Compile Include="UI\Page9UI.cs" />
     <Compile Include="UI\UIHelpers.cs" />
     <Compile Include="UI\MenuWindow.cs" />
     <Compile Include="UI\MenuUI.cs" />

@@ -13,12 +13,14 @@ namespace DescendersModMenu.UI
         private static Image bailTrack; private static RectTransform bailKnob;
         private static Text slowVal;
         private static Image slowTrack; private static RectTransform slowKnob;
+        private static Text topSpeedVal;
         private static Image capBg, capBdr; private static Text capTxt;
 
-        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, botBar;
-        private static Text[] tabTx = new Text[6];
-        private static GameObject[] tabLn = new GameObject[6];
+        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, botBar;
+        private static Text[] tabTx = new Text[9];
+        private static GameObject[] tabLn = new GameObject[9];
         private static int cur = 1;
+        private static UnityEngine.UI.Image _infoTabDot;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
 
@@ -72,7 +74,7 @@ namespace DescendersModMenu.UI
                 trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
                 trt.offsetMin = new Vector2(18, 0); trt.offsetMax = new Vector2(-100, 0);
 
-                var by = UIHelpers.Txt("By", hdr.transform, "v1.2.0 \u2014 Natehyden", 10,
+                var by = UIHelpers.Txt("By", hdr.transform, "v2.0.0 \u2014 Natehyden", 10,
                     FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
                 var brt = UIHelpers.RT(by.gameObject);
                 brt.anchorMin = Vector2.zero; brt.anchorMax = Vector2.one;
@@ -93,9 +95,9 @@ namespace DescendersModMenu.UI
                 tblrt.anchorMin = new Vector2(0, 0); tblrt.anchorMax = new Vector2(1, 0);
                 tblrt.pivot = new Vector2(.5f, 0); tblrt.sizeDelta = new Vector2(0, 1); tblrt.anchoredPosition = Vector2.zero;
 
-                string[] names = { "Stats", "ESP", "Tools", "Unlock", "Score", "Move" };
-                float[] anch = { 0f, .1667f, .3333f, .5f, .6667f, .8333f, 1f };
-                for (int i = 0; i < 6; i++)
+                string[] names = { "Stats", "ESP", "Info", "Unlock", "Score", "Move", "World", "Bike", "Silly" };
+                float[] anch = { 0f, .1111f, .2222f, .3333f, .4444f, .5556f, .6667f, .7778f, .8889f, 1f };
+                for (int i = 0; i < 9; i++)
                 {
                     int pi = i + 1;
                     var t = UIHelpers.Obj("T" + i, tb.transform);
@@ -110,6 +112,20 @@ namespace DescendersModMenu.UI
                     tabTx[i] = UIHelpers.Txt("TT", t.transform, names[i], 11,
                         FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextDim);
                     UIHelpers.Fill(UIHelpers.RT(tabTx[i].gameObject));
+
+                    // Add status dot to Info tab (index 2)
+                    if (i == 2)
+                    {
+                        var dotObj = UIHelpers.Panel("InfoDot", t.transform, UIHelpers.OnColor, UIHelpers.KnobSp);
+                        _infoTabDot = dotObj.GetComponent<UnityEngine.UI.Image>();
+                        var drt = UIHelpers.RT(dotObj);
+                        drt.anchorMin = new Vector2(0.75f, 0.65f);
+                        drt.anchorMax = new Vector2(0.75f, 0.65f);
+                        drt.pivot = new Vector2(0.5f, 0.5f);
+                        drt.sizeDelta = new Vector2(6, 6);
+                        drt.anchoredPosition = Vector2.zero;
+                        dotObj.AddComponent<LayoutElement>().ignoreLayout = true;
+                    }
 
                     tabLn[i] = UIHelpers.Panel("TLn", t.transform, new Color(0, 0, 0, 0));
                     var tlr = UIHelpers.RT(tabLn[i]);
@@ -144,6 +160,15 @@ namespace DescendersModMenu.UI
 
                 pg6 = UIHelpers.Obj("P6", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg6));
                 Page6UI.CreatePage(pg6.transform);
+
+                pg7 = UIHelpers.Obj("P7", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg7));
+                Page7UI.CreatePage(pg7.transform);
+
+                pg8 = UIHelpers.Obj("P8", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg8));
+                Page8UI.CreatePage(pg8.transform);
+
+                pg9 = UIHelpers.Obj("P9", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg9));
+                Page9UI.CreatePage(pg9.transform);
 
                 // ── Bottom bar ──────────────────────────────────────────
                 botBar = UIHelpers.Obj("Bot", win.transform);
@@ -281,6 +306,14 @@ namespace DescendersModMenu.UI
             UIHelpers.Toggle(smr.transform, "SMT", () => { SlowMotion.Toggle(); RefreshAll(); }, out slowTrack, out slowKnob);
             var smHint = UIHelpers.Txt("SMH", smr.transform, "F2", 10, FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
             smHint.gameObject.AddComponent<LayoutElement>().preferredWidth = 22;
+
+            // Top Speed
+            var tsr = UIHelpers.StatRow("Top Speed", p);
+            topSpeedVal = UIHelpers.Txt("TSV", tsr.transform, TopSpeed.DisplayValue, 12,
+                FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
+            var tsle = topSpeedVal.gameObject.AddComponent<LayoutElement>();
+            tsle.flexibleWidth = 1; tsle.preferredHeight = 20; tsle.flexibleHeight = 0;
+            UIHelpers.ActionBtn(tsr.transform, "Reset", () => { TopSpeed.Reset(); RefreshAll(); }, 52);
         }
 
         // =====================================================================
@@ -308,14 +341,19 @@ namespace DescendersModMenu.UI
             if (pg4) pg4.SetActive(cur == 4);
             if (pg5) pg5.SetActive(cur == 5);
             if (pg6) pg6.SetActive(cur == 6);
+            if (pg7) pg7.SetActive(cur == 7);
+            if (pg8) pg8.SetActive(cur == 8);
+            if (pg9) pg9.SetActive(cur == 9);
             if (botBar) botBar.SetActive(cur == 1);
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 9; i++)
             {
                 bool on = (i + 1) == cur;
                 if (tabTx[i]) tabTx[i].color = on ? UIHelpers.Accent : UIHelpers.TextDim;
                 if (tabLn[i]) tabLn[i].GetComponent<Image>().color = on ? UIHelpers.Accent : new Color(0, 0, 0, 0);
             }
             if (cur == 2) Page2UI.RefreshTexts();
+            if (cur == 3) Page3UI.Refresh();
+            if (_infoTabDot) _infoTabDot.color = DiagnosticsManager.FailCount > 0 ? UIHelpers.OffColor : UIHelpers.OnColor;
         }
 
         public static void RefreshAll()
@@ -354,6 +392,8 @@ namespace DescendersModMenu.UI
 
             if (fovVal) fovVal.text = FOV.DisplayValue;
             UIHelpers.SetBar(fovBar, (FOV.Level - 1) / 9f);
+
+            if (topSpeedVal) topSpeedVal.text = TopSpeed.DisplayValue;
 
             bool slow = SlowMotion.Enabled;
             if (slowVal) { slowVal.text = slow ? "ON" : "OFF"; slowVal.color = slow ? UIHelpers.OnColor : UIHelpers.OffColor; }
