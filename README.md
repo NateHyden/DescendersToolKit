@@ -1,14 +1,25 @@
 # Descenders Mod Menu
 
-A feature-rich MelonLoader mod menu for Descenders, built with HarmonyLib and Unity Canvas UI. Provides in-game bike physics tweaks, score tools, movement modifiers, world controls, suspension tuning, and silly fun — all accessible through a clean overlay menu.
+A feature-rich MelonLoader mod menu for Descenders, built with HarmonyLib and Unity Canvas UI. Provides in-game bike physics tweaks, score tools, movement modifiers, world controls, suspension tuning, session trackers and silly fun — all accessible through a clean sidebar overlay menu.
 
 Toggle the menu with **F6** at any time.
 
 ---
 
+## UI
+
+The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange Descenders-themed colour palette, and a bottom bar for Save/Load/Reset on the Stats tab.
+
+- **Window:** 760×780px, dark theme with `#FF5500` Descenders orange accents
+- **Sidebar:** 120px wide with tab icons, orange active indicator bar, and a green status dot on the Info tab
+- **Header:** Shows version number, "DESCENDERS MOD MENU" title, and author credit
+- **Tab order:** Stats, Move, Bike, World, Silly, ESP, Score, Unlock, Info
+
+---
+
 ## Features
 
-### Stats — Bike Physics
+### Stats — Bike Physics & Session Trackers
 - **Acceleration** — Increase pedal force up to 10 levels
 - **Max Speed** — Reduce drag coefficient to raise terminal velocity, levels 1–10
 - **No Speed Cap** — Removes the hard-coded speed limit that kills pedal input above 55 km/h
@@ -17,7 +28,10 @@ Toggle the menu with **F6** at any time.
 - **Bike Switcher** — Switch between Enduro, Downhill, Hardtail and BRNZL Enduro on the fly
 - **FOV Slider** — Adjust field of view from 45 to 130 across 10 levels
 - **Slow Motion** — Halves game speed via TimeScaleManager. Toggle with F2 or in menu
-- **Top Speed Recorder** — Tracks and displays your fastest speed this session with a reset button
+- **Top Speed Recorder** — Tracks your fastest speed using the game's own speedo formula, persists to file across sessions
+- **Session Timer** — Live MM:SS counter from when you enter a session
+- **Bail Counter** — Counts actual crashes via Harmony patch on Cyclist.Bail(), with reset button
+- **Longest Airtime** — Tracks your longest continuous time off the ground, with reset button
 
 ### ESP — Visual Tools
 - **ESP** — Draws player names and tracers on screen for all players in the session
@@ -28,7 +42,7 @@ Toggle the menu with **F6** at any time.
 
 ### Info — Diagnostics
 - **System Info** — Displays Unity version, version match status and MelonLoader version
-- **Mod Status** — Scrollable list of all 30 mods with live OK/FAILED indicators
+- **Mod Status** — Scrollable list of all 34+ mods with live OK/FAILED circle indicators
 - **Hotkeys** — Quick reference for all keyboard shortcuts
 
 ### Unlock — Progression
@@ -58,10 +72,11 @@ Toggle the menu with **F6** at any time.
 - **Time of Day** — 10 presets from Dawn through to Night via the TOD_Sky system
 - **Trees & Foliage** — Toggle terrain tree and foliage rendering
 - **Music** — Mute and restore game music via FMOD VCA, preserving your volume setting
+- **Fog** — Toggle fog rendering on and off, saves and restores original density
 - **Jump to Finish** — Instantly teleport to the finish line
 - **Skip Song** — Skip the currently playing track
 
-### Bike — Tuning & Fun
+### Bike — Tuning
 - **Suspension Travel** — Controls how much the fork and shock move (level 5 = default)
 - **Spring Stiffness** — Controls spring resistance (level 5 = default)
 - **Spring Damping** — Controls how fast the suspension settles (level 5 = default)
@@ -69,20 +84,25 @@ Toggle the menu with **F6** at any time.
 
 ### Silly — Fun Stuff
 - **Player Size** — Giant / Big / Default / Small / Tiny scale presets for your rider
+- **Invisible Bike** — Hide the bike model while keeping physics intact
+- **Wheel Size** — Small / Default / Large wheel scaling via bone transforms and physics radius
+- **Moon Mode** — One-button preset: low gravity + max suspension travel + min damping. Saves your current settings and restores them on deactivation
 - **Giant Everyone** — Scale all other players' riders in multiplayer
 - **Invisible Player** — Disable all renderers on your rider
 - **Turbo Wind** — Crank the WindZone to maximum turbulence
-- **Exploding Props** — Massively increase BounceVolume force so everything flies on contact
+- **No Mistakes** — Any sideways collision with a wall, rock or obstacle launches you backwards. Landings and gentle bumps are ignored
 
 ---
 
 ## Requirements
+
 - [MelonLoader](https://melonwiki.xyz/) 0.5.7
 - Descenders (Steam) — tested on Unity 2017.4.40f1
 
 ---
 
 ## Installation
+
 1. Install MelonLoader for Descenders if you haven't already
 2. Download `DescendersModMenu.dll` from the [Releases](../../releases) page
 3. Drop it into your `Descenders/Mods/` folder
@@ -91,6 +111,7 @@ Toggle the menu with **F6** at any time.
 ---
 
 ## Controls
+
 | Key | Action |
 |-----|--------|
 | F2 | Toggle slow motion |
@@ -101,6 +122,7 @@ Toggle the menu with **F6** at any time.
 ---
 
 ## Usage Notes
+
 - **No Speed Cap** requires you to lean forward as normal — it removes the game's internal limit. It does not auto-accelerate.
 - **Teleport to Player** works in multiplayer sessions. Press Scan to find players, use arrows to select, then Teleport. Score is preserved.
 - **ESP** only shows players currently in your session. Hit Refresh Targets if someone joins mid-session.
@@ -108,11 +130,16 @@ Toggle the menu with **F6** at any time.
 - **Cut Brakes** uses a Harmony postfix on VehicleController.FixedUpdate and resets on scene change.
 - **Suspension** modifiers apply to both wheels simultaneously. Level 5 is always default on all three sliders.
 - **Music** mute saves your current volume before muting and restores it exactly on unmute.
+- **Top Speed** uses the game's own speedo formula (`velocity × 3.6 / gravity × 9.81`) and saves your all-time record to `UserData/DescendersModMenu/TopSpeed.txt`. Only the Reset button clears it.
+- **Bail Counter** uses a Harmony postfix on `Cyclist.Bail()` — counts actual crashes, not manual resets or checkpoint teleports.
+- **Moon Mode** saves your current Gravity, Suspension Travel and Damping levels before activating, and restores them when you deactivate.
+- **No Mistakes** only triggers on sideways impacts (contact normal y ≤ 0.5) above 5 m/s — landings and gentle bumps are ignored.
 - **Save / Load / Reset** buttons at the bottom of the Stats tab persist your settings between sessions to `UserData/DescendersModMenu/BikeStats.json`.
 
 ---
 
 ## Building from Source
+
 - Visual Studio 2022 or Rider
 - Target framework: .NET 4.7.2
 - References: `MelonLoader.dll`, `HarmonyLib.dll`, `Assembly-CSharp.dll`, `UnityEngine.*.dll`
@@ -121,6 +148,22 @@ Toggle the menu with **F6** at any time.
 ---
 
 ## Changelog
+
+### v2.1.0
+- New sidebar navigation UI replacing the old horizontal tab bar
+- Added Invisible Bike (Silly tab)
+- Added Moon Mode preset — low gravity + bouncy suspension with save/restore (Silly tab)
+- Added Wheel Size — Small / Default / Large via bone transforms and physics radius (Silly tab)
+- Added No Mistakes — wall/rock collisions launch you backwards (Silly tab)
+- Added Session Timer, Bail Counter, Longest Airtime (Stats tab)
+- Added Fog Remover toggle (World tab)
+- Top Speed now matches the in-game speedometer exactly and persists to file
+- Bail Counter uses Cyclist.Bail() Harmony patch — counts real crashes, not resets
+- Action buttons use a softer orange
+- Mod status dots are proper circles
+- Info tab now tracks 34+ mods
+- Menu height scales to fit all content
+- Version display enlarged in header
 
 ### v2.0.0
 - Added World tab — Gravity, Time of Day, Trees & Foliage, Music, Jump to Finish, Skip Song
@@ -148,11 +191,12 @@ Toggle the menu with **F6** at any time.
 ---
 
 ## Disclaimer
+
 This mod is for single-player and private sessions. Use responsibly. Not affiliated with RageSquid or No More Robots.
 
 ---
 
-Contact me on Discord for support or feature requests  
+Contact me on Discord for support or feature requests
 https://discord.gg/rHvCrBdqaR
 
 *Built by Natehyden*
