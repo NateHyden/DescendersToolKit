@@ -17,14 +17,20 @@ namespace DescendersModMenu.UI
         private static Text _musicVal;
         private static Image _musicTrack;
         private static RectTransform _musicKnob;
+        private static Text _fogVal;
+        private static Image _fogTrack;
+        private static RectTransform _fogKnob;
 
         public static bool TreesEnabled = true;
         public static bool MusicEnabled = true;
+        public static bool FogEnabled = true;
 
         // Cached terrain type to avoid repeated reflection
         private static System.Type _terrainType = null;
         private static System.Reflection.PropertyInfo _dtfProp = null;
         private static float _savedMusicVolume = 1f;
+        private static float _savedFogDensity = -1f;
+        private static bool _savedFogState = true;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -85,6 +91,17 @@ namespace DescendersModMenu.UI
                     ToggleMusic(MusicEnabled);
                     RefreshAll();
                 }, out _musicTrack, out _musicKnob);
+
+                var fogr = UIHelpers.StatRow("Fog", pg.transform);
+                _fogVal = UIHelpers.Txt("FgV", fogr.transform, "ON", 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OnColor);
+                _fogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(fogr.transform, "FgT", () =>
+                {
+                    FogEnabled = !FogEnabled;
+                    ToggleFog(FogEnabled);
+                    RefreshAll();
+                }, out _fogTrack, out _fogKnob);
 
                 UIHelpers.Divider(pg.transform);
 
@@ -183,6 +200,31 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Music] ToggleMusic: " + ex.Message); }
         }
 
+        private static void ToggleFog(bool enabled)
+        {
+            try
+            {
+                if (!enabled)
+                {
+                    if (_savedFogDensity < 0f)
+                    {
+                        _savedFogDensity = RenderSettings.fogDensity;
+                        _savedFogState = RenderSettings.fog;
+                    }
+                    RenderSettings.fog = false;
+                    RenderSettings.fogDensity = 0f;
+                    MelonLogger.Msg("[Fog] Disabled");
+                }
+                else
+                {
+                    RenderSettings.fog = _savedFogState;
+                    RenderSettings.fogDensity = _savedFogDensity >= 0f ? _savedFogDensity : 0.01f;
+                    MelonLogger.Msg("[Fog] Restored density: " + RenderSettings.fogDensity);
+                }
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[Fog] ToggleFog: " + ex.Message); }
+        }
+
         public static void RefreshAll()
         {
             if (_gravityVal) _gravityVal.text = Gravity.DisplayValue;
@@ -195,6 +237,9 @@ namespace DescendersModMenu.UI
 
             if (_musicVal) { _musicVal.text = MusicEnabled ? "ON" : "OFF"; _musicVal.color = MusicEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_musicTrack, _musicKnob, MusicEnabled);
+
+            if (_fogVal) { _fogVal.text = FogEnabled ? "ON" : "OFF"; _fogVal.color = FogEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_fogTrack, _fogKnob, FogEnabled);
         }
     }
 }

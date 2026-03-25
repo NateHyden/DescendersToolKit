@@ -12,7 +12,7 @@ namespace DescendersModMenu
         public const string Description = "Modkit for Descenders";
         public const string Author = "NateHyden";
         public const string Company = null;
-        public const string Version = "2.0.0";
+        public const string Version = "2.1.0";
         public const string DownloadLink = null;
     }
 
@@ -44,6 +44,8 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedCap.ApplyVCPatch failed: " + ex.Message); DiagnosticsManager.Report("NoSpeedCap (VC)", false, ex.Message); }
             try { CutBrakes.ApplyPatch(harmony); }
             catch (System.Exception ex) { MelonLogger.Error("CutBrakes.ApplyPatch failed: " + ex.Message); }
+            try { SessionTrackers.ApplyBailPatch(harmony); DiagnosticsManager.Report("BailCounter", true); }
+            catch (System.Exception ex) { MelonLogger.Error("BailPatch failed: " + ex.Message); DiagnosticsManager.Report("BailCounter", false, ex.Message); }
         }
 
         public override void OnLateInitializeMelon()
@@ -76,8 +78,14 @@ namespace DescendersModMenu
             DiagnosticsManager.Report("Player Size", true);
             DiagnosticsManager.Report("Invisible Player", true);
             DiagnosticsManager.Report("Turbo Wind", true);
-            DiagnosticsManager.Report("Exploding Props", true);
+            DiagnosticsManager.Report("No Mistakes", true);
             DiagnosticsManager.Report("Giant Everyone", true);
+            DiagnosticsManager.Report("Invisible Bike", true);
+            DiagnosticsManager.Report("Moon Mode", true);
+            DiagnosticsManager.Report("Wheel Size", true);
+            DiagnosticsManager.Report("Fog Remover", true);
+            DiagnosticsManager.Report("SessionTrackers", true);
+            TopSpeed.Load();
             TopSpeed.StartTracking();
         }
 
@@ -96,7 +104,9 @@ namespace DescendersModMenu
             MelonLogger.Msg("OnSceneWasUnloaded: " + buildIndex + " | " + sceneName);
             SlowMotion.Reset();
             CutBrakes.Reset();
-            TopSpeed.Reset();
+            TopSpeed.ClearCache();
+            SessionTrackers.Reset();
+            ExplodingProps.Reset();
         }
 
         public override void OnUpdate()
@@ -111,6 +121,10 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("SpeedWatcher: " + ex.Message); }
             try { TopSpeed.Tick(); }
             catch (System.Exception ex) { MelonLogger.Error("TopSpeed.Tick: " + ex.Message); }
+            try { SessionTrackers.Tick(); }
+            catch (System.Exception ex) { MelonLogger.Error("SessionTrackers.Tick: " + ex.Message); }
+            try { MenuWindow.TickLive(); }
+            catch { }
 
             try { if (Input.GetKeyDown(KeyCode.F2)) SlowMotion.Toggle(); }
             catch (System.Exception ex) { MelonLogger.Error("SlowMotion.Toggle: " + ex.Message); }

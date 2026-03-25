@@ -44,8 +44,8 @@ namespace DescendersModMenu.UI
                 // ScrollHost in the VLG
                 var scrollHost = UIHelpers.Obj("ScrollHost", pg.transform);
                 var hostLE = scrollHost.AddComponent<LayoutElement>();
-                hostLE.preferredHeight = 130;
-                hostLE.minHeight = 130;
+                hostLE.preferredHeight = 180;
+                hostLE.minHeight = 180;
                 hostLE.flexibleHeight = 0;
                 scrollHost.AddComponent<Image>().color = new Color(0.118f, 0.118f, 0.133f, 1f);
 
@@ -169,11 +169,14 @@ namespace DescendersModMenu.UI
                     hlg.padding = new RectOffset(2, 2, 0, 0);
                     hlg.childAlignment = TextAnchor.MiddleLeft;
                     hlg.childForceExpandWidth = false;
-                    hlg.childForceExpandHeight = true;
+                    hlg.childForceExpandHeight = false;
 
-                    // Dot
-                    var dot = UIHelpers.Panel("Dot", row.transform,
-                        s.OK ? UIHelpers.OnColor : UIHelpers.OffColor, UIHelpers.KnobSp);
+                    // Dot — proper circle using DotSp (Simple, not Sliced)
+                    var dot = UIHelpers.Obj("Dot", row.transform);
+                    var dotImg = dot.AddComponent<Image>();
+                    dotImg.sprite = UIHelpers.DotSp;
+                    dotImg.type = Image.Type.Simple;
+                    dotImg.color = s.OK ? UIHelpers.OnColor : UIHelpers.OffColor;
                     var dle = dot.AddComponent<LayoutElement>();
                     dle.preferredWidth = 8; dle.minWidth = 8;
                     dle.preferredHeight = 8; dle.minHeight = 8;

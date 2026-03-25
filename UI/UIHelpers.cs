@@ -5,47 +5,56 @@ namespace DescendersModMenu.UI
 {
     public static class UIHelpers
     {
-        // ── Solid Carbon palette ────────────────────────────────────────────
+        // ── Descenders orange palette ───────────────────────────────────────
+        public static readonly Color WinOuter = new Color(0.078f, 0.078f, 0.094f, 0.98f);
+        public static readonly Color WinPanel = new Color(0.098f, 0.098f, 0.118f, 1f);
+        public static readonly Color WinBorder = new Color(0.180f, 0.180f, 0.220f, 1f);
+        public static readonly Color HeaderBg = new Color(0.063f, 0.063f, 0.078f, 1f);
+        public static readonly Color SidebarBg = new Color(0.051f, 0.051f, 0.067f, 1f);
+        public static readonly Color NavActive = new Color(0.118f, 0.118f, 0.149f, 1f);
+        public static readonly Color RowBg = new Color(0.133f, 0.133f, 0.165f, 1f);
+        public static readonly Color RowBorder = new Color(0.196f, 0.196f, 0.235f, 1f);
+        public static readonly Color BtnBg = new Color(0.165f, 0.165f, 0.200f, 1f);
 
-        public static readonly Color WinOuter = new Color(0.102f, 0.102f, 0.118f, 0.97f);
-        public static readonly Color WinPanel = new Color(0.133f, 0.133f, 0.149f, 1f);
-        public static readonly Color WinBorder = new Color(0.200f, 0.200f, 0.220f, 1f);
-        public static readonly Color HeaderBg = new Color(0.149f, 0.149f, 0.169f, 1f);
-        public static readonly Color RowBg = new Color(0.165f, 0.165f, 0.184f, 1f);
-        public static readonly Color RowBorder = new Color(0.220f, 0.220f, 0.243f, 1f);
-        public static readonly Color BtnBg = new Color(0.200f, 0.200f, 0.220f, 1f);
+        // Descenders #FF5500 orange
+        public static readonly Color Accent = new Color(1.000f, 0.333f, 0.000f, 1f);
+        public static readonly Color AccentDim = new Color(0.820f, 0.310f, 0.080f, 0.12f);
+        public static readonly Color AccentBdr = new Color(0.820f, 0.310f, 0.080f, 0.35f);
 
-        public static readonly Color Accent = new Color(0.910f, 0.627f, 0.220f, 1f);
-        public static readonly Color AccentDim = new Color(0.910f, 0.627f, 0.220f, 0.10f);
-        public static readonly Color AccentBdr = new Color(0.910f, 0.627f, 0.220f, 0.30f);
+        // Softer orange for small action buttons — less aggressive than full Accent
+        public static readonly Color ActionBtnBg = new Color(0.800f, 0.280f, 0.040f, 1f);
 
-        public static readonly Color TextLight = new Color(0.800f, 0.800f, 0.800f, 1f);
-        public static readonly Color TextMid = new Color(0.600f, 0.600f, 0.600f, 1f);
-        public static readonly Color TextDim = new Color(0.400f, 0.400f, 0.400f, 1f);
-        public static readonly Color BtnText = new Color(0.533f, 0.533f, 0.533f, 1f);
+        public static readonly Color TextLight = new Color(0.918f, 0.918f, 0.937f, 1f);
+        public static readonly Color TextMid = new Color(0.580f, 0.580f, 0.659f, 1f);
+        public static readonly Color TextDim = new Color(0.333f, 0.333f, 0.400f, 1f);
+        public static readonly Color BtnText = new Color(0.700f, 0.700f, 0.750f, 1f);
 
-        public static readonly Color OnColor = new Color(0.306f, 0.765f, 0.431f, 1f);
-        public static readonly Color OnBg = new Color(0.306f, 0.765f, 0.431f, 0.15f);
-        public static readonly Color OnBdr = new Color(0.306f, 0.765f, 0.431f, 0.40f);
-        public static readonly Color OffColor = new Color(0.973f, 0.443f, 0.443f, 1f);
+        public static readonly Color OnColor = new Color(0.133f, 0.773f, 0.369f, 1f);
+        public static readonly Color OnBg = new Color(0.133f, 0.773f, 0.369f, 0.12f);
+        public static readonly Color OnBdr = new Color(0.133f, 0.773f, 0.369f, 0.35f);
+        public static readonly Color OffColor = new Color(0.937f, 0.267f, 0.267f, 1f);
 
         public static readonly Color TogOffTrack = RowBorder;
         public static readonly Color TogOnTrack = Accent;
-        public static readonly Color TogKnobOn = new Color(0.867f, 0.867f, 0.867f, 1f);
-        public static readonly Color TogKnobOff = new Color(0.600f, 0.600f, 0.600f, 1f);
+        public static readonly Color TogKnobOn = new Color(1.000f, 1.000f, 1.000f, 1f);
+        public static readonly Color TogKnobOff = new Color(0.500f, 0.500f, 0.560f, 1f);
 
         public static readonly Color BarBg = RowBorder;
         public static readonly Color BarFill = Accent;
 
         // ── Layout ──────────────────────────────────────────────────────────
-
-        public const float WinW = 700f, WinH = 620f;
-        public const float HeaderH = 48f, TabH = 36f;
-        public const float RowH = 42f, RowGap = 5f, RowPad = 14f, ContentPad = 14f;
+        public const float WinW = 760f;
+        public const float WinH = 780f;
+        public const float SidebarW = 120f;
+        public const float HeaderH = 46f;
+        public const float TabH = 36f;  // kept for compat, not used
+        public const float RowH = 40f;
+        public const float RowGap = 4f;
+        public const float RowPad = 12f;
+        public const float ContentPad = 12f;
         public const float BottomH = 42f;
 
         // ── Font ────────────────────────────────────────────────────────────
-
         private static Font _font;
         public static Font GetFont()
         {
@@ -53,33 +62,27 @@ namespace DescendersModMenu.UI
             return _font;
         }
 
-        // ── Procedural rounded sprite ───────────────────────────────────────
-        // Bigger textures + bigger radii = actually visible rounding
-
+        // ── Procedural rounded sprites ───────────────────────────────────────
         public static Texture2D RoundTex(int w, int h, int r, Color fill)
         {
             var tex = new Texture2D(w, h, TextureFormat.ARGB32, false);
             tex.filterMode = FilterMode.Bilinear;
             var clr = new Color(0, 0, 0, 0);
             var px = new Color[w * h];
-            for (int y = 0; y < h; y++)
+            for (int y2 = 0; y2 < h; y2++)
                 for (int x = 0; x < w; x++)
                 {
                     float dx = 0, dy = 0;
-                    if (x < r && y < r) { dx = r - x; dy = r - y; }
-                    else if (x > w - r - 1 && y < r) { dx = x - (w - r - 1); dy = r - y; }
-                    else if (x < r && y > h - r - 1) { dx = r - x; dy = y - (h - r - 1); }
-                    else if (x > w - r - 1 && y > h - r - 1) { dx = x - (w - r - 1); dy = y - (h - r - 1); }
+                    if (x < r && y2 < r) { dx = r - x; dy = r - y2; }
+                    else if (x > w - r - 1 && y2 < r) { dx = x - (w - r - 1); dy = r - y2; }
+                    else if (x < r && y2 > h - r - 1) { dx = r - x; dy = y2 - (h - r - 1); }
+                    else if (x > w - r - 1 && y2 > h - r - 1) { dx = x - (w - r - 1); dy = y2 - (h - r - 1); }
                     float d = Mathf.Sqrt(dx * dx + dy * dy);
-                    if (d > r + 0.5f)
-                        px[y * w + x] = clr;
-                    else if (d > r - 0.5f)
-                        px[y * w + x] = new Color(fill.r, fill.g, fill.b, fill.a * (1f - (d - (r - 0.5f))));
-                    else
-                        px[y * w + x] = fill;
+                    if (d > r + 0.5f) px[y2 * w + x] = clr;
+                    else if (d > r - 0.5f) px[y2 * w + x] = new Color(fill.r, fill.g, fill.b, fill.a * (1f - (d - (r - 0.5f))));
+                    else px[y2 * w + x] = fill;
                 }
-            tex.SetPixels(px);
-            tex.Apply();
+            tex.SetPixels(px); tex.Apply();
             return tex;
         }
 
@@ -90,18 +93,28 @@ namespace DescendersModMenu.UI
                 SpriteMeshType.FullRect, new Vector4(r, r, r, r));
         }
 
-        // Larger textures with bigger radii for visible rounding
-        private static Sprite _rowSp, _btnSp, _winSp, _togSp, _knobSp, _barSp;
-
-        public static Sprite RowSp { get { if (_rowSp == null) _rowSp = RoundSprite(64, 12, Color.white); return _rowSp; } }
-        public static Sprite BtnSp { get { if (_btnSp == null) _btnSp = RoundSprite(48, 8, Color.white); return _btnSp; } }
+        private static Sprite _rowSp, _btnSp, _winSp, _togSp, _knobSp, _barSp, _dotSp;
+        public static Sprite RowSp { get { if (_rowSp == null) _rowSp = RoundSprite(64, 10, Color.white); return _rowSp; } }
+        public static Sprite BtnSp { get { if (_btnSp == null) _btnSp = RoundSprite(48, 6, Color.white); return _btnSp; } }
         public static Sprite WinSp { get { if (_winSp == null) _winSp = RoundSprite(64, 14, Color.white); return _winSp; } }
-        public static Sprite TogSp { get { if (_togSp == null) _togSp = RoundSprite(36, 18, Color.white); return _togSp; } }  // pill shape
-        public static Sprite KnobSp { get { if (_knobSp == null) _knobSp = RoundSprite(28, 14, Color.white); return _knobSp; } } // circle
-        public static Sprite BarSp { get { if (_barSp == null) _barSp = RoundSprite(16, 3, Color.white); return _barSp; } }  // thin rounded
+        public static Sprite TogSp { get { if (_togSp == null) _togSp = RoundSprite(44, 6, Color.white); return _togSp; } }
+        public static Sprite KnobSp { get { if (_knobSp == null) _knobSp = RoundSprite(16, 8, Color.white); return _knobSp; } }
+        public static Sprite BarSp { get { if (_barSp == null) _barSp = RoundSprite(16, 3, Color.white); return _barSp; } }
+        // DotSp — perfect circle, NO 9-slice, used with Image.Type.Simple
+        public static Sprite DotSp
+        {
+            get
+            {
+                if (_dotSp == null)
+                {
+                    var tex = RoundTex(16, 16, 8, Color.white);
+                    _dotSp = Sprite.Create(tex, new Rect(0, 0, 16, 16), new Vector2(.5f, .5f), 100f);
+                }
+                return _dotSp;
+            }
+        }
 
-        // ── Core helpers ────────────────────────────────────────────────────
-
+        // ── Core helpers ─────────────────────────────────────────────────────
         public static GameObject Obj(string n, Transform p)
         {
             var g = new GameObject(n, typeof(RectTransform));
@@ -123,7 +136,6 @@ namespace DescendersModMenu.UI
             rt.anchoredPosition = pos; rt.sizeDelta = sz;
         }
 
-        // Panel
         public static GameObject Panel(string n, Transform p, Color c, Sprite sp = null)
         {
             var g = Obj(n, p);
@@ -132,7 +144,6 @@ namespace DescendersModMenu.UI
             return g;
         }
 
-        // Text
         public static Text Txt(string n, Transform p, string txt, int sz, FontStyle fs, TextAnchor a, Color c)
         {
             var g = Obj(n, p);
@@ -145,7 +156,6 @@ namespace DescendersModMenu.UI
             return t;
         }
 
-        // Button (smaller, rounded)
         public static Button Btn(string n, Transform p, string lbl, Vector2 sz, int fs,
             UnityEngine.Events.UnityAction clk, Color? bg = null, Color? tc = null)
         {
@@ -165,27 +175,21 @@ namespace DescendersModMenu.UI
             return b;
         }
 
-        // +/- buttons — smaller (20x20)
         public static void SmallBtn(Transform p, string lbl, UnityEngine.Events.UnityAction clk)
         {
-            var b = Btn(lbl + "B", p, lbl, new Vector2(20, 20), 12, clk);
+            var b = Btn(lbl + "B", p, lbl, new Vector2(22, 22), 12, clk);
             var le = b.gameObject.AddComponent<LayoutElement>();
-            le.preferredWidth = 20; le.preferredHeight = 20;
-            le.minWidth = 20; le.minHeight = 20;
-            le.flexibleHeight = 0;
+            le.preferredWidth = 22; le.preferredHeight = 22;
+            le.minWidth = 22; le.minHeight = 22; le.flexibleHeight = 0;
         }
 
-        // Action button (accent)
         public static void ActionBtn(Transform p, string lbl, UnityEngine.Events.UnityAction clk, float w = 72)
         {
-            var b = Btn(lbl + "B", p, lbl, new Vector2(w, 24), 10, clk, AccentDim, Accent);
+            var b = Btn(lbl + "B", p, lbl, new Vector2(w, 24), 10, clk, ActionBtnBg, Color.white);
             var le = b.gameObject.AddComponent<LayoutElement>();
             le.preferredWidth = w; le.preferredHeight = 24;
-            le.minWidth = w; le.minHeight = 24;
-            le.flexibleHeight = 0;
+            le.minWidth = w; le.minHeight = 24; le.flexibleHeight = 0;
         }
-
-        // ── Progress bar (thin, rounded, won't stretch) ─────────────────────
 
         public static Image MakeBar(string n, Transform p, float pct)
         {
@@ -193,25 +197,18 @@ namespace DescendersModMenu.UI
             var wi = w.AddComponent<Image>();
             wi.sprite = BarSp; wi.type = Image.Type.Sliced;
             wi.color = BarBg; wi.raycastTarget = false;
-
             var le = w.AddComponent<LayoutElement>();
             le.preferredWidth = 70; le.preferredHeight = 4;
-            le.minWidth = 70; le.minHeight = 4;
-            le.flexibleHeight = 0;  // CRITICAL: prevents stretching to row height
+            le.minWidth = 70; le.minHeight = 4; le.flexibleHeight = 0;
 
             var f = Obj("F", w.transform);
             var fi = f.AddComponent<Image>();
-            fi.sprite = BarSp; fi.type = Image.Type.Sliced;
-            fi.color = BarFill;
-
-            // Fill anchored to left, fixed height of 4
+            fi.sprite = BarSp; fi.type = Image.Type.Sliced; fi.color = BarFill;
             var frt = RT(f);
-            frt.anchorMin = new Vector2(0, 0.5f);
-            frt.anchorMax = new Vector2(0, 0.5f);
+            frt.anchorMin = new Vector2(0, 0.5f); frt.anchorMax = new Vector2(0, 0.5f);
             frt.pivot = new Vector2(0, 0.5f);
             frt.sizeDelta = new Vector2(70f * Mathf.Clamp01(pct), 4);
             frt.anchoredPosition = Vector2.zero;
-
             return fi;
         }
 
@@ -220,8 +217,6 @@ namespace DescendersModMenu.UI
             if (fi) RT(fi.gameObject).sizeDelta = new Vector2(70f * Mathf.Clamp01(pct), 4);
         }
 
-        // ── Stat row (childForceExpandHeight OFF) ───────────────────────────
-
         public static GameObject StatRow(string label, Transform p)
         {
             var row = Panel(label + "R", p, RowBg, RowSp);
@@ -229,36 +224,27 @@ namespace DescendersModMenu.UI
             le.preferredHeight = RowH; le.minHeight = RowH;
 
             var hlg = row.AddComponent<HorizontalLayoutGroup>();
-            hlg.spacing = 8;
-            hlg.padding = new RectOffset((int)RowPad, (int)RowPad, 0, 0);
+            hlg.spacing = 8; hlg.padding = new RectOffset((int)RowPad, (int)RowPad, 0, 0);
             hlg.childAlignment = TextAnchor.MiddleCenter;
-            hlg.childForceExpandWidth = false;
-            hlg.childForceExpandHeight = false;  // FIX: don't stretch children
+            hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
 
-            // Border (rounded) — must ignore layout so it overlays without taking space
             var bd = Panel("Bd", row.transform, RowBorder, RowSp);
             bd.GetComponent<Image>().raycastTarget = false;
             Fill(RT(bd));
             bd.AddComponent<LayoutElement>().ignoreLayout = true;
 
-            // Label
-            var t = Txt(label + "L", row.transform, label, 12, FontStyle.Bold, TextAnchor.MiddleLeft, TextLight);
+            var t = Txt(label + "L", row.transform, label, 11, FontStyle.Bold, TextAnchor.MiddleLeft, TextLight);
             var tle = t.gameObject.AddComponent<LayoutElement>();
-            tle.flexibleWidth = 1;
-            tle.preferredHeight = RowH;  // give label explicit height since expand is off
+            tle.flexibleWidth = 1; tle.preferredHeight = RowH;
             return row;
         }
-
-        // ── Toggle (rounded pill track + circle knob) ───────────────────────
 
         public static void Toggle(Transform p, string n, UnityEngine.Events.UnityAction clk,
             out Image track, out RectTransform knob)
         {
             var g = Obj(n, p);
             track = g.AddComponent<Image>();
-            track.sprite = TogSp;           // pill-shaped sprite
-            track.type = Image.Type.Sliced;
-            track.color = TogOffTrack;
+            track.sprite = TogSp; track.type = Image.Type.Sliced; track.color = TogOffTrack;
 
             var b = g.AddComponent<Button>(); b.onClick.AddListener(clk);
             var cb = b.colors;
@@ -267,22 +253,18 @@ namespace DescendersModMenu.UI
             b.colors = cb;
 
             var le = g.AddComponent<LayoutElement>();
-            le.preferredWidth = 34; le.preferredHeight = 18;
-            le.minWidth = 34; le.minHeight = 18;
-            le.flexibleHeight = 0;
+            le.preferredWidth = 40; le.preferredHeight = 22;
+            le.minWidth = 40; le.minHeight = 22; le.flexibleHeight = 0;
 
             var k = Obj("K", g.transform);
             var ki = k.AddComponent<Image>();
-            ki.sprite = KnobSp;            // circle sprite
-            ki.type = Image.Type.Sliced;
-            ki.color = TogKnobOff;
+            ki.sprite = KnobSp; ki.type = Image.Type.Sliced; ki.color = TogKnobOff;
             ki.raycastTarget = false;
 
             knob = RT(k);
-            knob.anchorMin = new Vector2(0, 0.5f);
-            knob.anchorMax = new Vector2(0, 0.5f);
+            knob.anchorMin = new Vector2(0, 0.5f); knob.anchorMax = new Vector2(0, 0.5f);
             knob.pivot = new Vector2(0, 0.5f);
-            knob.sizeDelta = new Vector2(14, 14);
+            knob.sizeDelta = new Vector2(18, 18);
             knob.anchoredPosition = new Vector2(2, 0);
         }
 
@@ -291,25 +273,36 @@ namespace DescendersModMenu.UI
             if (track) track.color = on ? TogOnTrack : TogOffTrack;
             if (knob)
             {
-                knob.anchoredPosition = on ? new Vector2(18, 0) : new Vector2(2, 0);
+                knob.anchoredPosition = on ? new Vector2(20, 0) : new Vector2(2, 0);
                 knob.GetComponent<Image>().color = on ? TogKnobOn : TogKnobOff;
             }
         }
 
-        // ── Section header ──────────────────────────────────────────────────
-
         public static void SectionHeader(string title, Transform p)
         {
-            var t = Txt(title + "H", p, title, 11, FontStyle.Bold, TextAnchor.MiddleCenter, Accent);
-            t.gameObject.AddComponent<LayoutElement>().preferredHeight = 28;
+            // Left accent bar + uppercase label
+            var row = Obj(title + "H", p);
+            var le = row.AddComponent<LayoutElement>();
+            le.preferredHeight = 26; le.minHeight = 26; le.flexibleHeight = 0;
+
+            var bar = Panel("Bar", row.transform, Accent);
+            var brt = RT(bar);
+            brt.anchorMin = new Vector2(0, 0.5f); brt.anchorMax = new Vector2(0, 0.5f);
+            brt.pivot = new Vector2(0, 0.5f); brt.sizeDelta = new Vector2(3, 13);
+            brt.anchoredPosition = Vector2.zero;
+
+            var t = Txt(title + "T", row.transform, title.ToUpper(), 10,
+                FontStyle.Bold, TextAnchor.MiddleLeft, Accent);
+            var trt = RT(t.gameObject);
+            trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+            trt.offsetMin = new Vector2(10, 0); trt.offsetMax = Vector2.zero;
         }
 
         public static void Divider(Transform p)
         {
-            Panel("Dv", p, new Color(1, 1, 1, 0.04f)).AddComponent<LayoutElement>().preferredHeight = 1;
+            Panel("Dv", p, new Color(0.22f, 0.22f, 0.28f, 0.5f))
+                .AddComponent<LayoutElement>().preferredHeight = 1;
         }
-
-        // ── Info box ────────────────────────────────────────────────────────
 
         public static void InfoBox(Transform p, string txt)
         {
@@ -322,8 +315,6 @@ namespace DescendersModMenu.UI
             t.verticalOverflow = VerticalWrapMode.Truncate;
             Fill(RT(t.gameObject), 12, 12, 4, 4);
         }
-
-        // ── Hotkey row ──────────────────────────────────────────────────────
 
         public static void HotkeyRow(Transform p, string desc, string key)
         {
@@ -343,10 +334,9 @@ namespace DescendersModMenu.UI
 
             var badge = Panel("KB", row.transform, BtnBg, BtnSp);
             var ble = badge.AddComponent<LayoutElement>();
-            ble.preferredWidth = 38; ble.preferredHeight = 20; ble.minWidth = 38;
-            ble.flexibleHeight = 0;
+            ble.preferredWidth = 38; ble.preferredHeight = 20; ble.minWidth = 38; ble.flexibleHeight = 0;
 
-            var kt = Txt("K", badge.transform, key, 11, FontStyle.Bold, TextAnchor.MiddleCenter, TextMid);
+            var kt = Txt("K", badge.transform, key, 11, FontStyle.Bold, TextAnchor.MiddleCenter, Accent);
             Fill(RT(kt.gameObject));
         }
     }

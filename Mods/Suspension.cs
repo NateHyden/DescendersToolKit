@@ -27,6 +27,13 @@ namespace DescendersModMenu.Mods
         // ── Travel ────────────────────────────────────────────────────────
         public static void TravelIncrease() { if (TravelLevel < 10) { TravelLevel++; ApplyTravel(); } }
         public static void TravelDecrease() { if (TravelLevel > 1) { TravelLevel--; ApplyTravel(); } }
+        public static void SetTravelLevel(int level)
+        {
+            if (level < 1) level = 1;
+            if (level > 10) level = 10;
+            TravelLevel = level;
+            ApplyTravel();
+        }
 
         public static void ApplyTravel()
         {
@@ -52,6 +59,13 @@ namespace DescendersModMenu.Mods
         // ── Stiffness ─────────────────────────────────────────────────────
         public static void StiffnessIncrease() { if (StiffnessLevel < 10) { StiffnessLevel++; ApplyStiffness(); } }
         public static void StiffnessDecrease() { if (StiffnessLevel > 1) { StiffnessLevel--; ApplyStiffness(); } }
+        public static void SetStiffnessLevel(int level)
+        {
+            if (level < 1) level = 1;
+            if (level > 10) level = 10;
+            StiffnessLevel = level;
+            ApplyStiffness();
+        }
 
         public static void ApplyStiffness()
         {
@@ -77,6 +91,13 @@ namespace DescendersModMenu.Mods
         // ── Damping ───────────────────────────────────────────────────────
         public static void DampingIncrease() { if (DampingLevel < 10) { DampingLevel++; ApplyDamping(); } }
         public static void DampingDecrease() { if (DampingLevel > 1) { DampingLevel--; ApplyDamping(); } }
+        public static void SetDampingLevel(int level)
+        {
+            if (level < 1) level = 1;
+            if (level > 10) level = 10;
+            DampingLevel = level;
+            ApplyDamping();
+        }
 
         public static void ApplyDamping()
         {

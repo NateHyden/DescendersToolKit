@@ -102,6 +102,7 @@
     <Compile Include="Mods\CutBrakes.cs" />
     <Compile Include="Mods\DiagnosticsManager.cs" />
     <Compile Include="Mods\ESP.cs" />
+    <Compile Include="Mods\ExplodingProps.cs" />
     <Compile Include="Mods\Fov.cs" />
     <Compile Include="Mods\GameModifiers.cs" />
     <Compile Include="Mods\Gravity.cs" />
@@ -113,6 +114,7 @@
     <Compile Include="Mods\NoSpeedCap.cs" />
     <Compile Include="Mods\SceneDumper.cs" />
     <Compile Include="Mods\ScoreManager.cs" />
+    <Compile Include="Mods\SessionTrackers.cs" />
     <Compile Include="Mods\SlowMotion.cs" />
     <Compile Include="Mods\SpeedWatcher.cs" />
     <Compile Include="BikeStats\StatsManager.cs" />
