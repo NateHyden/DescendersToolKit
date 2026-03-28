@@ -33,7 +33,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtn(r2.transform, "+10K", () => ScoreManager.AddScore(10000), 50);
                 UIHelpers.ActionBtn(r2.transform, "+50K", () => ScoreManager.AddScore(50000), 50);
                 UIHelpers.ActionBtn(r2.transform, "+100K", () => ScoreManager.AddScore(100000), 56);
-                UIHelpers.ActionBtn(r2.transform, "+1M", () => ScoreManager.AddScore(1000000), 50);
+                UIHelpers.ActionBtnOrange(r2.transform, "+1M", () => ScoreManager.AddScore(1000000), 50);
 
                 UIHelpers.InfoBox(pg.transform, "Adds REP to your current session score. Must be in a game session.");
 
@@ -47,7 +47,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtn(mr.transform, "x2", () => ScoreManager.SetMultiplier(2f), 36);
                 UIHelpers.ActionBtn(mr.transform, "x5", () => ScoreManager.SetMultiplier(5f), 36);
                 UIHelpers.ActionBtn(mr.transform, "x10", () => ScoreManager.SetMultiplier(10f), 40);
-                UIHelpers.ActionBtn(mr.transform, "x20", () => ScoreManager.SetMultiplier(20f), 40);
+                UIHelpers.ActionBtnOrange(mr.transform, "x20", () => ScoreManager.SetMultiplier(20f), 40);
 
                 UIHelpers.InfoBox(pg.transform, "Sets the trick score multiplier. Resets naturally when you bail or land.");
 

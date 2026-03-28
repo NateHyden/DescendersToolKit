@@ -10,6 +10,7 @@ namespace DescendersModMenu.UI
         private static Text espVal, distVal, tracVal;
         private static Image espTrk, distTrk, tracTrk;
         private static RectTransform espKnb, distKnb, tracKnb;
+        private static Text _modUsersText;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -61,7 +62,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.Fill(UIHelpers.RT(TeleportUI.PlayerNameText.gameObject), 4, 4, 0, 0);
 
                 UIHelpers.SmallBtn(tpr.transform, "\u25B6", () => TeleportUI.NextPlayer());
-                UIHelpers.ActionBtn(tpr.transform, "Teleport", () => TeleportUI.TeleportToSelected(), 76);
+                UIHelpers.ActionBtnOrange(tpr.transform, "Teleport", () => TeleportUI.TeleportToSelected(), 76);
 
                 var sr = UIHelpers.StatRow("Find Players", pg.transform);
                 UIHelpers.ActionBtn(sr.transform, "Scan", () => TeleportUI.Scan());
@@ -70,11 +71,24 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("CHECKPOINT", pg.transform);
 
                 var cpr = UIHelpers.StatRow("Last Checkpoint", pg.transform);
-                UIHelpers.ActionBtn(cpr.transform, "Teleport", () =>
+                UIHelpers.ActionBtnOrange(cpr.transform, "Teleport", () =>
                 {
                     try { TeleportToCheckpoint.Teleport(); }
                     catch (System.Exception ex) { MelonLogger.Error("[TeleportCP]: " + ex.Message); }
                 }, 76);
+
+                UIHelpers.Divider(pg.transform);
+                UIHelpers.SectionHeader("MOD USERS", pg.transform);
+
+                var mdr = UIHelpers.StatRow("Detect Mod Users", pg.transform);
+                UIHelpers.ActionBtn(mdr.transform, "Scan", () => { ModDetection.Scan(); RefreshModUsers(); }, 52);
+
+                _modUsersText = UIHelpers.Txt("MUT", pg.transform, "Press Scan to detect mod users", 11,
+                    FontStyle.Normal, TextAnchor.UpperLeft, UIHelpers.TextMid);
+                _modUsersText.horizontalOverflow = HorizontalWrapMode.Wrap;
+                _modUsersText.verticalOverflow = VerticalWrapMode.Truncate;
+                var mutle = _modUsersText.gameObject.AddComponent<LayoutElement>();
+                mutle.preferredHeight = 60; mutle.flexibleWidth = 1;
 
                 RefreshTexts();
 
@@ -88,6 +102,26 @@ namespace DescendersModMenu.UI
             Upd(espVal, espTrk, espKnb, ESP.Enabled);
             Upd(distVal, distTrk, distKnb, ESP.ShowDistance);
             Upd(tracVal, tracTrk, tracKnb, ESP.ShowTracers);
+        }
+
+        private static void RefreshModUsers()
+        {
+            if ((object)_modUsersText == null) return;
+            var users = ModDetection.ModUsers;
+            if (users.Count == 0)
+            {
+                _modUsersText.text = "No mod users found in lobby";
+                _modUsersText.color = UIHelpers.TextDim;
+                return;
+            }
+            _modUsersText.color = UIHelpers.Accent;
+            string txt = "";
+            for (int i = 0; i < users.Count; i++)
+            {
+                if (i > 0) txt += "\n";
+                txt += users[i].Name + "  [v" + users[i].Version + "]";
+            }
+            _modUsersText.text = txt;
         }
 
         private static void Upd(Text l, Image t, RectTransform k, bool on)

@@ -10,11 +10,28 @@ namespace DescendersModMenu.Mods
         public static bool Enabled { get; private set; } = false;
         private static PropCollisionHandler _handler = null;
 
+        // Career map scene names — exploding props disabled here
+        private static readonly string[] CareerScenes =
+        {
+            "highlands", "forest", "canyon", "peaks", "hell",
+            "desert", "jungle", "favela", "glaciers", "ridges",
+            "overworld"
+        };
+
+        public static bool IsCareerScene(string sceneName)
+        {
+            if (string.IsNullOrEmpty(sceneName)) return false;
+            string lower = sceneName.ToLowerInvariant();
+            for (int i = 0; i < CareerScenes.Length; i++)
+                if (lower.StartsWith(CareerScenes[i])) return true;
+            return false;
+        }
+
         public static void Toggle()
         {
             Enabled = !Enabled;
             if (Enabled) Attach(); else Detach();
-            MelonLogger.Msg("[NoMistakes] -> " + (Enabled ? "ON" : "OFF"));
+            MelonLogger.Msg("[ExplodingProps] -> " + (Enabled ? "ON" : "OFF"));
         }
 
         public static void SetEnabled(bool enabled)
@@ -29,7 +46,7 @@ namespace DescendersModMenu.Mods
             {
                 GameObject player = GameObject.Find("Player_Human");
                 if ((object)player == null)
-                { MelonLogger.Warning("[NoMistakes] Player_Human not found."); return; }
+                { MelonLogger.Warning("[ExplodingProps] Player_Human not found."); return; }
 
                 _handler = player.GetComponent<PropCollisionHandler>();
                 if ((object)_handler == null)
@@ -38,20 +55,39 @@ namespace DescendersModMenu.Mods
                 _handler.enabled = true;
             }
             catch (Exception ex)
-            { MelonLogger.Error("[NoMistakes] Attach: " + ex.Message); }
+            { MelonLogger.Error("[ExplodingProps] Attach: " + ex.Message); }
         }
 
         private static void Detach()
         {
-            if ((object)_handler != null)
-                _handler.enabled = false;
+            try
+            {
+                if ((object)_handler != null && (object)(_handler as UnityEngine.Object) != null)
+                    _handler.enabled = false;
+            }
+            catch { }
+            _handler = null;
         }
 
         public static void Reset()
         {
             Enabled = false;
             Detach();
-            _handler = null;
+        }
+
+        // Called from OnSceneWasInitialized — auto-disable on career maps
+        public static void OnSceneInitialized(string sceneName)
+        {
+            if (Enabled && IsCareerScene(sceneName))
+            {
+                MelonLogger.Msg("[ExplodingProps] Career map detected — disabling.");
+                Enabled = false;
+                Detach();
+            }
+            else if (Enabled)
+            {
+                Attach(); // re-attach after scene load if still enabled
+            }
         }
     }
 
@@ -59,12 +95,7 @@ namespace DescendersModMenu.Mods
     {
         private Vehicle _vehicle;
         private Rigidbody _rb;
-
-        // Vehicle.SetVelocity — same method the OOB boundary uses
         private MethodInfo _setVelocityMethod;
-
-        // FMODUnity.RuntimeManager.PlayOneShot(string, Vector3)
-        // The actual crash sound is "event:/sfx/impact/surface/vehicle"
         private MethodInfo _playOneShotMethod;
         private bool _cached = false;
 
@@ -86,23 +117,16 @@ namespace DescendersModMenu.Mods
 
             try
             {
-                // Vehicle.SetVelocity(Vector3) — public, unobfuscated
                 _setVelocityMethod = typeof(Vehicle).GetMethod("SetVelocity",
                     BindingFlags.Public | BindingFlags.Instance, null,
                     new Type[] { typeof(Vector3) }, null);
 
-                if ((object)_setVelocityMethod != null)
-                    MelonLogger.Msg("[NoMistakes] Found Vehicle.SetVelocity");
-
-                // Find FMODUnity.RuntimeManager.PlayOneShot(string, Vector3)
-                // RuntimeManager is in a separate assembly — find by scanning
                 Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
                 for (int a = 0; a < assemblies.Length; a++)
                 {
                     Type rtType = assemblies[a].GetType("FMODUnity.RuntimeManager");
                     if ((object)rtType == null) continue;
 
-                    // Look for PlayOneShot(string, Vector3) — plays a one-shot at a position
                     MethodInfo[] methods = rtType.GetMethods(BindingFlags.Public | BindingFlags.Static);
                     for (int m = 0; m < methods.Length; m++)
                     {
@@ -111,14 +135,8 @@ namespace DescendersModMenu.Mods
                         if (parms.Length == 2 &&
                             string.Equals(parms[0].ParameterType.Name, "String", StringComparison.Ordinal) &&
                             string.Equals(parms[1].ParameterType.Name, "Vector3", StringComparison.Ordinal))
-                        {
-                            _playOneShotMethod = methods[m];
-                            MelonLogger.Msg("[NoMistakes] Found RuntimeManager.PlayOneShot(string, Vector3)");
-                            break;
-                        }
+                        { _playOneShotMethod = methods[m]; break; }
                     }
-
-                    // Fallback: PlayOneShot(string) — no position
                     if ((object)_playOneShotMethod == null)
                     {
                         for (int m = 0; m < methods.Length; m++)
@@ -127,20 +145,13 @@ namespace DescendersModMenu.Mods
                             ParameterInfo[] parms = methods[m].GetParameters();
                             if (parms.Length == 1 &&
                                 string.Equals(parms[0].ParameterType.Name, "String", StringComparison.Ordinal))
-                            {
-                                _playOneShotMethod = methods[m];
-                                MelonLogger.Msg("[NoMistakes] Found RuntimeManager.PlayOneShot(string) [fallback]");
-                                break;
-                            }
+                            { _playOneShotMethod = methods[m]; break; }
                         }
                     }
                     break;
                 }
-
-                if ((object)_playOneShotMethod == null)
-                    MelonLogger.Warning("[NoMistakes] RuntimeManager.PlayOneShot not found.");
             }
-            catch (Exception ex) { MelonLogger.Error("[NoMistakes] CacheReflection: " + ex.Message); }
+            catch (Exception ex) { MelonLogger.Error("[ExplodingProps] CacheReflection: " + ex.Message); }
         }
 
         private void PlayCrashSound()
@@ -162,32 +173,23 @@ namespace DescendersModMenu.Mods
             if (!ExplodingProps.Enabled) return;
             if ((object)_vehicle == null) return;
             if ((object)_rb == null) return;
-
-            // Cooldown
             if (Time.unscaledTime - _lastBounceTime < BounceCooldown) return;
-
             if (collision.contacts.Length == 0) return;
-            Vector3 normal = collision.contacts[0].normal;
 
-            // ── LANDING CHECK ─────────────────────────────────────────
-            // Normal pointing UP = ground/ramp landing, skip
+            Vector3 normal = collision.contacts[0].normal;
             if (normal.y > 0.5f) return;
 
-            // ── SPEED THRESHOLD ───────────────────────────────────────
             float impactSpeed = collision.relativeVelocity.magnitude;
             if (impactSpeed < MinImpactSpeed) return;
 
-            // ── IGNORE SELF ───────────────────────────────────────────
             GameObject other = collision.gameObject;
             if ((object)other == null) return;
             string otherName = other.name;
             if (otherName == "Player_Human") return;
             if (otherName == "wheel_front" || otherName == "wheel_back") return;
 
-            // Cache on first hit
             if (!_cached) CacheReflection();
 
-            // ── LAUNCH — same approach as OOB boundary ────────────────
             Vector3 bounceDir = Vector3.Reflect(_rb.velocity.normalized, normal);
             bounceDir.y = Mathf.Max(bounceDir.y, 0.4f);
             bounceDir = bounceDir.normalized;
@@ -196,16 +198,13 @@ namespace DescendersModMenu.Mods
             float force = Mathf.Max(speed * 0.8f, BounceSpeed);
             Vector3 bounceVelocity = (bounceDir + Vector3.up * 0.3f) * force;
 
-            // Use Vehicle.SetVelocity — moves bike + rider together
             if ((object)_setVelocityMethod != null)
                 _setVelocityMethod.Invoke(_vehicle, new object[] { bounceVelocity });
             else
                 _rb.velocity = bounceVelocity;
 
-            // ── CRASH SOUND — direct FMOD PlayOneShot ─────────────────
             PlayCrashSound();
 
-            // ── LAUNCH THE THING WE HIT (if it has a rigidbody) ───────
             Rigidbody propRb = other.GetComponent<Rigidbody>();
             if ((object)propRb != null)
             {

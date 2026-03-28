@@ -5,54 +5,70 @@ namespace DescendersModMenu.UI
 {
     public static class UIHelpers
     {
-        // ── Descenders orange palette ───────────────────────────────────────
-        public static readonly Color WinOuter = new Color(0.078f, 0.078f, 0.094f, 0.98f);
-        public static readonly Color WinPanel = new Color(0.098f, 0.098f, 0.118f, 1f);
-        public static readonly Color WinBorder = new Color(0.180f, 0.180f, 0.220f, 1f);
-        public static readonly Color HeaderBg = new Color(0.063f, 0.063f, 0.078f, 1f);
-        public static readonly Color SidebarBg = new Color(0.051f, 0.051f, 0.067f, 1f);
-        public static readonly Color NavActive = new Color(0.118f, 0.118f, 0.149f, 1f);
-        public static readonly Color RowBg = new Color(0.133f, 0.133f, 0.165f, 1f);
-        public static readonly Color RowBorder = new Color(0.196f, 0.196f, 0.235f, 1f);
-        public static readonly Color BtnBg = new Color(0.165f, 0.165f, 0.200f, 1f);
+        // ════════════════════════════════════════════════════
+        //  REDESIGN PALETTE — v3.0 Grungy MTB + Neon Lime
+        // ════════════════════════════════════════════════════
 
-        // Descenders #FF5500 orange
-        public static readonly Color Accent = new Color(1.000f, 0.333f, 0.000f, 1f);
-        public static readonly Color AccentDim = new Color(0.820f, 0.310f, 0.080f, 0.12f);
-        public static readonly Color AccentBdr = new Color(0.820f, 0.310f, 0.080f, 0.35f);
+        // Backgrounds — gunmetal grey
+        public static readonly Color WinOuter = new Color(0.055f, 0.059f, 0.063f, 0.98f);
+        public static readonly Color WinPanel = new Color(0.098f, 0.102f, 0.110f, 1.00f);
+        public static readonly Color WinBorder = new Color(0.160f, 0.165f, 0.175f, 1.00f);
+        public static readonly Color HeaderBg = new Color(0.067f, 0.071f, 0.078f, 1.00f);
+        public static readonly Color SidebarBg = new Color(0.067f, 0.071f, 0.078f, 1.00f);
+        public static readonly Color NavActive = new Color(0.090f, 0.110f, 0.055f, 1.00f);
+        public static readonly Color RowBg = new Color(0.118f, 0.122f, 0.130f, 1.00f);
+        public static readonly Color RowBorder = new Color(0.145f, 0.150f, 0.160f, 1.00f);
+        public static readonly Color BtnBg = new Color(0.145f, 0.150f, 0.160f, 1.00f);
 
-        // Softer orange for small action buttons — less aggressive than full Accent
-        public static readonly Color ActionBtnBg = new Color(0.800f, 0.280f, 0.040f, 1f);
+        // Primary accent — NEON LIME
+        public static readonly Color Accent = new Color(0.800f, 1.000f, 0.000f, 1.00f);
+        public static readonly Color AccentDim = new Color(0.110f, 0.125f, 0.055f, 1.00f);  // pre-blended lime on dark
+        public static readonly Color AccentBdr = new Color(0.220f, 0.280f, 0.055f, 1.00f);  // pre-blended lime border
 
-        public static readonly Color TextLight = new Color(0.918f, 0.918f, 0.937f, 1f);
-        public static readonly Color TextMid = new Color(0.580f, 0.580f, 0.659f, 1f);
-        public static readonly Color TextDim = new Color(0.333f, 0.333f, 0.400f, 1f);
-        public static readonly Color BtnText = new Color(0.700f, 0.700f, 0.750f, 1f);
+        // Button colour — NEON BLUE
+        public static readonly Color NeonBlue = new Color(0.000f, 0.600f, 1.000f, 1.00f);
 
-        public static readonly Color OnColor = new Color(0.133f, 0.773f, 0.369f, 1f);
-        public static readonly Color OnBg = new Color(0.133f, 0.773f, 0.369f, 0.12f);
-        public static readonly Color OnBdr = new Color(0.133f, 0.773f, 0.369f, 0.35f);
-        public static readonly Color OffColor = new Color(0.937f, 0.267f, 0.267f, 1f);
+        // Secondary accent — ORANGE (destructive actions only)
+        public static readonly Color Orange = new Color(1.000f, 0.267f, 0.000f, 1.00f);
+        public static readonly Color OrangeDim = new Color(0.140f, 0.075f, 0.047f, 1.00f);  // pre-blended orange on dark
+        public static readonly Color OrangeBdr = new Color(0.280f, 0.110f, 0.050f, 1.00f);  // pre-blended orange border
+        public static readonly Color ActionBtnBg = new Color(0.145f, 0.150f, 0.160f, 1.00f);
 
-        public static readonly Color TogOffTrack = RowBorder;
-        public static readonly Color TogOnTrack = Accent;
-        public static readonly Color TogKnobOn = new Color(1.000f, 1.000f, 1.000f, 1f);
-        public static readonly Color TogKnobOff = new Color(0.500f, 0.500f, 0.560f, 1f);
+        // Text
+        public static readonly Color TextLight = new Color(0.900f, 0.910f, 0.920f, 1.00f);
+        public static readonly Color TextMid = new Color(0.530f, 0.545f, 0.570f, 1.00f);
+        public static readonly Color TextDim = new Color(0.320f, 0.330f, 0.350f, 1.00f);
+        public static readonly Color BtnText = new Color(0.900f, 0.910f, 0.920f, 1.00f);
 
-        public static readonly Color BarBg = RowBorder;
-        public static readonly Color BarFill = Accent;
+        // States
+        public static readonly Color OnColor = new Color(0.000f, 1.000f, 0.533f, 1.00f);
+        public static readonly Color OnBg = new Color(0.063f, 0.145f, 0.098f, 1.00f);  // pre-blended green on dark
+        public static readonly Color OnBdr = new Color(0.055f, 0.310f, 0.192f, 1.00f);  // pre-blended green border
+        public static readonly Color OffColor = new Color(1.000f, 0.133f, 0.267f, 1.00f);
+        public static readonly Color RedDim = new Color(0.130f, 0.063f, 0.067f, 1.00f);  // pre-blended red on dark
+        public static readonly Color RedBdr = new Color(0.255f, 0.075f, 0.098f, 1.00f);  // pre-blended red border
+
+        // Toggles
+        public static readonly Color TogOffTrack = new Color(0.145f, 0.150f, 0.160f, 1.00f);
+        public static readonly Color TogOnTrack = new Color(0.145f, 0.175f, 0.078f, 1.00f);
+        public static readonly Color TogKnobOn = new Color(0.800f, 1.000f, 0.000f, 1.00f);
+        public static readonly Color TogKnobOff = new Color(0.310f, 0.320f, 0.340f, 1.00f);
+
+        // Bars
+        public static readonly Color BarBg = new Color(0.145f, 0.150f, 0.160f, 1.00f);
+        public static readonly Color BarFill = new Color(0.800f, 1.000f, 0.000f, 1.00f);
 
         // ── Layout ──────────────────────────────────────────────────────────
-        public const float WinW = 760f;
-        public const float WinH = 780f;
-        public const float SidebarW = 120f;
-        public const float HeaderH = 46f;
-        public const float TabH = 36f;  // kept for compat, not used
+        public const float WinW = 800f;
+        public const float WinH = 660f;
+        public const float SidebarW = 130f;
+        public const float HeaderH = 58f;
+        public const float TabH = 36f;
         public const float RowH = 40f;
         public const float RowGap = 4f;
         public const float RowPad = 12f;
-        public const float ContentPad = 12f;
-        public const float BottomH = 42f;
+        public const float ContentPad = 14f;
+        public const float BottomH = 46f;
 
         // ── Font ────────────────────────────────────────────────────────────
         private static Font _font;
@@ -93,14 +109,14 @@ namespace DescendersModMenu.UI
                 SpriteMeshType.FullRect, new Vector4(r, r, r, r));
         }
 
+        // Angular corners — radius 2 for rows/buttons, radius 3 for window
         private static Sprite _rowSp, _btnSp, _winSp, _togSp, _knobSp, _barSp, _dotSp;
-        public static Sprite RowSp { get { if (_rowSp == null) _rowSp = RoundSprite(64, 10, Color.white); return _rowSp; } }
-        public static Sprite BtnSp { get { if (_btnSp == null) _btnSp = RoundSprite(48, 6, Color.white); return _btnSp; } }
-        public static Sprite WinSp { get { if (_winSp == null) _winSp = RoundSprite(64, 14, Color.white); return _winSp; } }
-        public static Sprite TogSp { get { if (_togSp == null) _togSp = RoundSprite(44, 6, Color.white); return _togSp; } }
-        public static Sprite KnobSp { get { if (_knobSp == null) _knobSp = RoundSprite(16, 8, Color.white); return _knobSp; } }
+        public static Sprite RowSp { get { if (_rowSp == null) _rowSp = RoundSprite(64, 2, Color.white); return _rowSp; } }
+        public static Sprite BtnSp { get { if (_btnSp == null) _btnSp = RoundSprite(48, 2, Color.white); return _btnSp; } }
+        public static Sprite WinSp { get { if (_winSp == null) _winSp = RoundSprite(64, 3, Color.white); return _winSp; } }
+        public static Sprite TogSp { get { if (_togSp == null) _togSp = RoundSprite(44, 2, Color.white); return _togSp; } }
+        public static Sprite KnobSp { get { if (_knobSp == null) _knobSp = RoundSprite(16, 2, Color.white); return _knobSp; } }
         public static Sprite BarSp { get { if (_barSp == null) _barSp = RoundSprite(16, 3, Color.white); return _barSp; } }
-        // DotSp — perfect circle, NO 9-slice, used with Image.Type.Simple
         public static Sprite DotSp
         {
             get
@@ -175,20 +191,29 @@ namespace DescendersModMenu.UI
             return b;
         }
 
-        public static void SmallBtn(Transform p, string lbl, UnityEngine.Events.UnityAction clk)
+        public static Button SmallBtn(Transform p, string lbl, UnityEngine.Events.UnityAction clk)
         {
-            var b = Btn(lbl + "B", p, lbl, new Vector2(22, 22), 12, clk);
+            var b = Btn(lbl + "B", p, lbl, new Vector2(24, 24), 13, clk, NeonBlue, new Color(0, 0, 0, 1));
             var le = b.gameObject.AddComponent<LayoutElement>();
-            le.preferredWidth = 22; le.preferredHeight = 22;
-            le.minWidth = 22; le.minHeight = 22; le.flexibleHeight = 0;
+            le.preferredWidth = 24; le.preferredHeight = 24;
+            le.minWidth = 24; le.minHeight = 24; le.flexibleHeight = 0;
+            return b;
         }
 
         public static void ActionBtn(Transform p, string lbl, UnityEngine.Events.UnityAction clk, float w = 72)
         {
-            var b = Btn(lbl + "B", p, lbl, new Vector2(w, 24), 10, clk, ActionBtnBg, Color.white);
+            var b = Btn(lbl + "B", p, lbl, new Vector2(w, 26), 11, clk, NeonBlue, new Color(0, 0, 0, 1));
             var le = b.gameObject.AddComponent<LayoutElement>();
-            le.preferredWidth = w; le.preferredHeight = 24;
-            le.minWidth = w; le.minHeight = 24; le.flexibleHeight = 0;
+            le.preferredWidth = w; le.preferredHeight = 26;
+            le.minWidth = w; le.minHeight = 26; le.flexibleHeight = 0;
+        }
+
+        public static void ActionBtnOrange(Transform p, string lbl, UnityEngine.Events.UnityAction clk, float w = 72)
+        {
+            var b = Btn(lbl + "B", p, lbl, new Vector2(w, 26), 11, clk, NeonBlue, new Color(0, 0, 0, 1));
+            var le = b.gameObject.AddComponent<LayoutElement>();
+            le.preferredWidth = w; le.preferredHeight = 26;
+            le.minWidth = w; le.minHeight = 26; le.flexibleHeight = 0;
         }
 
         public static Image MakeBar(string n, Transform p, float pct)
@@ -233,7 +258,7 @@ namespace DescendersModMenu.UI
             Fill(RT(bd));
             bd.AddComponent<LayoutElement>().ignoreLayout = true;
 
-            var t = Txt(label + "L", row.transform, label, 11, FontStyle.Bold, TextAnchor.MiddleLeft, TextLight);
+            var t = Txt(label + "L", row.transform, label, 12, FontStyle.Bold, TextAnchor.MiddleLeft, TextLight);
             var tle = t.gameObject.AddComponent<LayoutElement>();
             tle.flexibleWidth = 1; tle.preferredHeight = RowH;
             return row;
@@ -244,7 +269,14 @@ namespace DescendersModMenu.UI
         {
             var g = Obj(n, p);
             track = g.AddComponent<Image>();
-            track.sprite = TogSp; track.type = Image.Type.Sliced; track.color = TogOffTrack;
+            track.sprite = TogSp; track.type = Image.Type.Sliced;
+            track.color = TogOffTrack;
+
+            // Border overlay on track
+            var tbdr = Panel("TBdr", g.transform, RowBorder, TogSp);
+            tbdr.GetComponent<Image>().raycastTarget = false;
+            Fill(RT(tbdr));
+            tbdr.AddComponent<LayoutElement>().ignoreLayout = true;
 
             var b = g.AddComponent<Button>(); b.onClick.AddListener(clk);
             var cb = b.colors;
@@ -253,12 +285,13 @@ namespace DescendersModMenu.UI
             b.colors = cb;
 
             var le = g.AddComponent<LayoutElement>();
-            le.preferredWidth = 40; le.preferredHeight = 22;
-            le.minWidth = 40; le.minHeight = 22; le.flexibleHeight = 0;
+            le.preferredWidth = 44; le.preferredHeight = 24;
+            le.minWidth = 44; le.minHeight = 24; le.flexibleHeight = 0;
 
             var k = Obj("K", g.transform);
             var ki = k.AddComponent<Image>();
-            ki.sprite = KnobSp; ki.type = Image.Type.Sliced; ki.color = TogKnobOff;
+            ki.sprite = KnobSp; ki.type = Image.Type.Sliced;
+            ki.color = TogKnobOff;
             ki.raycastTarget = false;
 
             knob = RT(k);
@@ -270,28 +303,41 @@ namespace DescendersModMenu.UI
 
         public static void SetToggle(Image track, RectTransform knob, bool on)
         {
-            if (track) track.color = on ? TogOnTrack : TogOffTrack;
+            if (track)
+            {
+                track.color = on ? TogOnTrack : TogOffTrack;
+                // Update border colour
+                Transform tbdr = track.transform.Find("TBdr");
+                if (tbdr != null)
+                {
+                    var tbdrImg = tbdr.GetComponent<Image>();
+                    if (tbdrImg) tbdrImg.color = on
+                        ? AccentBdr
+                        : RowBorder;
+                }
+            }
             if (knob)
             {
-                knob.anchoredPosition = on ? new Vector2(20, 0) : new Vector2(2, 0);
+                knob.anchoredPosition = on ? new Vector2(22, 0) : new Vector2(2, 0);
                 knob.GetComponent<Image>().color = on ? TogKnobOn : TogKnobOff;
             }
         }
 
         public static void SectionHeader(string title, Transform p)
         {
-            // Left accent bar + uppercase label
             var row = Obj(title + "H", p);
             var le = row.AddComponent<LayoutElement>();
-            le.preferredHeight = 26; le.minHeight = 26; le.flexibleHeight = 0;
+            le.preferredHeight = 28; le.minHeight = 28; le.flexibleHeight = 0;
 
+            // Left accent bar — neon lime
             var bar = Panel("Bar", row.transform, Accent);
             var brt = RT(bar);
             brt.anchorMin = new Vector2(0, 0.5f); brt.anchorMax = new Vector2(0, 0.5f);
-            brt.pivot = new Vector2(0, 0.5f); brt.sizeDelta = new Vector2(3, 13);
+            brt.pivot = new Vector2(0, 0.5f); brt.sizeDelta = new Vector2(3, 14);
             brt.anchoredPosition = Vector2.zero;
 
-            var t = Txt(title + "T", row.transform, title.ToUpper(), 10,
+            // Text — neon lime, bold, uppercase
+            var t = Txt(title + "T", row.transform, title.ToUpper(), 11,
                 FontStyle.Bold, TextAnchor.MiddleLeft, Accent);
             var trt = RT(t.gameObject);
             trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
@@ -300,7 +346,7 @@ namespace DescendersModMenu.UI
 
         public static void Divider(Transform p)
         {
-            Panel("Dv", p, new Color(0.22f, 0.22f, 0.28f, 0.5f))
+            Panel("Dv", p, RowBorder)
                 .AddComponent<LayoutElement>().preferredHeight = 1;
         }
 
@@ -308,12 +354,25 @@ namespace DescendersModMenu.UI
         {
             var bx = Panel("Inf", p, RowBg, RowSp);
             bx.AddComponent<LayoutElement>().preferredHeight = 34;
+
+            // Border overlay
             var bd = Panel("Bd", bx.transform, RowBorder, RowSp);
             bd.GetComponent<Image>().raycastTarget = false; Fill(RT(bd));
+            bd.AddComponent<LayoutElement>().ignoreLayout = true;
+
+            // Left accent bar
+            var lbar = Panel("LBar", bx.transform, TextDim);
+            var lbRT = RT(lbar);
+            lbRT.anchorMin = Vector2.zero; lbRT.anchorMax = new Vector2(0, 1);
+            lbRT.pivot = new Vector2(0, 0.5f);
+            lbRT.sizeDelta = new Vector2(2, 0); lbRT.offsetMin = new Vector2(0, 4);
+            lbRT.offsetMax = new Vector2(2, -4);
+            lbar.AddComponent<LayoutElement>().ignoreLayout = true;
+
             var t = Txt("IT", bx.transform, txt, 10, FontStyle.Italic, TextAnchor.MiddleLeft, TextDim);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Truncate;
-            Fill(RT(t.gameObject), 12, 12, 4, 4);
+            Fill(RT(t.gameObject), 14, 12, 4, 4);
         }
 
         public static void HotkeyRow(Transform p, string desc, string key)
@@ -332,12 +391,61 @@ namespace DescendersModMenu.UI
             var dle = dt.gameObject.AddComponent<LayoutElement>();
             dle.flexibleWidth = 1; dle.preferredHeight = 30;
 
-            var badge = Panel("KB", row.transform, BtnBg, BtnSp);
+            // Accent badge
+            var badge = Panel("KB", row.transform, AccentDim, BtnSp);
             var ble = badge.AddComponent<LayoutElement>();
             ble.preferredWidth = 38; ble.preferredHeight = 20; ble.minWidth = 38; ble.flexibleHeight = 0;
 
+            // Badge border
+            var bbdr = Panel("BBdr", badge.transform, AccentBdr, BtnSp);
+            bbdr.GetComponent<Image>().raycastTarget = false;
+            Fill(RT(bbdr));
+            bbdr.AddComponent<LayoutElement>().ignoreLayout = true;
+
             var kt = Txt("K", badge.transform, key, 11, FontStyle.Bold, TextAnchor.MiddleCenter, Accent);
             Fill(RT(kt.gameObject));
+        }
+
+        // ── Scroll fix: forward scroll events from buttons to parent ScrollRect ──
+        public static void AddScrollForwarders(Transform root)
+        {
+            if ((object)root == null) return;
+            ScrollRect parentSR = root.GetComponentInParent<ScrollRect>();
+            if ((object)parentSR == null) return;
+            AddForwardersRecursive(root, parentSR);
+        }
+
+        private static void AddForwardersRecursive(Transform t, ScrollRect sr)
+        {
+            for (int i = 0; i < t.childCount; i++)
+            {
+                Transform child = t.GetChild(i);
+                // Add forwarder to anything with a Graphic that receives raycasts
+                var graphic = child.GetComponent<UnityEngine.UI.Graphic>();
+                if ((object)graphic != null && graphic.raycastTarget)
+                {
+                    var fwd = child.GetComponent<ScrollForwarder>();
+                    if ((object)fwd == null)
+                    {
+                        fwd = child.gameObject.AddComponent<ScrollForwarder>();
+                        fwd.target = sr;
+                    }
+                }
+                AddForwardersRecursive(child, sr);
+            }
+        }
+    }
+
+    // MonoBehaviour that catches scroll events on buttons/toggles and
+    // forwards them to the parent ScrollRect so scrolling works everywhere
+    public class ScrollForwarder : MonoBehaviour, UnityEngine.EventSystems.IScrollHandler
+    {
+        public ScrollRect target;
+
+        public void OnScroll(UnityEngine.EventSystems.PointerEventData eventData)
+        {
+            if ((object)target != null)
+                target.OnScroll(eventData);
         }
     }
 }

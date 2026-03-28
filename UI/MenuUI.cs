@@ -10,6 +10,8 @@ namespace DescendersModMenu.UI
         private static CursorLockMode prevLock;
         private static bool prevVis;
 
+        public static bool IsOpen => menuVisible;
+
         public static void ToggleMenu()
         {
             if (menuCanvas == null) menuCanvas = MenuWindow.CreateMenu();

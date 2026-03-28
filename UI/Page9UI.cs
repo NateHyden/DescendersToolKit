@@ -9,6 +9,7 @@ namespace DescendersModMenu.UI
     {
         // ── Existing state ────────────────────────────────────────────────
         private static bool _invisiblePlayer = false;
+        private static Renderer[] _hiddenPlayerRenderers = null;
         private static bool _turboWind = false;
         private static float _savedWindMain = -1f;
         private static Image _invisTrack; private static RectTransform _invisKnob;
@@ -17,6 +18,7 @@ namespace DescendersModMenu.UI
 
         // ── New state: Invisible Bike ─────────────────────────────────────
         private static bool _invisibleBike = false;
+        private static Renderer[] _hiddenBikeRenderers = null;
         private static Image _invisBikeTrack; private static RectTransform _invisBikeKnob;
         private static Text _invisBikeVal;
 
@@ -37,6 +39,35 @@ namespace DescendersModMenu.UI
         private static Image _explodeTrack; private static RectTransform _explodeKnob;
         private static Text _explodeVal;
 
+        // ── Reverse Steering ────────────────────────────────────────────
+        private static Image _revSteerTrack; private static RectTransform _revSteerKnob;
+        private static Text _revSteerVal;
+
+        // ── Wide Tyres ───────────────────────────────────────────────────
+        private static Image _wideTyresTrack; private static RectTransform _wideTyresKnob;
+        private static Text _wideTyresVal, _wideTyresLvlVal; private static Image _wideTyresBar;
+        private static UnityEngine.UI.Button _wideTyresMinus, _wideTyresPlus;
+
+        // ── Sticky Tyres ──────────────────────────────────────────────────
+        private static Image _stickyTrack; private static RectTransform _stickyKnob;
+        private static Text _stickyVal;
+
+        // ── Ice Mode ─────────────────────────────────────────────────────
+        private static Image _iceModeTrack; private static RectTransform _iceModeKnob;
+        private static Text _iceModeVal;
+
+        // ── Drunk Mode ───────────────────────────────────────────────────
+        private static Image _drunkTrack; private static RectTransform _drunkKnob;
+        private static Text _drunkVal;
+
+        // ── Fly Mode ─────────────────────────────────────────────────────
+        private static Image _flyTrack; private static RectTransform _flyKnob;
+        private static Text _flyVal;
+
+        // ── Mirror Mode ───────────────────────────────────────────────────
+        private static Image _mirrorTrack; private static RectTransform _mirrorKnob;
+        private static Text _mirrorVal;
+
         public static GameObject CreatePage(Transform parent)
         {
             GameObject pg = null;
@@ -44,30 +75,59 @@ namespace DescendersModMenu.UI
             {
                 pg = UIHelpers.Obj("P9R", parent);
                 UIHelpers.Fill(UIHelpers.RT(pg));
-                var vlg = pg.AddComponent<VerticalLayoutGroup>();
+
+                // ScrollRect wrapper
+                var scrollObj = UIHelpers.Obj("Scroll", pg.transform);
+                UIHelpers.Fill(UIHelpers.RT(scrollObj));
+                var sr = scrollObj.AddComponent<ScrollRect>();
+                sr.horizontal = false; sr.vertical = true;
+                sr.movementType = ScrollRect.MovementType.Clamped;
+                sr.scrollSensitivity = 25f;
+                sr.inertia = false;
+
+                var vp = UIHelpers.Obj("VP", scrollObj.transform);
+                UIHelpers.Fill(UIHelpers.RT(vp));
+                vp.AddComponent<Image>().color = new Color(0, 0, 0, 0.01f);
+                vp.AddComponent<Mask>().showMaskGraphic = true;
+                sr.viewport = UIHelpers.RT(vp);
+
+                var content = UIHelpers.Obj("Content", vp.transform);
+                var crt = UIHelpers.RT(content);
+                crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
+                crt.pivot = new Vector2(0.5f, 1);
+                crt.sizeDelta = new Vector2(0, 0);
+                sr.content = crt;
+
+                var csf = content.AddComponent<ContentSizeFitter>();
+                csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                var vlg = content.AddComponent<VerticalLayoutGroup>();
                 vlg.spacing = UIHelpers.RowGap;
                 vlg.padding = new RectOffset((int)UIHelpers.ContentPad, (int)UIHelpers.ContentPad, 8, 8);
                 vlg.childAlignment = TextAnchor.UpperCenter;
                 vlg.childForceExpandWidth = true;
                 vlg.childForceExpandHeight = false;
 
-                // ── Player Size ───────────────────────────────────────────
-                UIHelpers.SectionHeader("PLAYER SIZE", pg.transform);
+                // Redirect all rows to content transform
+                var pg9 = content.transform;
 
-                var psr = UIHelpers.StatRow("Size", pg.transform);
+                // ── Player Size ───────────────────────────────────────────
+                UIHelpers.SectionHeader("PLAYER SIZE", pg9);
+
+                var psr = UIHelpers.StatRow("Size", pg9);
                 UIHelpers.ActionBtn(psr.transform, "Giant", () => SetPlayerScale(3.5f), 52);
                 UIHelpers.ActionBtn(psr.transform, "Big", () => SetPlayerScale(1.5f), 44);
                 UIHelpers.ActionBtn(psr.transform, "Default", () => SetPlayerScale(1.0f), 58);
                 UIHelpers.ActionBtn(psr.transform, "Small", () => SetPlayerScale(0.6f), 52);
                 UIHelpers.ActionBtn(psr.transform, "Tiny", () => SetPlayerScale(0.2f), 44);
 
-                UIHelpers.Divider(pg.transform);
+                UIHelpers.Divider(pg9);
 
                 // ── Bike ──────────────────────────────────────────────────
-                UIHelpers.SectionHeader("BIKE", pg.transform);
+                UIHelpers.SectionHeader("BIKE", pg9);
 
                 // Invisible Bike toggle
-                var ibr = UIHelpers.StatRow("Invisible Bike", pg.transform);
+                var ibr = UIHelpers.StatRow("Invisible Bike", pg9);
                 _invisBikeVal = UIHelpers.Txt("IbV", ibr.transform, "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _invisBikeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -79,18 +139,42 @@ namespace DescendersModMenu.UI
                 }, out _invisBikeTrack, out _invisBikeKnob);
 
                 // Giant Wheels
-                var gwr = UIHelpers.StatRow("Wheel Size", pg.transform);
+                var gwr = UIHelpers.StatRow("Wheel Size", pg9);
                 UIHelpers.ActionBtn(gwr.transform, "Small", () => { SetWheelSize(1); RefreshAll(); }, 52);
                 UIHelpers.ActionBtn(gwr.transform, "Default", () => { SetWheelSize(0); RefreshAll(); }, 58);
                 UIHelpers.ActionBtn(gwr.transform, "Large", () => { SetWheelSize(2); RefreshAll(); }, 52);
 
-                UIHelpers.Divider(pg.transform);
+                // Wide Tyres toggle + width bar
+                var wtr = UIHelpers.StatRow("Wide Tyres", pg9);
+                _wideTyresVal = UIHelpers.Txt("WtV", wtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _wideTyresVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(wtr.transform, "WtT", () => { WideTyres.Toggle(); RefreshAll(); }, out _wideTyresTrack, out _wideTyresKnob);
+
+                var wtwr = UIHelpers.StatRow("  Width", pg9);
+                _wideTyresBar = UIHelpers.MakeBar("WtB", wtwr.transform, (WideTyres.Level - 1) / 19f);
+                _wideTyresLvlVal = UIHelpers.Txt("WtL", wtwr.transform, WideTyres.Level.ToString(), 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
+                _wideTyresLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
+                _wideTyresMinus = UIHelpers.SmallBtn(wtwr.transform, "-", () => { WideTyres.Decrease(); RefreshAll(); });
+                _wideTyresPlus = UIHelpers.SmallBtn(wtwr.transform, "+", () => { WideTyres.Increase(); RefreshAll(); });
+
+                // Sticky Tyres toggle
+                var str2 = UIHelpers.StatRow("Sticky Tyres", pg9);
+                _stickyVal = UIHelpers.Txt("StV", str2.transform,
+                    StickyTyres.Enabled ? "ON" : "OFF", 11, FontStyle.Bold,
+                    TextAnchor.MiddleCenter,
+                    StickyTyres.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor);
+                _stickyVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(str2.transform, "StT",
+                    () => { StickyTyres.Toggle(); RefreshAll(); },
+                    out _stickyTrack, out _stickyKnob);
+
+                UIHelpers.Divider(pg9);
 
                 // ── Presets ───────────────────────────────────────────────
-                UIHelpers.SectionHeader("PRESETS", pg.transform);
+                UIHelpers.SectionHeader("PRESETS", pg9);
 
                 // Moon Mode — compound row like NoSpeedCap in Stats tab
-                var mmo = UIHelpers.Panel("MMR", pg.transform, UIHelpers.RowBg, UIHelpers.RowSp);
+                var mmo = UIHelpers.Panel("MMR", pg9, UIHelpers.RowBg, UIHelpers.RowSp);
                 mmo.AddComponent<LayoutElement>().minHeight = UIHelpers.RowH + 38;
                 var mmbd = UIHelpers.Panel("MMBd", mmo.transform, UIHelpers.RowBorder, UIHelpers.RowSp);
                 mmbd.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(mmbd));
@@ -117,7 +201,7 @@ namespace DescendersModMenu.UI
                 // Bottom row: the big toggle button
                 var mmBtn = UIHelpers.Obj("MMBtn", mmo.transform);
                 _moonBg = mmBtn.AddComponent<Image>(); _moonBg.sprite = UIHelpers.BtnSp;
-                _moonBg.type = Image.Type.Sliced; _moonBg.color = UIHelpers.Accent;
+                _moonBg.type = Image.Type.Sliced; _moonBg.color = UIHelpers.NeonBlue;
                 var mbtn = mmBtn.AddComponent<Button>();
                 mbtn.onClick.AddListener(() => { ToggleMoonMode(); RefreshAll(); });
                 var mcb = mbtn.colors;
@@ -125,31 +209,67 @@ namespace DescendersModMenu.UI
                 mcb.pressedColor = new Color(.7f, .7f, .7f, 1); mcb.colorMultiplier = 1; mcb.fadeDuration = .08f;
                 mbtn.colors = mcb;
                 mmBtn.AddComponent<LayoutElement>().preferredHeight = 30;
-                var mbdr = UIHelpers.Panel("MBdr", mmBtn.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
+                var mbdr = UIHelpers.Panel("MBdr", mmBtn.transform, UIHelpers.NeonBlue, UIHelpers.BtnSp);
                 _moonBdr = mbdr.GetComponent<Image>(); _moonBdr.raycastTarget = false;
                 UIHelpers.Fill(UIHelpers.RT(mbdr));
                 _moonTxt = UIHelpers.Txt("MT", mmBtn.transform, "ACTIVATE MOON MODE", 11,
-                    FontStyle.Bold, TextAnchor.MiddleCenter, Color.white);
+                    FontStyle.Bold, TextAnchor.MiddleCenter, new Color(0, 0, 0, 1));
                 _moonTxt.horizontalOverflow = HorizontalWrapMode.Overflow;
                 UIHelpers.Fill(UIHelpers.RT(_moonTxt.gameObject));
 
-                UIHelpers.Divider(pg.transform);
+                UIHelpers.Divider(pg9);
 
                 // ── Multiplayer Chaos ─────────────────────────────────────
-                UIHelpers.SectionHeader("MULTIPLAYER", pg.transform);
+                UIHelpers.SectionHeader("MULTIPLAYER", pg9);
 
-                var gsr = UIHelpers.StatRow("Giant Everyone", pg.transform);
-                UIHelpers.ActionBtn(gsr.transform, "Giant", () => SetAllPlayersScale(3.5f), 52);
+                var gsr = UIHelpers.StatRow("Giant Everyone", pg9);
+                UIHelpers.ActionBtnOrange(gsr.transform, "Giant", () => SetAllPlayersScale(3.5f), 52);
                 UIHelpers.ActionBtn(gsr.transform, "Default", () => SetAllPlayersScale(1.0f), 58);
                 UIHelpers.ActionBtn(gsr.transform, "Tiny", () => SetAllPlayersScale(0.2f), 44);
 
-                UIHelpers.Divider(pg.transform);
+                UIHelpers.Divider(pg9);
+
+                // ── Controls ────────────────────────────────────────────────
+                UIHelpers.SectionHeader("CONTROLS", pg9);
+
+                var rsr = UIHelpers.StatRow("Reverse Steering", pg9);
+                _revSteerVal = UIHelpers.Txt("RsV", rsr.transform, "OFF", 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _revSteerVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(rsr.transform, "RsT", () =>
+                {
+                    ReverseSteering.Toggle();
+                    RefreshAll();
+                }, out _revSteerTrack, out _revSteerKnob);
+
+                var imr = UIHelpers.StatRow("Ice Grip", pg9);
+                _iceModeVal = UIHelpers.Txt("ImV", imr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _iceModeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(imr.transform, "ImT", () => { IceMode.Toggle(); RefreshAll(); }, out _iceModeTrack, out _iceModeKnob);
+
+                var mmr = UIHelpers.StatRow("Mirror Mode", pg9);
+                _mirrorVal = UIHelpers.Txt("MmV", mmr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _mirrorVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(mmr.transform, "MmT", () => { MirrorMode.Toggle(); RefreshAll(); }, out _mirrorTrack, out _mirrorKnob);
+
+                var flyr = UIHelpers.StatRow("Fly Mode", pg9);
+                _flyVal = UIHelpers.Txt("FlV", flyr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _flyVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(flyr.transform, "FlT", () => { FlyMode.Toggle(); RefreshAll(); }, out _flyTrack, out _flyKnob);
+
+                var drnkr = UIHelpers.StatRow("Drunk Mode", pg9);
+                _drunkVal = UIHelpers.Txt("DrV", drnkr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _drunkVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(drnkr.transform, "DrT", () => { DrunkMode.Toggle(); RefreshAll(); }, out _drunkTrack, out _drunkKnob);
+
+
+                UIHelpers.Divider(pg9);
 
                 // ── World ─────────────────────────────────────────────────
-                UIHelpers.SectionHeader("WORLD", pg.transform);
+                UIHelpers.SectionHeader("WORLD", pg9);
 
                 // Invisible player
-                var ir = UIHelpers.StatRow("Invisible Player", pg.transform);
+                var ir = UIHelpers.StatRow("Invisible Player", pg9);
                 _invisVal = UIHelpers.Txt("InV", ir.transform, "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _invisVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -161,7 +281,7 @@ namespace DescendersModMenu.UI
                 }, out _invisTrack, out _invisKnob);
 
                 // Turbo wind
-                var wr = UIHelpers.StatRow("Turbo Wind", pg.transform);
+                var wr = UIHelpers.StatRow("Turbo Wind", pg9);
                 _windVal = UIHelpers.Txt("WnV", wr.transform, "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _windVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -173,7 +293,7 @@ namespace DescendersModMenu.UI
                 }, out _windTrack, out _windKnob);
 
                 // No Mistakes
-                var er = UIHelpers.StatRow("No Mistakes", pg.transform);
+                var er = UIHelpers.StatRow("No Mistakes", pg9);
                 _explodeVal = UIHelpers.Txt("ExV", er.transform, "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _explodeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -184,9 +304,12 @@ namespace DescendersModMenu.UI
                     RefreshAll();
                 }, out _explodeTrack, out _explodeKnob);
 
-                UIHelpers.InfoBox(pg.transform, "Hitting any wall, rock or obstacle will launch you backwards with a crash sound.");
+                UIHelpers.InfoBox(pg9, "Hitting any wall, rock or obstacle will launch you backwards with a crash sound.");
 
                 RefreshAll();
+
+                // Fix scroll over buttons
+                UIHelpers.AddScrollForwarders(pg9);
             }
             catch (System.Exception ex) { MelonLogger.Error("Page9UI.CreatePage: " + ex.Message); return null; }
             return pg;
@@ -202,17 +325,33 @@ namespace DescendersModMenu.UI
                 GameObject player = GameObject.Find("Player_Human");
                 if ((object)player == null) { MelonLogger.Warning("[Silly] Player_Human not found."); return; }
 
-                // BikeModel holds the bike mesh — confirmed from scene dump path
                 Transform bikeModel = player.transform.Find("BikeModel");
                 if ((object)bikeModel == null) { MelonLogger.Warning("[Silly] BikeModel not found."); return; }
 
-                // Disable all renderers under BikeModel rather than deactivating the GO
-                // This keeps physics and collision intact while hiding the visuals
-                Renderer[] renderers = bikeModel.GetComponentsInChildren<Renderer>(true);
-                for (int i = 0; i < renderers.Length; i++)
-                    renderers[i].enabled = !invisible;
-
-                MelonLogger.Msg("[Silly] Invisible Bike -> " + invisible + " (" + renderers.Length + " renderers)");
+                if (invisible)
+                {
+                    // Only store renderers that are currently enabled, then hide them
+                    Renderer[] all = bikeModel.GetComponentsInChildren<Renderer>(true);
+                    var toHide = new System.Collections.Generic.List<Renderer>();
+                    for (int i = 0; i < all.Length; i++)
+                        if (all[i].enabled) toHide.Add(all[i]);
+                    _hiddenBikeRenderers = toHide.ToArray();
+                    for (int i = 0; i < _hiddenBikeRenderers.Length; i++)
+                        _hiddenBikeRenderers[i].enabled = false;
+                    MelonLogger.Msg("[Silly] Invisible Bike ON (" + _hiddenBikeRenderers.Length + " renderers hidden)");
+                }
+                else
+                {
+                    // Only restore the exact renderers we hid — ignores blocks/disabled GOs
+                    if ((object)_hiddenBikeRenderers != null)
+                    {
+                        for (int i = 0; i < _hiddenBikeRenderers.Length; i++)
+                            if ((object)_hiddenBikeRenderers[i] != null)
+                                _hiddenBikeRenderers[i].enabled = true;
+                        _hiddenBikeRenderers = null;
+                    }
+                    MelonLogger.Msg("[Silly] Invisible Bike OFF");
+                }
             }
             catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleInvisibleBike: " + ex.Message); }
         }
@@ -228,9 +367,7 @@ namespace DescendersModMenu.UI
         private static float _defaultRadiusFront = -1f;
         private static float _defaultRadiusBack = -1f;
 
-        // BikeAnimation has Transform fields pointing to the actual wheel bone joints:
-        //   YLzyVuM -> backWheel_Jnt    RCNLpue -> frontWheel_Jnt
-        // These are the bones that drive the SkinnedMeshRenderer wheel visuals
+        // BikeAnimation bone fields (from scene dump): YLzyVuM=backWheel_Jnt, RCNLpue=frontWheel_Jnt
         private static System.Reflection.FieldInfo _backBoneField = null;
         private static System.Reflection.FieldInfo _frontBoneField = null;
 
@@ -243,38 +380,23 @@ namespace DescendersModMenu.UI
 
                 float scale = WheelScales[mode];
 
-                // ── 1. Scale the visual wheel BONES via BikeAnimation ─────
-                // The wheel meshes are part of bike_skinning (SkinnedMeshRenderer)
-                // Scaling the bone transforms deforms the mesh around the wheels
+                // ── 1. Scale the visual wheel bone joints ─────────────────────
+                // YLzyVuM = backWheel_Jnt, RCNLpue = frontWheel_Jnt (from scene dump)
+                // These are Transform-only joints (no SkinnedMeshRenderer children)
+                // safe to scale without artefacts
                 Transform bikeModel = player.transform.Find("BikeModel");
                 if ((object)bikeModel != null)
                 {
                     BikeAnimation bikeAnim = bikeModel.GetComponent<BikeAnimation>();
                     if ((object)bikeAnim != null)
                     {
-                        // Cache bone field references
-                        if ((object)_backBoneField == null || (object)_frontBoneField == null)
-                        {
-                            System.Reflection.FieldInfo[] fields = bikeAnim.GetType().GetFields(
+                        if ((object)_backBoneField == null)
+                            _backBoneField = typeof(BikeAnimation).GetField("YLzyVuM",
                                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                            for (int i = 0; i < fields.Length; i++)
-                            {
-                                if (!string.Equals(fields[i].FieldType.Name, "Transform",
-                                    System.StringComparison.Ordinal)) continue;
+                        if ((object)_frontBoneField == null)
+                            _frontBoneField = typeof(BikeAnimation).GetField("RCNLpue",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
 
-                                // YLzyVuM = backWheel_Jnt, RCNLpue = frontWheel_Jnt
-                                object val = fields[i].GetValue(bikeAnim);
-                                Transform t = val as Transform;
-                                if ((object)t == null) continue;
-
-                                if (t.name == "backWheel_Jnt")
-                                { _backBoneField = fields[i]; MelonLogger.Msg("[Silly] Found backWheel bone: " + fields[i].Name); }
-                                else if (t.name == "frontWheel_Jnt")
-                                { _frontBoneField = fields[i]; MelonLogger.Msg("[Silly] Found frontWheel bone: " + fields[i].Name); }
-                            }
-                        }
-
-                        // Scale the bones
                         if ((object)_backBoneField != null)
                         {
                             Transform backBone = _backBoneField.GetValue(bikeAnim) as Transform;
@@ -288,19 +410,9 @@ namespace DescendersModMenu.UI
                                 frontBone.localScale = new Vector3(scale, scale, scale);
                         }
                     }
-                    else
-                    {
-                        // Fallback: navigate bone hierarchy directly
-                        Transform frontBone = bikeModel.Find("root_Jnt/Frame_Jnt/steer_Jnt/forkShockAbsorber_Jnt/frontWheel_Jnt");
-                        Transform backBone = bikeModel.Find("root_Jnt/Frame_Jnt/backWheelRotator_Jnt/BackWheelShockAbsorber_Jnt/backWheel_Jnt");
-                        if ((object)frontBone != null)
-                            frontBone.localScale = new Vector3(scale, scale, scale);
-                        if ((object)backBone != null)
-                            backBone.localScale = new Vector3(scale, scale, scale);
-                    }
                 }
 
-                // ── 2. Scale the physics radius on Wheel components ───────
+                // ── 2. Scale the physics radius on Wheel components ───────────
                 Wheel[] wheels = player.GetComponentsInChildren<Wheel>();
                 if (wheels != null && wheels.Length > 0)
                 {
@@ -310,12 +422,11 @@ namespace DescendersModMenu.UI
                             _wheelRadiusField = wheels[i].GetType().GetField("HqsqNkJ",
                                 System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
                         if ((object)_wheelRadiusField == null)
-                        { MelonLogger.Warning("[Silly] Wheel radius field (HqsqNkJ) not found."); break; }
+                        { MelonLogger.Warning("[Silly] Wheel radius field not found."); break; }
 
                         bool isFront = string.Equals(wheels[i].gameObject.name, "wheel_front",
                             System.StringComparison.Ordinal);
 
-                        // Cache defaults per wheel (front/back may differ)
                         if (isFront && _defaultRadiusFront < 0f)
                             _defaultRadiusFront = (float)_wheelRadiusField.GetValue(wheels[i]);
                         else if (!isFront && _defaultRadiusBack < 0f)
@@ -430,10 +541,31 @@ namespace DescendersModMenu.UI
                 if ((object)player == null) return;
                 Transform cyclist = player.transform.Find("Cyclist");
                 if ((object)cyclist == null) return;
-                Renderer[] renderers = cyclist.GetComponentsInChildren<Renderer>();
-                for (int i = 0; i < renderers.Length; i++)
-                    renderers[i].enabled = !invisible;
-                MelonLogger.Msg("[Silly] Invisible -> " + invisible);
+
+                if (invisible)
+                {
+                    // Snapshot only currently-enabled renderers, then hide them
+                    Renderer[] all = cyclist.GetComponentsInChildren<Renderer>(true);
+                    var toHide = new System.Collections.Generic.List<Renderer>();
+                    for (int i = 0; i < all.Length; i++)
+                        if (all[i].enabled) toHide.Add(all[i]);
+                    _hiddenPlayerRenderers = toHide.ToArray();
+                    for (int i = 0; i < _hiddenPlayerRenderers.Length; i++)
+                        _hiddenPlayerRenderers[i].enabled = false;
+                    MelonLogger.Msg("[Silly] Invisible Player ON (" + _hiddenPlayerRenderers.Length + " renderers hidden)");
+                }
+                else
+                {
+                    // Restore only what we hid — leaves disabled placeholders alone
+                    if ((object)_hiddenPlayerRenderers != null)
+                    {
+                        for (int i = 0; i < _hiddenPlayerRenderers.Length; i++)
+                            if ((object)_hiddenPlayerRenderers[i] != null)
+                                _hiddenPlayerRenderers[i].enabled = true;
+                        _hiddenPlayerRenderers = null;
+                    }
+                    MelonLogger.Msg("[Silly] Invisible Player OFF");
+                }
             }
             catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleInvisible: " + ex.Message); }
         }
@@ -509,14 +641,51 @@ namespace DescendersModMenu.UI
             if (_moonTxt)
             {
                 _moonTxt.text = _moonModeActive ? "MOON MODE ACTIVE" : "ACTIVATE MOON MODE";
-                _moonTxt.color = Color.white;
+                _moonTxt.color = new Color(0, 0, 0, 1);
             }
-            if (_moonBg) _moonBg.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.Accent;
-            if (_moonBdr) _moonBdr.color = _moonModeActive ? UIHelpers.OnBdr : UIHelpers.AccentBdr;
+            if (_moonBg) _moonBg.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
+            if (_moonBdr) _moonBdr.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
 
             // Exploding Props
             if (_explodeVal) { _explodeVal.text = _explodingProps ? "ON" : "OFF"; _explodeVal.color = _explodingProps ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_explodeTrack, _explodeKnob, _explodingProps);
+
+            // Reverse Steering
+            bool revOn = ReverseSteering.Enabled;
+            if (_revSteerVal) { _revSteerVal.text = revOn ? "ON" : "OFF"; _revSteerVal.color = revOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_revSteerTrack, _revSteerKnob, revOn);
+
+            // Mirror Mode
+            bool drunkOn = DrunkMode.Enabled;
+            if (_drunkVal) { _drunkVal.text = drunkOn ? "ON" : "OFF"; _drunkVal.color = drunkOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_drunkTrack, _drunkKnob, drunkOn);
+
+            bool flyOn = FlyMode.Enabled;
+            if (_flyVal) { _flyVal.text = flyOn ? "ON" : "OFF"; _flyVal.color = flyOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_flyTrack, _flyKnob, flyOn);
+
+            bool mmOn = MirrorMode.Enabled;
+            if (_mirrorVal) { _mirrorVal.text = mmOn ? "ON" : "OFF"; _mirrorVal.color = mmOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_mirrorTrack, _mirrorKnob, mmOn);
+
+            // Ice Mode
+            bool imOn = IceMode.Enabled;
+            if (_iceModeVal) { _iceModeVal.text = imOn ? "ON" : "OFF"; _iceModeVal.color = imOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_iceModeTrack, _iceModeKnob, imOn);
+
+            // Wide Tyres
+            bool wtOn = WideTyres.Enabled;
+            if (_wideTyresVal) { _wideTyresVal.text = wtOn ? "ON" : "OFF"; _wideTyresVal.color = wtOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_wideTyresTrack, _wideTyresKnob, wtOn);
+            if (_wideTyresLvlVal) _wideTyresLvlVal.text = WideTyres.Level.ToString();
+            UIHelpers.SetBar(_wideTyresBar, (WideTyres.Level - 1) / 19f);
+            if ((object)_wideTyresMinus != null) _wideTyresMinus.interactable = wtOn;
+            if ((object)_wideTyresPlus != null) _wideTyresPlus.interactable = wtOn;
+
+            // Sticky Tyres
+            bool stOn = StickyTyres.Enabled;
+            if (_stickyVal) { _stickyVal.text = stOn ? "ON" : "OFF"; _stickyVal.color = stOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_stickyTrack, _stickyKnob, stOn);
         }
     }
 }

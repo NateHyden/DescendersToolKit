@@ -7,6 +7,10 @@ namespace DescendersModMenu.UI
 {
     public static class Page7UI
     {
+        // ── Sky Colours ───────────────────────────────────────────────────
+        private static Image _stormTrack; private static RectTransform _stormKnob;
+        private static Text _stormVal, _skyPresetVal;
+
         private static Text _gravityVal;
         private static Image _gravityBar;
         private static Text _todVal;
@@ -39,17 +43,70 @@ namespace DescendersModMenu.UI
             {
                 pg = UIHelpers.Obj("P7R", parent);
                 UIHelpers.Fill(UIHelpers.RT(pg));
-                var vlg = pg.AddComponent<VerticalLayoutGroup>();
+
+                // ScrollRect wrapper — same pattern as Page9UI
+                var scrollObj = UIHelpers.Obj("Scroll", pg.transform);
+                UIHelpers.Fill(UIHelpers.RT(scrollObj));
+                var scrollRect = scrollObj.AddComponent<ScrollRect>();
+                scrollRect.horizontal = false; scrollRect.vertical = true;
+                scrollRect.movementType = ScrollRect.MovementType.Clamped;
+                scrollRect.scrollSensitivity = 25f;
+                scrollRect.inertia = false;
+
+                var vp = UIHelpers.Obj("VP", scrollObj.transform);
+                UIHelpers.Fill(UIHelpers.RT(vp));
+                vp.AddComponent<Image>().color = new Color(0, 0, 0, 0.01f);
+                vp.AddComponent<Mask>().showMaskGraphic = true;
+                scrollRect.viewport = UIHelpers.RT(vp);
+
+                var content = UIHelpers.Obj("Content", vp.transform);
+                var crt = UIHelpers.RT(content);
+                crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
+                crt.pivot = new Vector2(0.5f, 1);
+                crt.sizeDelta = new Vector2(0, 0);
+                scrollRect.content = crt;
+
+                var csf = content.AddComponent<ContentSizeFitter>();
+                csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                var vlg = content.AddComponent<VerticalLayoutGroup>();
                 vlg.spacing = UIHelpers.RowGap;
                 vlg.padding = new RectOffset((int)UIHelpers.ContentPad, (int)UIHelpers.ContentPad, 8, 8);
                 vlg.childAlignment = TextAnchor.UpperCenter;
                 vlg.childForceExpandWidth = true;
                 vlg.childForceExpandHeight = false;
 
-                // ── Physics ───────────────────────────────────────────────
-                UIHelpers.SectionHeader("PHYSICS", pg.transform);
+                // All rows go into scrollable content
+                var pg7 = content.transform;
 
-                var gr = UIHelpers.StatRow("Gravity", pg.transform);
+                // ── Physics ───────────────────────────────────────────────
+                // ── Sky ─────────────────────────────────────────────────────
+                UIHelpers.SectionHeader("SKY", pg7);
+
+                var skpr = UIHelpers.StatRow("Colour", pg7);
+                UIHelpers.ActionBtn(skpr.transform, "Normal", () => { SkyColours.ApplyPreset(0); RefreshAll(); }, 46);
+                UIHelpers.ActionBtn(skpr.transform, "Blood Red", () => { SkyColours.ApplyPreset(1); RefreshAll(); }, 58);
+                UIHelpers.ActionBtn(skpr.transform, "Alien", () => { SkyColours.ApplyPreset(2); RefreshAll(); }, 40);
+                UIHelpers.ActionBtn(skpr.transform, "Synthwave", () => { SkyColours.ApplyPreset(3); RefreshAll(); }, 60);
+                UIHelpers.ActionBtn(skpr.transform, "Midnight", () => { SkyColours.ApplyPreset(4); RefreshAll(); }, 55);
+                UIHelpers.ActionBtn(skpr.transform, "Toxic", () => { SkyColours.ApplyPreset(5); RefreshAll(); }, 40);
+
+                var skActive = UIHelpers.StatRow("Active", pg7);
+                _skyPresetVal = UIHelpers.Txt("SkV", skActive.transform, SkyColours.PresetNames[0], 11,
+                    FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
+                _skyPresetVal.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+                var stmr = UIHelpers.StatRow("Storm", pg7);
+                _stormVal = UIHelpers.Txt("StmV", stmr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _stormVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(stmr.transform, "StmT", () => { SkyColours.ToggleStorm(); RefreshAll(); }, out _stormTrack, out _stormKnob);
+
+                UIHelpers.Divider(pg7);
+
+                // ── Physics ───────────────────────────────────────────────
+                UIHelpers.SectionHeader("PHYSICS", pg7);
+
+                var gr = UIHelpers.StatRow("Gravity", pg7);
                 _gravityBar = UIHelpers.MakeBar("GrB", gr.transform, (Gravity.Level - 1) / 9f);
                 _gravityVal = UIHelpers.Txt("GrV", gr.transform, Gravity.DisplayValue, 12,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
@@ -57,12 +114,12 @@ namespace DescendersModMenu.UI
                 UIHelpers.SmallBtn(gr.transform, "-", () => { Gravity.Decrease(); RefreshAll(); });
                 UIHelpers.SmallBtn(gr.transform, "+", () => { Gravity.Increase(); RefreshAll(); });
 
-                UIHelpers.Divider(pg.transform);
+                UIHelpers.Divider(pg7);
 
                 // ── Environment ───────────────────────────────────────────
-                UIHelpers.SectionHeader("ENVIRONMENT", pg.transform);
+                UIHelpers.SectionHeader("ENVIRONMENT", pg7);
 
-                var tr = UIHelpers.StatRow("Time of Day", pg.transform);
+                var tr = UIHelpers.StatRow("Time of Day", pg7);
                 _todBar = UIHelpers.MakeBar("TdB", tr.transform, (TimeOfDay.Level - 1) / 9f);
                 _todVal = UIHelpers.Txt("TdV", tr.transform, TimeOfDay.DisplayValue, 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
@@ -70,7 +127,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.SmallBtn(tr.transform, "-", () => { TimeOfDay.Decrease(); RefreshAll(); });
                 UIHelpers.SmallBtn(tr.transform, "+", () => { TimeOfDay.Increase(); RefreshAll(); });
 
-                var ter = UIHelpers.StatRow("Trees & Foliage", pg.transform);
+                var ter = UIHelpers.StatRow("Trees & Foliage", pg7);
                 _treesVal = UIHelpers.Txt("TrV", ter.transform, "ON", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OnColor);
                 _treesVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -81,7 +138,7 @@ namespace DescendersModMenu.UI
                     RefreshAll();
                 }, out _treesTrack, out _treesKnob);
 
-                var mur = UIHelpers.StatRow("Music", pg.transform);
+                var mur = UIHelpers.StatRow("Music", pg7);
                 _musicVal = UIHelpers.Txt("MuV", mur.transform, "ON", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OnColor);
                 _musicVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -92,7 +149,7 @@ namespace DescendersModMenu.UI
                     RefreshAll();
                 }, out _musicTrack, out _musicKnob);
 
-                var fogr = UIHelpers.StatRow("Fog", pg.transform);
+                var fogr = UIHelpers.StatRow("Fog", pg7);
                 _fogVal = UIHelpers.Txt("FgV", fogr.transform, "ON", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OnColor);
                 _fogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -103,19 +160,19 @@ namespace DescendersModMenu.UI
                     RefreshAll();
                 }, out _fogTrack, out _fogKnob);
 
-                UIHelpers.Divider(pg.transform);
+                UIHelpers.Divider(pg7);
 
                 // ── Level Tools ───────────────────────────────────────────
-                UIHelpers.SectionHeader("LEVEL", pg.transform);
+                UIHelpers.SectionHeader("LEVEL", pg7);
 
-                var jr = UIHelpers.StatRow("Jump to Finish", pg.transform);
-                UIHelpers.ActionBtn(jr.transform, "Jump", () =>
+                var jr = UIHelpers.StatRow("Jump to Finish", pg7);
+                UIHelpers.ActionBtnOrange(jr.transform, "Jump", () =>
                 {
                     try { DevCommandsGameplay.JumpToFinish(); }
                     catch (System.Exception ex) { MelonLogger.Error("[JumpToFinish]: " + ex.Message); }
                 }, 60);
 
-                var sr = UIHelpers.StatRow("Skip Song", pg.transform);
+                var sr = UIHelpers.StatRow("Skip Song", pg7);
                 UIHelpers.ActionBtn(sr.transform, "Skip", () =>
                 {
                     try { DevCommandsGameplay.SkipSong(); }
@@ -123,6 +180,7 @@ namespace DescendersModMenu.UI
                 }, 60);
 
                 RefreshAll();
+                UIHelpers.AddScrollForwarders(pg7);
             }
             catch (System.Exception ex) { MelonLogger.Error("Page7UI.CreatePage: " + ex.Message); return null; }
             return pg;
@@ -240,6 +298,11 @@ namespace DescendersModMenu.UI
 
             if (_fogVal) { _fogVal.text = FogEnabled ? "ON" : "OFF"; _fogVal.color = FogEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_fogTrack, _fogKnob, FogEnabled);
+
+            if (_skyPresetVal) _skyPresetVal.text = SkyColours.PresetNames[SkyColours.CurrentPreset];
+            bool storm = SkyColours.StormEnabled;
+            if (_stormVal) { _stormVal.text = storm ? "ON" : "OFF"; _stormVal.color = storm ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_stormTrack, _stormKnob, storm);
         }
     }
 }

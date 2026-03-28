@@ -34,89 +34,93 @@ namespace DescendersModMenu.Mods
         // ── Spin ────────────────────────────────────────────────────────────
         public static void SpinIncrease() { if (SpinLevel < 10) { SpinLevel++; ApplySpin(); } }
         public static void SpinDecrease() { if (SpinLevel > 1) { SpinLevel--; ApplySpin(); } }
+        public static void SetSpinLevel(int v) { SpinLevel = System.Math.Max(1, System.Math.Min(10, v)); }
 
         public static void ApplySpin()
         {
 
             try
             {
-            Cyclist c = GetCyclist();
-            if ((object)c == null) return;
-            if ((object)_spinField == null)
-                _spinField = FindField(c, "\u005EE\u005DVx\u0081\u0082");
-            if ((object)_spinField == null) { MelonLogger.Warning("[Movement] Spin field not found."); return; }
-            if (_spinDefault < 0f) _spinDefault = (float)_spinField.GetValue(c);
-            _spinField.SetValue(c, _spinDefault * Mult(SpinLevel));
-            MelonLogger.Msg("[Movement] Spin -> " + SpinLevel + " (" + (_spinDefault * Mult(SpinLevel)) + ")");
+                Cyclist c = GetCyclist();
+                if ((object)c == null) return;
+                if ((object)_spinField == null)
+                    _spinField = FindField(c, "\u005EE\u005DVx\u0081\u0082");
+                if ((object)_spinField == null) { MelonLogger.Warning("[Movement] Spin field not found."); return; }
+                if (_spinDefault < 0f) _spinDefault = (float)_spinField.GetValue(c);
+                _spinField.SetValue(c, _spinDefault * Mult(SpinLevel));
+                MelonLogger.Msg("[Movement] Spin -> " + SpinLevel + " (" + (_spinDefault * Mult(SpinLevel)) + ")");
             }
             catch (System.Exception ex) { MelonLogger.Error("Movement.ApplySpin: " + ex.Message); }
-        
+
         }
 
         // ── Hop ─────────────────────────────────────────────────────────────
         public static void HopIncrease() { if (HopLevel < 10) { HopLevel++; ApplyHop(); } }
         public static void HopDecrease() { if (HopLevel > 1) { HopLevel--; ApplyHop(); } }
+        public static void SetHopLevel(int v) { HopLevel = System.Math.Max(1, System.Math.Min(10, v)); }
 
         public static void ApplyHop()
         {
 
             try
             {
-            Cyclist c = GetCyclist();
-            if ((object)c == null) return;
-            if ((object)_hopField == null)
-                _hopField = FindField(c, "kV\u005B\u0083SnO");
-            if ((object)_hopField == null) { MelonLogger.Warning("[Movement] Hop field not found."); return; }
-            if (_hopDefault < 0f) _hopDefault = (float)_hopField.GetValue(c);
-            _hopField.SetValue(c, _hopDefault * MultStrong(HopLevel));
-            MelonLogger.Msg("[Movement] Hop -> " + HopLevel + " (" + (_hopDefault * MultStrong(HopLevel)) + ")");
+                Cyclist c = GetCyclist();
+                if ((object)c == null) return;
+                if ((object)_hopField == null)
+                    _hopField = FindField(c, "kV\u005B\u0083SnO");
+                if ((object)_hopField == null) { MelonLogger.Warning("[Movement] Hop field not found."); return; }
+                if (_hopDefault < 0f) _hopDefault = (float)_hopField.GetValue(c);
+                _hopField.SetValue(c, _hopDefault * MultStrong(HopLevel));
+                MelonLogger.Msg("[Movement] Hop -> " + HopLevel + " (" + (_hopDefault * MultStrong(HopLevel)) + ")");
             }
             catch (System.Exception ex) { MelonLogger.Error("Movement.ApplyHop: " + ex.Message); }
-        
+
         }
 
         // ── Wheelie ─────────────────────────────────────────────────────────
         public static void WheelieIncrease() { if (WheelieLevel < 10) { WheelieLevel++; ApplyWheelie(); } }
         public static void WheelieDecrease() { if (WheelieLevel > 1) { WheelieLevel--; ApplyWheelie(); } }
+        public static void SetWheelieLevel(int v) { WheelieLevel = System.Math.Max(1, System.Math.Min(10, v)); }
 
         public static void ApplyWheelie()
         {
 
             try
             {
-            Cyclist c = GetCyclist();
-            if ((object)c == null) return;
-            if ((object)_wheelieField == null)
-                _wheelieField = FindField(c, "\u007D\u0060\u0082zWt\u007C");
-            if ((object)_wheelieField == null) { MelonLogger.Warning("[Movement] Wheelie field not found."); return; }
-            if (_wheelieDefault < 0f) _wheelieDefault = (float)_wheelieField.GetValue(c);
-            _wheelieField.SetValue(c, _wheelieDefault * Mult(WheelieLevel));
-            MelonLogger.Msg("[Movement] Wheelie -> " + WheelieLevel + " (" + (_wheelieDefault * Mult(WheelieLevel)) + ")");
+                Cyclist c = GetCyclist();
+                if ((object)c == null) return;
+                if ((object)_wheelieField == null)
+                    _wheelieField = FindField(c, "\u007D\u0060\u0082zWt\u007C");
+                if ((object)_wheelieField == null) { MelonLogger.Warning("[Movement] Wheelie field not found."); return; }
+                if (_wheelieDefault < 0f) _wheelieDefault = (float)_wheelieField.GetValue(c);
+                _wheelieField.SetValue(c, _wheelieDefault * Mult(WheelieLevel));
+                MelonLogger.Msg("[Movement] Wheelie -> " + WheelieLevel + " (" + (_wheelieDefault * Mult(WheelieLevel)) + ")");
             }
             catch (System.Exception ex) { MelonLogger.Error("Movement.ApplyWheelie: " + ex.Message); }
-        
+
         }
 
         // ── Lean ────────────────────────────────────────────────────────────
         public static void LeanIncrease() { if (LeanLevel < 10) { LeanLevel++; ApplyLean(); } }
         public static void LeanDecrease() { if (LeanLevel > 1) { LeanLevel--; ApplyLean(); } }
+        public static void SetLeanLevel(int v) { LeanLevel = System.Math.Max(1, System.Math.Min(10, v)); }
 
         public static void ApplyLean()
         {
 
             try
             {
-            Cyclist c = GetCyclist();
-            if ((object)c == null) return;
-            if ((object)_leanField == null)
-                _leanField = FindField(c, "Pl\u007Fvrb\u0082");
-            if ((object)_leanField == null) { MelonLogger.Warning("[Movement] Lean field not found."); return; }
-            if (_leanDefault < 0f) _leanDefault = (float)_leanField.GetValue(c);
-            _leanField.SetValue(c, _leanDefault * MultStrong(LeanLevel));
-            MelonLogger.Msg("[Movement] Lean -> " + LeanLevel + " (" + (_leanDefault * MultStrong(LeanLevel)) + ")");
+                Cyclist c = GetCyclist();
+                if ((object)c == null) return;
+                if ((object)_leanField == null)
+                    _leanField = FindField(c, "Pl\u007Fvrb\u0082");
+                if ((object)_leanField == null) { MelonLogger.Warning("[Movement] Lean field not found."); return; }
+                if (_leanDefault < 0f) _leanDefault = (float)_leanField.GetValue(c);
+                _leanField.SetValue(c, _leanDefault * MultStrong(LeanLevel));
+                MelonLogger.Msg("[Movement] Lean -> " + LeanLevel + " (" + (_leanDefault * MultStrong(LeanLevel)) + ")");
             }
             catch (System.Exception ex) { MelonLogger.Error("Movement.ApplyLean: " + ex.Message); }
-        
+
         }
 
         // ── Helpers ─────────────────────────────────────────────────────────

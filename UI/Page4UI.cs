@@ -23,12 +23,12 @@ namespace DescendersModMenu.UI
             UIHelpers.SectionHeader("COSMETICS & PROGRESSION", pg.transform);
 
             var cr = UIHelpers.StatRow("Cosmetics", pg.transform);
-            UIHelpers.ActionBtn(cr.transform, "Unlock All", () => UnlockAll.Cosmetics(), 90);
+            UIHelpers.ActionBtnOrange(cr.transform, "Unlock All", () => UnlockAll.Cosmetics(), 90);
 
             UIHelpers.InfoBox(pg.transform, "Unlocks all cosmetic items including bikes, helmets, jerseys and more.");
 
             var sr = UIHelpers.StatRow("Shortcuts", pg.transform);
-            UIHelpers.ActionBtn(sr.transform, "Unlock All", () => UnlockAll.Shortcuts(), 90);
+            UIHelpers.ActionBtnOrange(sr.transform, "Unlock All", () => UnlockAll.Shortcuts(), 90);
 
             UIHelpers.InfoBox(pg.transform, "Unlocks all world shortcuts across every biome.");
 
@@ -36,12 +36,12 @@ namespace DescendersModMenu.UI
             UIHelpers.SectionHeader("ACHIEVEMENTS & MISSIONS", pg.transform);
 
             var ar = UIHelpers.StatRow("Achievements", pg.transform);
-            UIHelpers.ActionBtn(ar.transform, "Unlock All", () => UnlockAll.Achievements(), 90);
+            UIHelpers.ActionBtnOrange(ar.transform, "Unlock All", () => UnlockAll.Achievements(), 90);
 
             UIHelpers.InfoBox(pg.transform, "Unlocks all Steam achievements.");
 
             var mr = UIHelpers.StatRow("Missions", pg.transform);
-            UIHelpers.ActionBtn(mr.transform, "Complete All", () => UnlockAll.Missions(), 96);
+            UIHelpers.ActionBtnOrange(mr.transform, "Complete All", () => UnlockAll.Missions(), 96);
 
             UIHelpers.InfoBox(pg.transform, "Marks all missions as complete.");
 

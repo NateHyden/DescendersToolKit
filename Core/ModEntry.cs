@@ -1,4 +1,4 @@
-using DescendersModMenu.Mods;
+﻿using DescendersModMenu.Mods;
 using DescendersModMenu.UI;
 using HarmonyLib;
 using MelonLoader;
@@ -19,6 +19,11 @@ namespace DescendersModMenu
     public class DescendersModMenu : MelonMod
     {
         private HarmonyLib.Harmony harmony;
+
+        // Right stick click state for ghost replay binds
+        private float _lastRStickClick = -999f;
+        private bool _pendingRStickSave = false;
+        private float _rStickSaveTime = 0f;
 
         public override void OnInitializeMelon()
         {
@@ -44,8 +49,26 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedCap.ApplyVCPatch failed: " + ex.Message); DiagnosticsManager.Report("NoSpeedCap (VC)", false, ex.Message); }
             try { CutBrakes.ApplyPatch(harmony); }
             catch (System.Exception ex) { MelonLogger.Error("CutBrakes.ApplyPatch failed: " + ex.Message); }
+            try { ReverseSteering.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("ReverseSteering.ApplyPatch failed: " + ex.Message); }
+            try { AutoBalance.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("AutoBalance.ApplyPatch failed: " + ex.Message); }
+            try { IceMode.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("IceMode.ApplyPatch failed: " + ex.Message); }
+            try { SkyColours.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("SkyColours.ApplyPatch failed: " + ex.Message); }
+            try { DrunkMode.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("DrunkMode.ApplyPatch failed: " + ex.Message); }
             try { SessionTrackers.ApplyBailPatch(harmony); DiagnosticsManager.Report("BailCounter", true); }
             catch (System.Exception ex) { MelonLogger.Error("BailPatch failed: " + ex.Message); DiagnosticsManager.Report("BailCounter", false, ex.Message); }
+            try { GhostReplay.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("GhostReplay.ApplyPatch failed: " + ex.Message); }
+            try { MapChanger.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Warning("MapChanger.ApplyPatch failed: " + ex.Message); }
+            try { OutfitPresets.Init(); }
+            catch (System.Exception ex) { MelonLogger.Error("OutfitPresets.Init failed: " + ex.Message); }
+            try { ModChat.Init(); }
+            catch (System.Exception ex) { MelonLogger.Error("ModChat.Init failed: " + ex.Message); }
         }
 
         public override void OnLateInitializeMelon()
@@ -85,18 +108,34 @@ namespace DescendersModMenu
             DiagnosticsManager.Report("Wheel Size", true);
             DiagnosticsManager.Report("Fog Remover", true);
             DiagnosticsManager.Report("SessionTrackers", true);
+            DiagnosticsManager.Report("AutoBalance", true);
+            DiagnosticsManager.Report("WideTyres", true);
+            DiagnosticsManager.Report("IceMode", true);
+            DiagnosticsManager.Report("SpeedrunTimer", true);
+            DiagnosticsManager.Report("MirrorMode", true);
+            DiagnosticsManager.Report("SlowMoOnBail", true);
+
+            DiagnosticsManager.Report("ModDetection", true);
             TopSpeed.Load();
             TopSpeed.StartTracking();
+
         }
 
         public override void OnSceneWasLoaded(int buildindex, string sceneName)
         {
             MelonLogger.Msg("OnSceneWasLoaded: " + buildindex + " | " + sceneName);
+            GhostReplay.OnSceneLoaded();
         }
 
         public override void OnSceneWasInitialized(int buildindex, string sceneName)
         {
             MelonLogger.Msg("OnSceneWasInitialized: " + buildindex + " | " + sceneName);
+            GhostReplay.OnSceneInitialized();
+            MapChanger.OnSceneInitialized();
+            ExplodingProps.OnSceneInitialized(sceneName);
+            // Build map list when main menu loads (scene 1) — GameData is ready here
+            if (buildindex == 1)
+                MapChanger.BuildMapList();
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -104,16 +143,92 @@ namespace DescendersModMenu
             MelonLogger.Msg("OnSceneWasUnloaded: " + buildIndex + " | " + sceneName);
             SlowMotion.Reset();
             CutBrakes.Reset();
+            ReverseSteering.Reset();
+            AutoBalance.Reset();
+            WideTyres.Reset();
+            IceMode.Reset();
+            SpeedrunTimer.Reset();
+            GameModifierMods.NoSpeedWobblesReset();
+            MirrorMode.Reset();
+            FlyMode.Reset();
+            DrunkMode.Reset();
+            OutfitPresets.Reset();
+            ModChat.Reset();
+            AvalancheMode.Reset();
+            GhostReplay.Reset();
+            SlowMoOnBail.Reset();
+            SkyColours.Reset();
+            GraphicsSettings.Reset();
             TopSpeed.ClearCache();
             SessionTrackers.Reset();
             ExplodingProps.Reset();
+            StickyTyres.Reset();
         }
 
         public override void OnUpdate()
         {
             try { if (NoBail.Enabled) NoBail.Apply(); }
             catch (System.Exception ex) { MelonLogger.Error("NoBail.Apply: " + ex.Message); }
-            try { if (Input.GetKeyDown(KeyCode.F6)) MenuUI.ToggleMenu(); }
+            try
+            {
+                // ── Ghost Replay keybinds ──────────────────────────────────
+                // F3 / RS double-click → toggle on/off
+                if (Input.GetKeyDown(KeyCode.F3))
+                {
+                    GhostReplay.Toggle();
+                    Page14UI.RefreshAll();
+                }
+
+                // F4 / LS single-click → save current run as ghost
+                if (Input.GetKeyDown(KeyCode.F4))
+                {
+                    GhostReplay.SaveRun();
+                    Page14UI.RefreshAll();
+                }
+
+                // LS click (JoystickButton8) → set spawn marker
+                if (Input.GetKeyDown(KeyCode.JoystickButton8))
+                {
+                    GhostReplay.SetSpawnMarker();
+                    Page14UI.RefreshAll();
+                }
+
+                // RS click (JoystickButton9) — single = save run, double = toggle
+                if (Input.GetKeyDown(KeyCode.JoystickButton9))
+                {
+                    float now = Time.realtimeSinceStartup;
+                    float gap = now - _lastRStickClick;
+                    _lastRStickClick = now;
+
+                    if (gap < 0.4f)
+                    {
+                        // Double click — toggle on/off
+                        GhostReplay.Toggle();
+                        Page14UI.RefreshAll();
+                        _lastRStickClick = -999f;
+                    }
+                    else
+                    {
+                        // Single click — arm pending save
+                        _pendingRStickSave = true;
+                        _rStickSaveTime = now + 0.4f;
+                    }
+                }
+
+                // Fire pending RS single-click save
+                if (_pendingRStickSave && Time.realtimeSinceStartup >= _rStickSaveTime)
+                {
+                    _pendingRStickSave = false;
+                    if (GhostReplay.IsRecording && GhostReplay.RecordedFrames >= 30)
+                    {
+                        GhostReplay.SaveRun();
+                        Page14UI.RefreshAll();
+                    }
+                }
+
+                if (Input.GetKeyDown(KeyCode.F6))
+                    MenuUI.ToggleMenu();
+            }
             catch (System.Exception ex) { MelonLogger.Error("ToggleMenu: " + ex.Message); }
             try { SceneDumper.CheckHotkey(); }
             catch (System.Exception ex) { MelonLogger.Error("SceneDumper: " + ex.Message); }
@@ -125,21 +240,59 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("SessionTrackers.Tick: " + ex.Message); }
             try { MenuWindow.TickLive(); }
             catch { }
+            try { MirrorMode.Tick(); }
+            catch { }
+            try { FlyMode.Tick(); }
+            catch { }
+            try { DrunkMode.Tick(); }
+            catch { }
+            try { Page11UI.Tick(); }
+            catch { }
+            try { Page12UI.Tick(); }
+            catch { }
+            try { Page13UI.Tick(); }
+            catch { }
+            try { AvalancheMode.Tick(); }
+            catch { }
+            try { GhostReplay.Tick(); }
+            catch { }
+            try { MapChanger.Tick(); }
+            catch { }
+            try { Page14UI.Tick(); }
+            catch { }
+            try { SlowMoOnBail.Tick(); }
+            catch { }
+            try { ModDetection.TagLocalPlayer(); }
+            catch { }
 
             try { if (Input.GetKeyDown(KeyCode.F2)) SlowMotion.Toggle(); }
             catch (System.Exception ex) { MelonLogger.Error("SlowMotion.Toggle: " + ex.Message); }
+        }
+
+        public override void OnFixedUpdate()
+        {
+            try { AvalancheMode.FixedTick(); }
+            catch { }
+            try { StickyTyres.FixedTick(); }
+            catch { }
         }
 
         public override void OnLateUpdate()
         {
             try { FOV.Apply(); }
             catch (System.Exception ex) { MelonLogger.Error("FOV.Apply: " + ex.Message); }
+            try { SkyColours.Tick(); }
+            catch (System.Exception ex) { MelonLogger.Error("SkyColours.Tick: " + ex.Message); }
+            try { DrunkMode.LateTick(); }
+            catch { }
         }
 
         public override void OnGUI()
         {
             try { ESP.OnGUI(); }
             catch (System.Exception ex) { MelonLogger.Error("ESP.OnGUI: " + ex.Message); }
+            try { GhostHUD.Draw(); }
+            catch (System.Exception ex) { MelonLogger.Error("GhostHUD.Draw: " + ex.Message); }
         }
 
         public override void OnApplicationQuit()

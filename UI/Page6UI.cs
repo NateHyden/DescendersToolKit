@@ -10,8 +10,8 @@ namespace DescendersModMenu.UI
         private static Text spinVal, hopVal, wheelieVal, leanVal;
         private static Image spinBar, hopBar, wheelieBar, leanBar;
 
-        private static Text wbVal, iacVal, fbVal, psVal, iceVal;
-        private static Image wbBar, iacBar, fbBar, psBar, iceBar;
+        private static Text wbVal, iacVal, psVal;
+        private static Image wbBar, iacBar, psBar;
         private static Text cutBrakesVal;
         private static Image cutBrakesTrack;
         private static RectTransform cutBrakesKnob;
@@ -85,29 +85,13 @@ namespace DescendersModMenu.UI
                 UIHelpers.SmallBtn(iacr.transform, "-", () => { GameModifierMods.InAirCorrDecrease(); RefreshAll(); });
                 UIHelpers.SmallBtn(iacr.transform, "+", () => { GameModifierMods.InAirCorrIncrease(); RefreshAll(); });
 
-                var fbr = UIHelpers.StatRow("Fakie Balance", pg.transform);
-                fbBar = UIHelpers.MakeBar("FbB", fbr.transform, (GameModifierMods.FakieBalanceLevel - 1) / 9f);
-                fbVal = UIHelpers.Txt("FbV", fbr.transform, GameModifierMods.FakieBalanceLevel.ToString(), 12,
-                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
-                fbVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
-                UIHelpers.SmallBtn(fbr.transform, "-", () => { GameModifierMods.FakieBalanceDecrease(); RefreshAll(); });
-                UIHelpers.SmallBtn(fbr.transform, "+", () => { GameModifierMods.FakieBalanceIncrease(); RefreshAll(); });
-
-                var psr = UIHelpers.StatRow("Pump Strength", pg.transform);
-                psBar = UIHelpers.MakeBar("PsB", psr.transform, (GameModifierMods.PumpStrengthLevel - 1) / 9f);
-                psVal = UIHelpers.Txt("PsV", psr.transform, GameModifierMods.PumpStrengthLevel.ToString(), 12,
+                var fbr = UIHelpers.StatRow("Pump Strength", pg.transform);
+                psBar = UIHelpers.MakeBar("PsB", fbr.transform, (GameModifierMods.PumpStrengthLevel - 1) / 9f);
+                psVal = UIHelpers.Txt("PsV", fbr.transform, GameModifierMods.PumpStrengthLevel.ToString(), 12,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
                 psVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
-                UIHelpers.SmallBtn(psr.transform, "-", () => { GameModifierMods.PumpStrengthDecrease(); RefreshAll(); });
-                UIHelpers.SmallBtn(psr.transform, "+", () => { GameModifierMods.PumpStrengthIncrease(); RefreshAll(); });
-
-                var icer = UIHelpers.StatRow("Ice Physics", pg.transform);
-                iceBar = UIHelpers.MakeBar("IcB", icer.transform, (GameModifierMods.IcePhysicsLevel - 1) / 9f);
-                iceVal = UIHelpers.Txt("IcV", icer.transform, GameModifierMods.IcePhysicsLevel.ToString(), 12,
-                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
-                iceVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
-                UIHelpers.SmallBtn(icer.transform, "-", () => { GameModifierMods.IcePhysicsDecrease(); RefreshAll(); });
-                UIHelpers.SmallBtn(icer.transform, "+", () => { GameModifierMods.IcePhysicsIncrease(); RefreshAll(); });
+                UIHelpers.SmallBtn(fbr.transform, "-", () => { GameModifierMods.PumpStrengthDecrease(); RefreshAll(); });
+                UIHelpers.SmallBtn(fbr.transform, "+", () => { GameModifierMods.PumpStrengthIncrease(); RefreshAll(); });
 
                 UIHelpers.Divider(pg.transform);
                 UIHelpers.SectionHeader("MISC", pg.transform);
@@ -137,14 +121,10 @@ namespace DescendersModMenu.UI
 
             if (wbVal) wbVal.text = GameModifierMods.WheelieBalanceLevel.ToString();
             if (iacVal) iacVal.text = GameModifierMods.InAirCorrLevel.ToString();
-            if (fbVal) fbVal.text = GameModifierMods.FakieBalanceLevel.ToString();
             if (psVal) psVal.text = GameModifierMods.PumpStrengthLevel.ToString();
-            if (iceVal) iceVal.text = GameModifierMods.IcePhysicsLevel.ToString();
             UIHelpers.SetBar(wbBar, (GameModifierMods.WheelieBalanceLevel - 1) / 9f);
             UIHelpers.SetBar(iacBar, (GameModifierMods.InAirCorrLevel - 1) / 9f);
-            UIHelpers.SetBar(fbBar, (GameModifierMods.FakieBalanceLevel - 1) / 9f);
             UIHelpers.SetBar(psBar, (GameModifierMods.PumpStrengthLevel - 1) / 9f);
-            UIHelpers.SetBar(iceBar, (GameModifierMods.IcePhysicsLevel - 1) / 9f);
 
             if (cutBrakesVal) { cutBrakesVal.text = CutBrakes.Enabled ? "ON" : "OFF"; cutBrakesVal.color = CutBrakes.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(cutBrakesTrack, cutBrakesKnob, CutBrakes.Enabled);

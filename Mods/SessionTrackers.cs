@@ -51,12 +51,19 @@ namespace DescendersModMenu.Mods
             _lastBailTime = now;
             BailCount++;
             MelonLogger.Msg("[SessionTrackers] Bail #" + BailCount);
+            SlowMoOnBail.OnBail();
         }
 
         // ── Longest Airtime ───────────────────────────────────────────────
         public static float LongestAirtime { get; private set; } = 0f;
         private static float _currentAirtimeStart = -1f;
         private static bool _wasOnGround = true;
+
+        // ── G-Force Tracker ──────────────────────────────────────────────
+        public static float CurrentGForce { get; private set; } = 0f;
+        public static float PeakGForce { get; private set; } = 0f;
+        private static Vector3 _lastVelocity = Vector3.zero;
+        private static bool _hasLastVelocity = false;
 
         // Cached for ground check — same property NoSpeedCap uses
         private static PropertyInfo _onGroundProp = null;
@@ -69,6 +76,16 @@ namespace DescendersModMenu.Mods
         public static string AirtimeDisplay
         {
             get { return LongestAirtime > 0.1f ? LongestAirtime.ToString("F1") + "s" : "--"; }
+        }
+
+        public static string GForceDisplay
+        {
+            get { return CurrentGForce.ToString("F1") + "G"; }
+        }
+
+        public static string PeakGForceDisplay
+        {
+            get { return PeakGForce > 0.1f ? PeakGForce.ToString("F1") + "G" : "--"; }
         }
 
         // ── Tick (call from OnUpdate) ─────────────────────────────────────
@@ -149,6 +166,26 @@ namespace DescendersModMenu.Mods
                 }
 
                 _wasOnGround = onGround;
+
+                // ── G-Force tracking ──────────────────────────────────────
+                Rigidbody rb = _cachedPlayer.GetComponent<Rigidbody>();
+                if ((object)rb != null)
+                {
+                    Vector3 currentVelocity = rb.velocity;
+                    if (_hasLastVelocity)
+                    {
+                        float dt = Time.fixedDeltaTime;
+                        if (dt > 0.0001f)
+                        {
+                            Vector3 accel = (currentVelocity - _lastVelocity) / dt;
+                            CurrentGForce = accel.magnitude / 9.81f;
+                            if (CurrentGForce > PeakGForce)
+                                PeakGForce = CurrentGForce;
+                        }
+                    }
+                    _lastVelocity = currentVelocity;
+                    _hasLastVelocity = true;
+                }
             }
             catch { }
         }
@@ -166,10 +203,15 @@ namespace DescendersModMenu.Mods
             _cachedVehicle = null;
             _groundPropCached = false;
             _onGroundProp = null;
+            CurrentGForce = 0f;
+            PeakGForce = 0f;
+            _lastVelocity = Vector3.zero;
+            _hasLastVelocity = false;
         }
 
         public static void ResetBails() { BailCount = 0; _lastBailTime = -999f; }
         public static void ResetAirtime() { LongestAirtime = 0f; _currentAirtimeStart = -1f; }
+        public static void ResetGForce() { PeakGForce = 0f; CurrentGForce = 0f; }
 
         // ── Harmony Patch for bail detection ──────────────────────────────
         // Patches Cyclist.Bail() — the actual crash/bail method

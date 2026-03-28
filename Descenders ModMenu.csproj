@@ -79,6 +79,10 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>D:\SteamLibrary\steamapps\common\Descenders\Descenders_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TerrainModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\SteamLibrary\steamapps\common\Descenders\Descenders_Data\Managed\UnityEngine.TerrainModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TerrainPhysicsModule">
       <HintPath>D:\SteamLibrary\steamapps\common\Descenders\Descenders_Data\Managed\UnityEngine.TerrainPhysicsModule.dll</HintPath>
     </Reference>
@@ -98,34 +102,59 @@
   <ItemGroup>
     <Compile Include="BikeStats\BikeStatsData.cs" />
     <Compile Include="Data\GameRefs.cs" />
+    <Compile Include="Mods\AutoBalance.cs" />
+    <Compile Include="Mods\AvalancheMode.cs" />
     <Compile Include="Mods\BikeSwitcher.cs" />
     <Compile Include="Mods\CutBrakes.cs" />
     <Compile Include="Mods\DiagnosticsManager.cs" />
+    <Compile Include="Mods\DrunkMode.cs" />
     <Compile Include="Mods\ESP.cs" />
     <Compile Include="Mods\ExplodingProps.cs" />
+    <Compile Include="Mods\FlyMode.cs" />
     <Compile Include="Mods\Fov.cs" />
     <Compile Include="Mods\GameModifiers.cs" />
+    <Compile Include="Mods\GhostReplay.cs" />
+    <Compile Include="Mods\Graphics.cs" />
     <Compile Include="Mods\Gravity.cs" />
+    <Compile Include="Mods\IceMode.cs" />
     <Compile Include="Mods\LandingImpact.cs" />
+    <Compile Include="Mods\MapChanger.cs" />
     <Compile Include="Mods\MaxSpeedMultiplier.cs" />
     <Compile Include="Mods\Acceleration.cs" />
+    <Compile Include="Mods\MirrorMode.cs" />
+    <Compile Include="Mods\ModChat.cs" />
+    <Compile Include="Mods\ModDetection.cs" />
     <Compile Include="Mods\Movement.cs" />
     <Compile Include="Mods\NoBail.cs" />
     <Compile Include="Mods\NoSpeedCap.cs" />
+    <Compile Include="Mods\OutfitPresets.cs" />
+    <Compile Include="Mods\ReverseSteering.cs" />
     <Compile Include="Mods\SceneDumper.cs" />
     <Compile Include="Mods\ScoreManager.cs" />
     <Compile Include="Mods\SessionTrackers.cs" />
+    <Compile Include="Mods\SkyColours.cs" />
+    <Compile Include="Mods\SlowMoOnBail.cs" />
     <Compile Include="Mods\SlowMotion.cs" />
+    <Compile Include="Mods\SpeedrunTimer.cs" />
     <Compile Include="Mods\SpeedWatcher.cs" />
     <Compile Include="BikeStats\StatsManager.cs" />
+    <Compile Include="Mods\StickyTyres.cs" />
     <Compile Include="Mods\Suspension.cs" />
     <Compile Include="Mods\TeleportToCheckpoint.cs" />
     <Compile Include="Mods\TeleportToPlayer.cs" />
     <Compile Include="Mods\TimeOfDay.cs" />
     <Compile Include="Mods\TopSpeed.cs" />
     <Compile Include="Mods\UnlockAll.cs" />
+    <Compile Include="Mods\WideTyres.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ModEntry.cs" />
+    <Compile Include="UI\GhostHUD.cs" />
+    <Compile Include="UI\Page10UI.cs" />
+    <Compile Include="UI\Page11UI.cs" />
+    <Compile Include="UI\Page12UI.cs" />
+    <Compile Include="UI\Page13UI.cs" />
+    <Compile Include="UI\Page14UI.cs" />
+    <Compile Include="UI\Page15UI.cs" />
     <Compile Include="UI\Page2UI.cs" />
     <Compile Include="UI\Page3UI.cs" />
     <Compile Include="UI\Page4UI.cs" />
