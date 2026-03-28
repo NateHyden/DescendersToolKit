@@ -8,12 +8,14 @@ Toggle the menu with **F6** at any time.
 
 ## UI
 
-The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange Descenders-themed colour palette, and a bottom bar for Save/Load/Reset on the Stats tab.
+The mod menu uses a **left sidebar navigation** layout with 15 tabs, an orange Descenders-themed colour palette, and a bottom bar for Save/Load/Reset on the Stats tab.
 
-- **Window:** 760×780px, dark theme with `#FF5500` Descenders orange accents
-- **Sidebar:** 120px wide with tab icons, orange active indicator bar, and a green status dot on the Info tab
-- **Header:** Shows version number, "DESCENDERS MOD MENU" title, and author credit
-- **Tab order:** Stats, Move, Bike, World, Silly, ESP, Score, Unlock, Info
+- **Window:** 800×660px, dark grungy MTB theme with **neon lime** (`#CCFF00`) as the primary accent
+- **Sidebar:** 130px wide with tab labels, lime active indicator, a green status dot on the Info tab, and group dividers labelling BIKE, WORLD, TOOLS and SYSTEM sections
+- **Toggles:** Lime knob when ON, red/pink when OFF
+- **Buttons:** Neon blue for standard actions, orange reserved for destructive actions only
+- **Header:** "DESCENDERS MOD MENU" title with version badge and author credit
+- **Tab order:** Stats, Move, Bike, Graphics, World, Silly, Outfit, Chat, Avalanche, GhostReplay, MapChange, ESP, Score, Unlock, Info
 
 ---
 
@@ -39,10 +41,11 @@ The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange De
 - **ESP Tracers** — Toggleable lines from screen edge to each player
 - **Teleport to Player** — Scan for players and teleport directly to them without losing your score
 - **Teleport to Checkpoint** — Instantly teleport to the last triggered race checkpoint
+- **Mod Users** — Highlights other players running the mod menu in your session
 
 ### Info — Diagnostics
 - **System Info** — Displays Unity version, version match status and MelonLoader version
-- **Mod Status** — Scrollable list of all 34+ mods with live OK/FAILED circle indicators
+- **Mod Status** — Scrollable list of all mods with live OK/FAILED circle indicators
 - **Hotkeys** — Quick reference for all keyboard shortcuts
 
 ### Unlock — Progression
@@ -68,8 +71,10 @@ The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange De
 - **Cut Brakes** — Disables braking entirely via Harmony patch
 
 ### World — Environment
+- **Storm** — Activates storm weather — dark sky, wind and rain
 - **Gravity** — 10 levels from floaty to heavy (level 5 = default −17.5)
 - **Time of Day** — 10 presets from Dawn through to Night via the TOD_Sky system
+- **Sky Colour** — Custom sky colour presets — Blood Red, Alien Green, Synthwave, Midnight, Toxic
 - **Trees & Foliage** — Toggle terrain tree and foliage rendering
 - **Music** — Mute and restore game music via FMOD VCA, preserving your volume setting
 - **Fog** — Toggle fog rendering on and off, saves and restores original density
@@ -86,11 +91,55 @@ The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange De
 - **Player Size** — Giant / Big / Default / Small / Tiny scale presets for your rider
 - **Invisible Bike** — Hide the bike model while keeping physics intact
 - **Wheel Size** — Small / Default / Large wheel scaling via bone transforms and physics radius
+- **Wide Tyres** — Widen the tyres across 20 levels
+- **Sticky Tyres** — Tyres grip any surface including walls and ceilings
 - **Moon Mode** — One-button preset: low gravity + max suspension travel + min damping. Saves your current settings and restores them on deactivation
 - **Giant Everyone** — Scale all other players' riders in multiplayer
 - **Invisible Player** — Disable all renderers on your rider
+- **Reverse Steering** — Flip left/right steering input
+- **Ice Grip** — Reduce tyre friction for slippery handling
+- **Fly Mode** — Detach from the bike and fly freely through the level
+- **Drunk Mode** — Applies a persistent FOV wobble effect
+- **Mirror Mode** — Flips the game world left/right
 - **Turbo Wind** — Crank the WindZone to maximum turbulence
 - **No Mistakes** — Any sideways collision with a wall, rock or obstacle launches you backwards. Landings and gentle bumps are ignored
+
+### Graphics — Visuals
+- **Bloom** — Toggle bloom post processing effect
+- **Ambient Occlusion** — Toggle ambient occlusion
+- **Vignette** — Toggle vignette effect
+- **Depth of Field** — Toggle depth of field blur
+- **Chromatic Aberration** — Toggle chromatic aberration
+- **Quality Preset** — Switch between Low, Medium, High and Ultra render quality on the fly
+
+### Outfit — Customisation
+- **Outfit Presets** — Save and load up to 3 full outfit loadouts (helmet, jersey, bike) for quick switching
+- **Quick Actions** — Shortcuts to apply saved outfits instantly in session
+
+### Chat — Multiplayer
+- **Mod Chat** — Send and receive messages with other players running the mod menu in your session
+
+### Avalanche — Chaos Mode
+- **Avalanche Mode** — Spawns boulders above you that roll downhill. Survive as long as possible
+- **Survival Timer** — Tracks how long you've lasted since the avalanche started
+- **Active Hazards** — Live count of boulders currently in play
+- **Spawn Settings** — Configure spawn interval, max hazards, boulder size and spawn radius
+- **Physics Settings** — Control boulder shape, extra gravity and attraction force
+- **Instant Fail on Hit** — End the run immediately on first boulder contact
+- **Difficulty Scaling** — Gradually increases spawn rate the longer you survive
+- **Show Timer** — Toggle the on-screen survival timer overlay
+
+### Ghost Replay — Run Recording
+- **Ghost Replay** — Records your run and plays it back as a semi-transparent ghost rider alongside you
+- **Recording Controls** — F3 / RS double-click to toggle, F4 / LS click to save current run
+- **Ghost Alpha** — Adjust ghost transparency
+- **Saved Ghost Run** — Displays length and time of your saved ghost run
+- **Clear** — Wipe the saved ghost recording
+
+### MapChange — Level Select
+- **Map Changer** — Browse and load any base game world or bike park directly from the menu without going through the main menu
+- **Base Game Maps** — All procedural biomes: Highlands, Forest, Canyon, Peaks, Desert, Jungle, Favela, Glaciers, Ridges, Hell
+- **Bike Parks & Freeride** — All handcrafted bike park maps
 
 ---
 
@@ -115,6 +164,8 @@ The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange De
 | Key | Action |
 |-----|--------|
 | F2 | Toggle slow motion |
+| F3 | Toggle Ghost Replay on / off |
+| F4 | Save current run as ghost |
 | F6 | Toggle mod menu open / closed |
 | F10 (hold) | Speed watcher — record vehicle field changes while riding |
 | F12 | Dump scene to desktop |
@@ -134,6 +185,10 @@ The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange De
 - **Bail Counter** uses a Harmony postfix on `Cyclist.Bail()` — counts actual crashes, not manual resets or checkpoint teleports.
 - **Moon Mode** saves your current Gravity, Suspension Travel and Damping levels before activating, and restores them when you deactivate.
 - **No Mistakes** only triggers on sideways impacts (contact normal y ≤ 0.5) above 5 m/s — landings and gentle bumps are ignored.
+- **Ghost Replay** records position and rotation every 2 frames. Max recording length is 18,000 frames (~5 minutes). Save your best run with F4 and it will persist until you clear it or record a new one.
+- **Avalanche Mode** only works in procedural worlds — bike parks have no terrain for boulders to spawn on.
+- **Map Changer** loads maps the same way the game does internally, preserving career progress and session state.
+- **Outfit Presets** save your current helmet, jersey and bike selection. Presets persist between sessions.
 - **Save / Load / Reset** buttons at the bottom of the Stats tab persist your settings between sessions to `UserData/DescendersModMenu/BikeStats.json`.
 
 ---
@@ -148,6 +203,27 @@ The mod menu uses a **left sidebar navigation** layout with 9 tabs, an orange De
 ---
 
 ## Changelog
+
+### v3.0.0
+- Expanded from 9 to 15 tabs — added Graphics, Outfit, Chat, Avalanche, GhostReplay, MapChange
+- **Ghost Replay** — records your run and plays it back as a ghost rider. Save your best run and compare on future attempts. F3 to toggle, F4 to save
+- **Avalanche Mode** — boulders spawn above you and roll downhill. Configurable spawn rate, boulder size, gravity, attraction force, difficulty scaling and instant-fail mode. Survival timer included
+- **Map Changer** — load any base game world or bike park directly from the menu. No main menu required
+- **Outfit Presets** — save and load up to 3 full outfit loadouts for quick in-session switching
+- **Mod Chat** — send and receive messages with other mod menu users in your session
+- **Graphics tab** — toggle Bloom, Ambient Occlusion, Vignette, Depth of Field and Chromatic Aberration individually, plus Low/Medium/High/Ultra quality presets
+- **Storm mode** — dark sky, wind and rain via direct TOD_Sky skydome swap and EffectList refresh (World tab)
+- **Sky Colour presets** — Blood Red, Alien Green, Synthwave, Midnight, Toxic (World tab)
+- **Wide Tyres** — 20-level tyre width slider (Silly tab)
+- **Sticky Tyres** — grip any surface including walls and ceilings (Silly tab)
+- **Fly Mode** — detach from the bike and fly freely (Silly tab)
+- **Drunk Mode** — persistent FOV wobble effect (Silly tab)
+- **Mirror Mode** — flips the world left/right (Silly tab)
+- **Reverse Steering** — moved to Silly tab controls section
+- **Mod Users** indicator in ESP tab — highlights other players running the mod menu
+- Ghost Replay keybinds: F3 toggle, F4 save run, RS double-click toggle, LS click save
+- Fixed Invisible Bike and Invisible Player restoring placeholder/disabled renderers on toggle-off
+- UI updated to v3.0.0 version badge in header
 
 ### v2.1.0
 - New sidebar navigation UI replacing the old horizontal tab bar
