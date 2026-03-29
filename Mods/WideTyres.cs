@@ -52,6 +52,21 @@ namespace DescendersModMenu.Mods
         }
 
         public static void SetLevel(int v) { Level = System.Math.Max(1, System.Math.Min(20, v)); }
+
+        // Called from OnLateUpdate every frame — reapplies after BikeModel Animation component runs
+        public static void Tick()
+        {
+            if (!Enabled) return;
+            try
+            {
+                Transform frontBone, backBone;
+                if (!GetBones(out frontBone, out backBone)) return;
+                float w = Width;
+                if ((object)frontBone != null) frontBone.localScale = new Vector3(w, 1f, 1f);
+                if ((object)backBone != null) backBone.localScale = new Vector3(w, 1f, 1f);
+            }
+            catch { }
+        }
         public static void Apply()
         {
             try

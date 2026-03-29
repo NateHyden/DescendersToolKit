@@ -18,6 +18,7 @@ namespace DescendersModMenu.Mods
         private static float _lastRoll = 0f;
         private static float _smoothRoll = 0f;
         private static Quaternion _cleanRot = Quaternion.identity;
+        private static CameraAngle _cachedAngle = null; // cached once on enable
 
         // Reflection for zsEdyM} (body lean) — brace in name breaks direct access
         private static System.Reflection.PropertyInfo _bodyLeanProp = null;
@@ -33,7 +34,8 @@ namespace DescendersModMenu.Mods
                 _camRollTime = 0f;
                 _cam = Camera.main;
                 if ((object)_cam != null) _baseFOV = _cam.fieldOfView;
-                // Try to get the real targetFOV from CameraAngle
+                // Cache CameraAngle once on enable — reused every LateTick
+                _cachedAngle = null;
                 BikeCamera[] cams = GameObject.FindObjectsOfType<BikeCamera>();
                 for (int i = 0; i < cams.Length; i++)
                 {
@@ -44,7 +46,7 @@ namespace DescendersModMenu.Mods
                         if (!string.Equals(fields[j].FieldType.Name, "CameraAngle",
                             System.StringComparison.Ordinal)) continue;
                         CameraAngle ca = fields[j].GetValue(cams[i]) as CameraAngle;
-                        if ((object)ca != null) { _baseFOV = ca.targetFOV; }
+                        if ((object)ca != null) { _baseFOV = ca.targetFOV; _cachedAngle = ca; }
                         break;
                     }
                 }
@@ -54,6 +56,7 @@ namespace DescendersModMenu.Mods
             {
                 // Restore FOV
                 if ((object)_cam != null) _cam.fieldOfView = _baseFOV;
+                _cachedAngle = null;
                 MelonLogger.Msg("[DrunkMode] OFF");
             }
         }
@@ -78,24 +81,10 @@ namespace DescendersModMenu.Mods
             if ((object)_cam == null) return;
 
             // ── FOV breathing via CameraAngle.targetFOV ───────────────────
-            // Same method as the FOV mod — BikeCamera lerps toward targetFOV
             float fovWobble = Mathf.Sin(_fovTime * Mathf.PI * 2f) * 10f
                             + Mathf.Sin(_fovTime * Mathf.PI * 3.3f) * 5f;
-            BikeCamera[] cameras = GameObject.FindObjectsOfType<BikeCamera>();
-            for (int i = 0; i < cameras.Length; i++)
-            {
-                System.Reflection.FieldInfo[] fields = cameras[i].GetType().GetFields(
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                for (int j = 0; j < fields.Length; j++)
-                {
-                    if (!string.Equals(fields[j].FieldType.Name, "CameraAngle",
-                        System.StringComparison.Ordinal)) continue;
-                    CameraAngle ca = fields[j].GetValue(cameras[i]) as CameraAngle;
-                    if ((object)ca == null) break;
-                    ca.targetFOV = _baseFOV + fovWobble;
-                    break;
-                }
-            }
+            if ((object)_cachedAngle != null)
+                _cachedAngle.targetFOV = _baseFOV + fovWobble;
 
             // ── Camera roll ───────────────────────────────────────────────
             float roll = Mathf.Sin(_camRollTime * Mathf.PI * 2f) * 14f

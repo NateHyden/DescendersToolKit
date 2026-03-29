@@ -169,12 +169,13 @@ namespace DescendersModMenu
             WheelieAngleLimit.Reset();
             AirControl.Reset();
             ScoreManager.ResetMultiplier();
+            FOV.ClearCache();
+            NoBail.ClearCache();
+            Page9UI.ResetWheelSize();
         }
 
         public override void OnUpdate()
         {
-            try { if (NoBail.Enabled) NoBail.Apply(); }
-            catch (System.Exception ex) { MelonLogger.Error("NoBail.Apply: " + ex.Message); }
             try
             {
                 // ── Ghost Replay keybinds ──────────────────────────────────
@@ -294,6 +295,10 @@ namespace DescendersModMenu
             try { SkyColours.Tick(); }
             catch (System.Exception ex) { MelonLogger.Error("SkyColours.Tick: " + ex.Message); }
             try { DrunkMode.LateTick(); }
+            catch { }
+            try { WideTyres.Tick(); }
+            catch { }
+            try { Page9UI.WheelSizeTick(); }
             catch { }
         }
 

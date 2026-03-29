@@ -366,9 +366,39 @@ namespace DescendersModMenu.UI
         private static float _defaultRadiusFront = -1f;
         private static float _defaultRadiusBack = -1f;
 
-        // BikeAnimation bone fields (from scene dump): YLzyVuM=backWheel_Jnt, RCNLpue=frontWheel_Jnt
+        // BikeAnimation bone fields
         private static System.Reflection.FieldInfo _backBoneField = null;
         private static System.Reflection.FieldInfo _frontBoneField = null;
+
+        // Called from OnSceneWasUnloaded to clear stale references
+        public static void ResetWheelSize()
+        {
+            _wheelSizeMode = 0;
+            _cachedFrontBone = null;
+            _cachedBackBone = null;
+            _backBoneField = null;
+            _frontBoneField = null;
+            _wheelRadiusField = null;
+            _defaultRadiusFront = -1f;
+            _defaultRadiusBack = -1f;
+        }
+
+        // Cached bone transforms for per-frame reapplication
+        private static Transform _cachedFrontBone = null;
+        private static Transform _cachedBackBone = null;
+
+        // Called from OnLateUpdate — reapplies bone scale after BikeModel Animation runs each frame
+        public static void WheelSizeTick()
+        {
+            if (_wheelSizeMode == 0) return; // default — no override needed
+            try
+            {
+                float scale = WheelScales[_wheelSizeMode];
+                if ((object)_cachedFrontBone != null) _cachedFrontBone.localScale = new Vector3(scale, scale, scale);
+                if ((object)_cachedBackBone != null) _cachedBackBone.localScale = new Vector3(scale, scale, scale);
+            }
+            catch { }
+        }
 
         private static void SetWheelSize(int mode)
         {
@@ -400,13 +430,19 @@ namespace DescendersModMenu.UI
                         {
                             Transform backBone = _backBoneField.GetValue(bikeAnim) as Transform;
                             if ((object)backBone != null)
+                            {
                                 backBone.localScale = new Vector3(scale, scale, scale);
+                                _cachedBackBone = backBone;
+                            }
                         }
                         if ((object)_frontBoneField != null)
                         {
                             Transform frontBone = _frontBoneField.GetValue(bikeAnim) as Transform;
                             if ((object)frontBone != null)
+                            {
                                 frontBone.localScale = new Vector3(scale, scale, scale);
+                                _cachedFrontBone = frontBone;
+                            }
                         }
                     }
                 }
@@ -438,6 +474,7 @@ namespace DescendersModMenu.UI
                 }
 
                 _wheelSizeMode = mode;
+                if (mode == 0) { _cachedFrontBone = null; _cachedBackBone = null; }
                 MelonLogger.Msg("[Silly] Wheel size -> " + WheelLabels[mode] + " (scale " + scale + ")");
             }
             catch (System.Exception ex) { MelonLogger.Error("[Silly] SetWheelSize: " + ex.Message); }

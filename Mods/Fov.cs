@@ -12,6 +12,10 @@ namespace DescendersModMenu.Mods
 
         public static string DisplayValue { get { return ((int)GetFOV()).ToString(); } }
 
+        // Cached references — rebuilt on scene load or when null
+        private static BikeCamera[] _cachedCameras = null;
+        private static CameraAngle[] _cachedAngles = null;
+
         public static void Increase() { if (Level < 10) Level++; }
         public static void Decrease() { if (Level > 1) Level--; }
         public static void SetLevel(int level)
@@ -21,43 +25,46 @@ namespace DescendersModMenu.Mods
             Level = level;
         }
 
-        // Set targetFOV on CameraAngle so BikeCamera's own lerp drives toward our value
-        // This works for all camera modes since every BikeCamera has a CameraAngle reference
+        public static void ClearCache()
+        {
+            _cachedCameras = null;
+            _cachedAngles = null;
+        }
+
+        // Called from OnLateUpdate every frame — uses cache, no FindObjectsOfType after first call
         public static void Apply()
         {
-
             try
             {
-            BikeCamera[] cameras = GameObject.FindObjectsOfType<BikeCamera>();
-            if ((object)cameras == null || cameras.Length == 0) return;
-
-            float target = GetFOV();
-            for (int i = 0; i < cameras.Length; i++)
-            {
-                BikeCamera bc = cameras[i];
-                if ((object)bc == null) continue;
-
-                // CameraAngle is the public field P\x82lio[ on BikeCamera
-                // Access it via reflection since the field name has unprintable chars
-                System.Reflection.FieldInfo[] fields = bc.GetType().GetFields(
-                    System.Reflection.BindingFlags.Public |
-                    System.Reflection.BindingFlags.Instance
-                );
-                for (int j = 0; j < fields.Length; j++)
+                // Build cache if missing
+                if ((object)_cachedCameras == null || _cachedCameras.Length == 0)
                 {
-                    if (!string.Equals(fields[j].FieldType.Name, "CameraAngle",
-                        System.StringComparison.Ordinal)) continue;
+                    _cachedCameras = GameObject.FindObjectsOfType<BikeCamera>();
+                    if ((object)_cachedCameras == null || _cachedCameras.Length == 0) return;
 
-                    CameraAngle ca = fields[j].GetValue(bc) as CameraAngle;
-                    if ((object)ca == null) break;
+                    _cachedAngles = new CameraAngle[_cachedCameras.Length];
+                    for (int i = 0; i < _cachedCameras.Length; i++)
+                    {
+                        System.Reflection.FieldInfo[] fields = _cachedCameras[i].GetType().GetFields(
+                            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        for (int j = 0; j < fields.Length; j++)
+                        {
+                            if (!string.Equals(fields[j].FieldType.Name, "CameraAngle",
+                                System.StringComparison.Ordinal)) continue;
+                            _cachedAngles[i] = fields[j].GetValue(_cachedCameras[i]) as CameraAngle;
+                            break;
+                        }
+                    }
+                }
 
-                    ca.targetFOV = target;
-                    break;
+                float target = GetFOV();
+                for (int i = 0; i < _cachedAngles.Length; i++)
+                {
+                    if ((object)_cachedAngles[i] == null) continue;
+                    _cachedAngles[i].targetFOV = target;
                 }
             }
-            }
             catch (System.Exception ex) { MelonLogger.Error("FOV.Apply: " + ex.Message); }
-        
         }
     }
 }
