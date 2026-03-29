@@ -13,6 +13,7 @@ namespace DescendersModMenu.UI
         private static Image _dofTrack; private static RectTransform _dofKnob; private static Text _dofVal;
         private static Image _cabTrack; private static RectTransform _cabKnob; private static Text _cabVal;
         private static Text _qualityVal;
+        private static string _selectedQuality = "Fantastic"; // default matches game default
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -62,10 +63,10 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("QUALITY", pg.transform);
 
                 var qr = UIHelpers.StatRow("Preset", pg.transform);
-                UIHelpers.ActionBtn(qr.transform, "Low", () => { GraphicsSettings.SetQuality(0); RefreshAll(); }, 44);
-                UIHelpers.ActionBtn(qr.transform, "Medium", () => { GraphicsSettings.SetQuality(1); RefreshAll(); }, 56);
-                UIHelpers.ActionBtn(qr.transform, "High", () => { GraphicsSettings.SetQuality(2); RefreshAll(); }, 44);
-                UIHelpers.ActionBtn(qr.transform, "Ultra", () => { GraphicsSettings.SetQuality(3); RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Low", () => { GraphicsSettings.SetQuality(0); _selectedQuality = "Low"; RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Medium", () => { GraphicsSettings.SetQuality(1); _selectedQuality = "Medium"; RefreshAll(); }, 56);
+                UIHelpers.ActionBtn(qr.transform, "High", () => { GraphicsSettings.SetQuality(2); _selectedQuality = "High"; RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Ultra", () => { GraphicsSettings.SetQuality(3); _selectedQuality = "Ultra"; RefreshAll(); }, 44);
 
                 var qvr = UIHelpers.StatRow("Current", pg.transform);
                 _qualityVal = UIHelpers.Txt("QlV", qvr.transform, "—", 11, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
@@ -104,16 +105,7 @@ namespace DescendersModMenu.UI
             UIHelpers.SetToggle(_cabTrack, _cabKnob, cab);
 
             if (_qualityVal)
-            {
-                int q = GraphicsSettings.GetCurrentQuality();
-                // Unity quality level indices may not match our 0-3 mapping
-                // Show the raw Unity quality name if out of our range
-                string[] unityNames = QualitySettings.names;
-                if (q >= 0 && q < unityNames.Length)
-                    _qualityVal.text = unityNames[q];
-                else
-                    _qualityVal.text = q.ToString();
-            }
+                _qualityVal.text = _selectedQuality;
         }
     }
 }

@@ -86,6 +86,9 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("HOTKEYS", pg.transform);
                 UIHelpers.HotkeyRow(pg.transform, "Toggle mod menu", "F6");
                 UIHelpers.HotkeyRow(pg.transform, "Toggle slow motion", "F2");
+                UIHelpers.HotkeyRow(pg.transform, "Ghost Replay — toggle", "F3 / RS Dbl Click");
+                UIHelpers.HotkeyRow(pg.transform, "Ghost Replay — save run", "F4 / RS Click");
+                UIHelpers.HotkeyRow(pg.transform, "Ghost Replay — set spawn", "LS Click");
 
                 Refresh();
             }

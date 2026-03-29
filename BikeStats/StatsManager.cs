@@ -65,6 +65,7 @@ namespace DescendersModMenu.BikeStats
 
                     // Toggles
                     SlowMotionEnabled = SlowMotion.Enabled,
+                    SlowMotionLevel = SlowMotion.Level,
                     CutBrakesEnabled = CutBrakes.Enabled,
                     NoSpeedCapEnabled = NoSpeedCap.Enabled,
                     ReverseSteerEnabled = ReverseSteering.Enabled,
@@ -76,6 +77,11 @@ namespace DescendersModMenu.BikeStats
                     SpeedrunTimerEnabled = SpeedrunTimer.Enabled,
                     SlowMoOnBailEnabled = SlowMoOnBail.Enabled,
                     GhostReplayEnabled = GhostReplay.Enabled,
+
+                    WheelieAngleLimitEnabled = WheelieAngleLimit.Enabled,
+                    WheelieAngleLimitLevel = WheelieAngleLimit.Level,
+                    AirControlEnabled = AirControl.Enabled,
+                    AirControlLevel = AirControl.Level,
 
                     // Floats
                     FlyMoveSpeed = FlyMode.MoveSpeed,
@@ -125,6 +131,7 @@ namespace DescendersModMenu.BikeStats
                 FlyMode.ClimbSpeed = data.FlyClimbSpeed;
                 GhostReplay.GhostAlpha = data.GhostAlpha;
                 StickyTyres.SuctionForce = data.StickyForce;
+                SlowMotion.SetLevel(data.SlowMotionLevel);
 
                 // Levels
                 Movement.SetSpinLevel(data.SpinLevel);
@@ -160,6 +167,11 @@ namespace DescendersModMenu.BikeStats
                 if (data.SpeedrunTimerEnabled && !SpeedrunTimer.Enabled) SpeedrunTimer.Toggle();
                 if (data.SlowMoOnBailEnabled && !SlowMoOnBail.Enabled) SlowMoOnBail.Toggle();
                 if (data.GhostReplayEnabled && !GhostReplay.Enabled) GhostReplay.Toggle();
+
+                WheelieAngleLimit.SetLevel(data.WheelieAngleLimitLevel);
+                AirControl.SetLevel(data.AirControlLevel);
+                if (data.WheelieAngleLimitEnabled && !WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
+                if (data.AirControlEnabled && !AirControl.Enabled) AirControl.Toggle();
 
                 MelonLogger.Msg("[StatsManager] Loaded from: " + SaveFile);
             }
@@ -211,6 +223,7 @@ namespace DescendersModMenu.BikeStats
                 FlyMode.ClimbSpeed = 20f;
                 GhostReplay.GhostAlpha = 0.45f;
                 StickyTyres.SuctionForce = 150f;
+                SlowMotion.SetLevel(5);
 
                 // Toggles — turn off anything that's on
                 if (WideTyres.Enabled) WideTyres.Toggle();

@@ -391,10 +391,11 @@ namespace DescendersModMenu.UI
             var dle = dt.gameObject.AddComponent<LayoutElement>();
             dle.flexibleWidth = 1; dle.preferredHeight = 30;
 
-            // Accent badge
+            // Accent badge — width scales with text so long labels like "RS Dbl Click" fit
             var badge = Panel("KB", row.transform, AccentDim, BtnSp);
             var ble = badge.AddComponent<LayoutElement>();
-            ble.preferredWidth = 38; ble.preferredHeight = 20; ble.minWidth = 38; ble.flexibleHeight = 0;
+            float badgeW = Mathf.Max(38f, key.Length * 8f + 16f);
+            ble.preferredWidth = badgeW; ble.minWidth = badgeW; ble.preferredHeight = 20; ble.flexibleHeight = 0;
 
             // Badge border
             var bbdr = Panel("BBdr", badge.transform, AccentBdr, BtnSp);

@@ -144,18 +144,16 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtn(gwr.transform, "Default", () => { SetWheelSize(0); RefreshAll(); }, 58);
                 UIHelpers.ActionBtn(gwr.transform, "Large", () => { SetWheelSize(2); RefreshAll(); }, 52);
 
-                // Wide Tyres toggle + width bar
+                // Wide Tyres toggle + width bar on same row
                 var wtr = UIHelpers.StatRow("Wide Tyres", pg9);
                 _wideTyresVal = UIHelpers.Txt("WtV", wtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _wideTyresVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(wtr.transform, "WtT", () => { WideTyres.Toggle(); RefreshAll(); }, out _wideTyresTrack, out _wideTyresKnob);
-
-                var wtwr = UIHelpers.StatRow("  Width", pg9);
-                _wideTyresBar = UIHelpers.MakeBar("WtB", wtwr.transform, (WideTyres.Level - 1) / 19f);
-                _wideTyresLvlVal = UIHelpers.Txt("WtL", wtwr.transform, WideTyres.Level.ToString(), 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
+                _wideTyresBar = UIHelpers.MakeBar("WtB", wtr.transform, (WideTyres.Level - 1) / 19f);
+                _wideTyresLvlVal = UIHelpers.Txt("WtL", wtr.transform, WideTyres.Level.ToString(), 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
                 _wideTyresLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
-                _wideTyresMinus = UIHelpers.SmallBtn(wtwr.transform, "-", () => { WideTyres.Decrease(); RefreshAll(); });
-                _wideTyresPlus = UIHelpers.SmallBtn(wtwr.transform, "+", () => { WideTyres.Increase(); RefreshAll(); });
+                _wideTyresMinus = UIHelpers.SmallBtn(wtr.transform, "-", () => { WideTyres.Decrease(); RefreshAll(); });
+                _wideTyresPlus = UIHelpers.SmallBtn(wtr.transform, "+", () => { WideTyres.Increase(); RefreshAll(); });
 
                 // Sticky Tyres toggle
                 var str2 = UIHelpers.StatRow("Sticky Tyres", pg9);
@@ -297,14 +295,15 @@ namespace DescendersModMenu.UI
                 _explodeVal = UIHelpers.Txt("ExV", er.transform, "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _explodeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                var erHint = UIHelpers.Txt("ExH", er.transform, "launch on impact", 9,
+                    FontStyle.Italic, TextAnchor.MiddleRight, UIHelpers.TextDim);
+                erHint.gameObject.AddComponent<LayoutElement>().preferredWidth = 90;
                 UIHelpers.Toggle(er.transform, "ExT", () =>
                 {
                     ExplodingProps.Toggle();
                     _explodingProps = ExplodingProps.Enabled;
                     RefreshAll();
                 }, out _explodeTrack, out _explodeKnob);
-
-                UIHelpers.InfoBox(pg9, "Hitting any wall, rock or obstacle will launch you backwards with a crash sound.");
 
                 RefreshAll();
 

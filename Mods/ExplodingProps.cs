@@ -102,7 +102,7 @@ namespace DescendersModMenu.Mods
         private float _lastBounceTime = -999f;
         private const float BounceCooldown = 0.5f;
         private const float BounceSpeed = 18f;
-        private const float MinImpactSpeed = 5f;
+        private const float MinImpactSpeed = 2f; // lowered from 5f — triggers on lighter touches
 
         private void Start()
         {

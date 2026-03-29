@@ -9,7 +9,6 @@ namespace DescendersModMenu.UI
     {
         private static Image _enableTrack; private static RectTransform _enableKnob;
         private static Text _statusText = null;
-        private static Text _recFrameText = null;
         private static Text _recTimeText = null;
         private static Text _savedTimeText = null;
         private static GameObject _savedPanel = null;

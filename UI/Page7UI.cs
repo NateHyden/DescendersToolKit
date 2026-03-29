@@ -84,17 +84,15 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("SKY", pg7);
 
                 var skpr = UIHelpers.StatRow("Colour", pg7);
+                _skyPresetVal = UIHelpers.Txt("SkV", skpr.transform, SkyColours.PresetNames[0], 11,
+                    FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
+                _skyPresetVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 60;
                 UIHelpers.ActionBtn(skpr.transform, "Normal", () => { SkyColours.ApplyPreset(0); RefreshAll(); }, 46);
                 UIHelpers.ActionBtn(skpr.transform, "Blood Red", () => { SkyColours.ApplyPreset(1); RefreshAll(); }, 58);
                 UIHelpers.ActionBtn(skpr.transform, "Alien", () => { SkyColours.ApplyPreset(2); RefreshAll(); }, 40);
                 UIHelpers.ActionBtn(skpr.transform, "Synthwave", () => { SkyColours.ApplyPreset(3); RefreshAll(); }, 60);
                 UIHelpers.ActionBtn(skpr.transform, "Midnight", () => { SkyColours.ApplyPreset(4); RefreshAll(); }, 55);
                 UIHelpers.ActionBtn(skpr.transform, "Toxic", () => { SkyColours.ApplyPreset(5); RefreshAll(); }, 40);
-
-                var skActive = UIHelpers.StatRow("Active", pg7);
-                _skyPresetVal = UIHelpers.Txt("SkV", skActive.transform, SkyColours.PresetNames[0], 11,
-                    FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
-                _skyPresetVal.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
                 var stmr = UIHelpers.StatRow("Storm", pg7);
                 _stormVal = UIHelpers.Txt("StmV", stmr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
@@ -113,6 +111,8 @@ namespace DescendersModMenu.UI
                 _gravityVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
                 UIHelpers.SmallBtn(gr.transform, "-", () => { Gravity.Decrease(); RefreshAll(); });
                 UIHelpers.SmallBtn(gr.transform, "+", () => { Gravity.Increase(); RefreshAll(); });
+                UIHelpers.Txt("GrHint", gr.transform, "def:-17.5", 9, FontStyle.Italic, TextAnchor.MiddleRight, UIHelpers.TextDim)
+                    .gameObject.AddComponent<LayoutElement>().preferredWidth = 52;
 
                 UIHelpers.Divider(pg7);
 

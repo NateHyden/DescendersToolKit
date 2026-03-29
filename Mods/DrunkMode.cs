@@ -16,7 +16,7 @@ namespace DescendersModMenu.Mods
         private static float _baseFOV = 60f;
         private static Camera _cam = null;
         private static float _lastRoll = 0f;
-        private static float _lastFovWobble = 0f;
+        private static float _smoothRoll = 0f;
         private static Quaternion _cleanRot = Quaternion.identity;
 
         // Reflection for zsEdyM} (body lean) — brace in name breaks direct access
@@ -98,13 +98,13 @@ namespace DescendersModMenu.Mods
             }
 
             // ── Camera roll ───────────────────────────────────────────────
-            // BikeCamera just set the rotation — capture it as our clean base
-            // then SET roll on top. Fresh every frame, zero accumulation.
             float roll = Mathf.Sin(_camRollTime * Mathf.PI * 2f) * 14f
                        + Mathf.Sin(_camRollTime * Mathf.PI * 1.7f) * 6f;
+            // Lerp toward target roll for smooth transitions — no more snapping
+            _smoothRoll = Mathf.Lerp(_smoothRoll, roll, Time.deltaTime * 3f);
             _cleanRot = _cam.transform.rotation * Quaternion.Inverse(Quaternion.Euler(0f, 0f, _lastRoll));
-            _cam.transform.rotation = _cleanRot * Quaternion.Euler(0f, 0f, roll);
-            _lastRoll = roll;
+            _cam.transform.rotation = _cleanRot * Quaternion.Euler(0f, 0f, _smoothRoll);
+            _lastRoll = _smoothRoll;
         }
 
         // Called from Harmony postfix on Vehicle.FixedUpdate — adds steering wobble
@@ -148,7 +148,7 @@ namespace DescendersModMenu.Mods
                 Enabled = false;
             }
             _lastRoll = 0f;
-            _lastFovWobble = 0f;
+            _smoothRoll = 0f;
             _cam = null;
         }
     }

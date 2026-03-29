@@ -12,7 +12,7 @@ namespace DescendersModMenu
         public const string Description = "Modkit for Descenders";
         public const string Author = "NateHyden";
         public const string Company = null;
-        public const string Version = "2.1.0";
+        public const string Version = "3.1.0";
         public const string DownloadLink = null;
     }
 
@@ -47,24 +47,28 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedCap.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("NoSpeedCap", false, ex.Message); }
             try { NoSpeedCap.ApplyVCPatch(harmony); DiagnosticsManager.Report("NoSpeedCap (VC)", true); }
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedCap.ApplyVCPatch failed: " + ex.Message); DiagnosticsManager.Report("NoSpeedCap (VC)", false, ex.Message); }
-            try { CutBrakes.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("CutBrakes.ApplyPatch failed: " + ex.Message); }
-            try { ReverseSteering.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("ReverseSteering.ApplyPatch failed: " + ex.Message); }
-            try { AutoBalance.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("AutoBalance.ApplyPatch failed: " + ex.Message); }
-            try { IceMode.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("IceMode.ApplyPatch failed: " + ex.Message); }
+            try { CutBrakes.ApplyPatch(harmony); DiagnosticsManager.Report("CutBrakes", true); }
+            catch (System.Exception ex) { MelonLogger.Error("CutBrakes.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("CutBrakes", false, ex.Message); }
+            try { ReverseSteering.ApplyPatch(harmony); DiagnosticsManager.Report("ReverseSteering", true); }
+            catch (System.Exception ex) { MelonLogger.Error("ReverseSteering.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("ReverseSteering", false, ex.Message); }
+            try { AutoBalance.ApplyPatch(harmony); DiagnosticsManager.Report("AutoBalance", true); }
+            catch (System.Exception ex) { MelonLogger.Error("AutoBalance.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("AutoBalance", false, ex.Message); }
+            try { IceMode.ApplyPatch(harmony); DiagnosticsManager.Report("IceMode", true); }
+            catch (System.Exception ex) { MelonLogger.Error("IceMode.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("IceMode", false, ex.Message); }
             try { SkyColours.ApplyPatch(harmony); }
             catch (System.Exception ex) { MelonLogger.Error("SkyColours.ApplyPatch failed: " + ex.Message); }
-            try { DrunkMode.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("DrunkMode.ApplyPatch failed: " + ex.Message); }
+            try { DrunkMode.ApplyPatch(harmony); DiagnosticsManager.Report("DrunkMode", true); }
+            catch (System.Exception ex) { MelonLogger.Error("DrunkMode.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("DrunkMode", false, ex.Message); }
             try { SessionTrackers.ApplyBailPatch(harmony); DiagnosticsManager.Report("BailCounter", true); }
             catch (System.Exception ex) { MelonLogger.Error("BailPatch failed: " + ex.Message); DiagnosticsManager.Report("BailCounter", false, ex.Message); }
-            try { GhostReplay.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("GhostReplay.ApplyPatch failed: " + ex.Message); }
-            try { MapChanger.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Warning("MapChanger.ApplyPatch failed: " + ex.Message); }
+            try { GhostReplay.ApplyPatch(harmony); DiagnosticsManager.Report("GhostReplay", true); }
+            catch (System.Exception ex) { MelonLogger.Error("GhostReplay.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("GhostReplay", false, ex.Message); }
+            try { GameModifierMods.ApplyNoSpeedWobblesPatch(harmony); DiagnosticsManager.Report("NoSpeedWobbles", true); }
+            catch (System.Exception ex) { MelonLogger.Error("NoSpeedWobbles patch failed: " + ex.Message); DiagnosticsManager.Report("NoSpeedWobbles", false, ex.Message); }
+            try { WheelieAngleLimit.ApplyPatch(harmony); DiagnosticsManager.Report("WheelieAngleLimit", true); }
+            catch (System.Exception ex) { MelonLogger.Error("WheelieAngleLimit patch failed: " + ex.Message); DiagnosticsManager.Report("WheelieAngleLimit", false, ex.Message); }
+            try { MapChanger.ApplyPatch(harmony); DiagnosticsManager.Report("MapChanger", true); }
+            catch (System.Exception ex) { MelonLogger.Warning("MapChanger.ApplyPatch failed: " + ex.Message); DiagnosticsManager.Report("MapChanger", false, ex.Message); }
             try { OutfitPresets.Init(); }
             catch (System.Exception ex) { MelonLogger.Error("OutfitPresets.Init failed: " + ex.Message); }
             try { ModChat.Init(); }
@@ -90,7 +94,6 @@ namespace DescendersModMenu
             DiagnosticsManager.Report("TimeOfDay", true);
             DiagnosticsManager.Report("GameModifiers", true);
             DiagnosticsManager.Report("TopSpeed", true);
-            DiagnosticsManager.Report("CutBrakes", true);
             DiagnosticsManager.Report("TeleportToCheckpoint", true);
             DiagnosticsManager.Report("Suspension", true);
             DiagnosticsManager.Report("Trees & Foliage", true);
@@ -108,13 +111,13 @@ namespace DescendersModMenu
             DiagnosticsManager.Report("Wheel Size", true);
             DiagnosticsManager.Report("Fog Remover", true);
             DiagnosticsManager.Report("SessionTrackers", true);
-            DiagnosticsManager.Report("AutoBalance", true);
             DiagnosticsManager.Report("WideTyres", true);
-            DiagnosticsManager.Report("IceMode", true);
-            DiagnosticsManager.Report("SpeedrunTimer", true);
+            DiagnosticsManager.Report("StickyTyres", true);
+            DiagnosticsManager.Report("FlyMode", true);
             DiagnosticsManager.Report("MirrorMode", true);
+            DiagnosticsManager.Report("SpeedrunTimer", true);
             DiagnosticsManager.Report("SlowMoOnBail", true);
-
+            DiagnosticsManager.Report("AirControl", true);
             DiagnosticsManager.Report("ModDetection", true);
             TopSpeed.Load();
             TopSpeed.StartTracking();
@@ -163,6 +166,9 @@ namespace DescendersModMenu
             SessionTrackers.Reset();
             ExplodingProps.Reset();
             StickyTyres.Reset();
+            WheelieAngleLimit.Reset();
+            AirControl.Reset();
+            ScoreManager.ResetMultiplier();
         }
 
         public override void OnUpdate()
@@ -262,6 +268,8 @@ namespace DescendersModMenu
             catch { }
             try { SlowMoOnBail.Tick(); }
             catch { }
+            try { ScoreManager.Tick(); }
+            catch { }
             try { ModDetection.TagLocalPlayer(); }
             catch { }
 
@@ -274,6 +282,8 @@ namespace DescendersModMenu
             try { AvalancheMode.FixedTick(); }
             catch { }
             try { StickyTyres.FixedTick(); }
+            catch { }
+            try { AirControl.FixedTick(); }
             catch { }
         }
 

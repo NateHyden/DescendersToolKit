@@ -52,6 +52,113 @@ namespace DescendersModMenu.Mods
         public static int CurrentPreset { get; private set; } = 0;
         public static bool StormEnabled { get; private set; } = false;
 
+        // Rain intensity — scales particle emission rate on active storm EffectInstances
+        // Level 1 = 0.5x (light), Level 5 = 1x (default), Level 10 = 3x (heavy)
+        public static int RainIntensityLevel { get; private set; } = 5;
+        private static readonly float[] RainMultipliers = { 0.5f, 0.65f, 0.8f, 0.9f, 1f, 1.3f, 1.7f, 2.0f, 2.5f, 3.0f };
+
+        public static void RainIntensityIncrease()
+        {
+            if (RainIntensityLevel < 10) RainIntensityLevel++;
+            if (StormEnabled) ApplyRainIntensity();
+        }
+
+        public static void RainIntensityDecrease()
+        {
+            if (RainIntensityLevel > 1) RainIntensityLevel--;
+            if (StormEnabled) ApplyRainIntensity();
+        }
+
+        private static ParticleSystem[] _cachedRainPS = null;
+        private static float[] _defaultEmissionRates = null;
+
+        private static void ApplyRainIntensity()
+        {
+            try
+            {
+                float mult = RainMultipliers[RainIntensityLevel - 1];
+
+                // Collect particle systems from EffectInstances only
+                EffectInstance[] instances = Object.FindObjectsOfType<EffectInstance>();
+                if ((object)instances == null || instances.Length == 0)
+                { MelonLogger.Warning("[SkyColours] No EffectInstances found."); return; }
+
+                var psList = new System.Collections.Generic.List<ParticleSystem>();
+                System.Reflection.FieldInfo psField = typeof(EffectInstance).GetField(
+                    "\u007FJm\u007DD\u0060\u007B",
+                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if ((object)psField == null) { MelonLogger.Warning("[SkyColours] PS field not found."); return; }
+
+                for (int i = 0; i < instances.Length; i++)
+                {
+                    if ((object)instances[i] == null) continue;
+                    ParticleSystem[] pss = psField.GetValue(instances[i]) as ParticleSystem[];
+                    if ((object)pss == null) continue;
+                    for (int j = 0; j < pss.Length; j++)
+                        if ((object)pss[j] != null) psList.Add(pss[j]);
+                }
+
+                if (psList.Count == 0) { MelonLogger.Warning("[SkyColours] No PS in EffectInstances."); return; }
+
+                // Cache default rates on first call (only reset by storm toggle, not slider)
+                if ((object)_cachedRainPS == null)
+                {
+                    var validPS = new System.Collections.Generic.List<ParticleSystem>();
+                    var validRates = new System.Collections.Generic.List<float>();
+
+                    for (int i = 0; i < psList.Count; i++)
+                    {
+                        var em = psList[i].emission;
+                        float rot = em.rateOverTime.mode == ParticleSystemCurveMode.Constant
+                            ? em.rateOverTime.constant : em.rateOverTime.curveMultiplier;
+                        float rod = em.rateOverDistance.mode == ParticleSystemCurveMode.Constant
+                            ? em.rateOverDistance.constant : em.rateOverDistance.curveMultiplier;
+
+                        if (rot > 0f || rod > 0f)
+                        {
+                            float baseRate = rot > 0f ? rot : rod * 10f; // rOD*10 = approx equiv rOT
+                            validPS.Add(psList[i]);
+                            validRates.Add(baseRate);
+
+                            // Convert rateOverDistance emitters to rateOverTime
+                            // so emission happens regardless of transform movement
+                            if (rod > 0f && rot <= 0f)
+                            {
+                                em.rateOverDistance = 0f;
+                                em.rateOverTime = baseRate;
+                            }
+                        }
+                    }
+
+                    _cachedRainPS = validPS.ToArray();
+                    _defaultEmissionRates = validRates.ToArray();
+
+                    MelonLogger.Msg("[SkyColours] Storm PS cached: " + _cachedRainPS.Length
+                        + " active emitters converted to rateOverTime. Base rate="
+                        + (_defaultEmissionRates.Length > 0 ? _defaultEmissionRates[0].ToString("F1") : "none"));
+                }
+
+                if (_cachedRainPS.Length == 0)
+                { MelonLogger.Warning("[SkyColours] No active emitters found."); return; }
+
+                // Apply multiplier via rateOverTime
+                int applied = 0;
+                for (int i = 0; i < _cachedRainPS.Length; i++)
+                {
+                    if ((object)_cachedRainPS[i] == null) continue;
+                    try
+                    {
+                        var em = _cachedRainPS[i].emission;
+                        em.rateOverTime = _defaultEmissionRates[i] * mult;
+                        applied++;
+                    }
+                    catch { }
+                }
+                MelonLogger.Msg("[SkyColours] Rain intensity x" + mult.ToString("F2") + " applied to " + applied + " systems.");
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[SkyColours] ApplyRainIntensity: " + ex.Message); }
+        }
+
         private static int _idSunSky = -1;
         private static int _idMoonSky = -1;
         private static int _idFog = -1;
@@ -93,6 +200,21 @@ namespace DescendersModMenu.Mods
                     BindingFlags.Public | BindingFlags.Static);
                 harmony.Patch(lateUpdate, postfix: new HarmonyMethod(postfix));
                 MelonLogger.Msg("[SkyColours] Patched TOD_Sky.LateUpdate.");
+
+                // Patch TLJ\u0081Hrt — fires after game spawns fresh LoopingParticle instances
+                // We apply intensity immediately to the brand-new PS before anything else runs
+                MethodInfo tljMethod = typeof(EffectList).GetMethod("TLJ\u0081Hrt",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+                if ((object)tljMethod != null)
+                {
+                    MethodInfo tljPostfix = typeof(SkyColours_TLJPatch).GetMethod("Postfix",
+                        BindingFlags.Public | BindingFlags.Static);
+                    harmony.Patch(tljMethod, postfix: new HarmonyMethod(tljPostfix));
+                    MelonLogger.Msg("[SkyColours] Patched EffectList.TLJ (spawn hook).");
+                }
+                else
+                    MelonLogger.Warning("[SkyColours] TLJ method not found — intensity patch skipped.");
+
                 DiagnosticsManager.Report("SkyColours", true);
             }
             catch (System.Exception ex)
@@ -253,6 +375,12 @@ namespace DescendersModMenu.Mods
                     + " | world=" + ceWorld + " mod=" + targetModifier
                     + " | lists=" + allEffectLists.Length
                     + " | spawnMethod=" + ((object)spawnEffects != null));
+
+                if (StormEnabled)
+                {
+                    _cachedRainPS = null; // force recache since particles just respawned
+                    ApplyRainIntensity();
+                }
             }
             catch (System.Exception ex)
             {
@@ -324,6 +452,24 @@ namespace DescendersModMenu.Mods
                     }
                     catch { }
                 }
+
+                // Re-assert emission enabled + intensity every frame
+                // The game's UpdateEnvironmentStates resets emission.enabled constantly
+                if ((object)_cachedRainPS != null && _cachedRainPS.Length > 0)
+                {
+                    float mult = RainMultipliers[RainIntensityLevel - 1];
+                    for (int i = 0; i < _cachedRainPS.Length; i++)
+                    {
+                        if ((object)_cachedRainPS[i] == null) continue;
+                        try
+                        {
+                            var em = _cachedRainPS[i].emission;
+                            em.enabled = true;
+                            em.rateOverTime = _defaultEmissionRates[i] * mult;
+                        }
+                        catch { }
+                    }
+                }
             }
             catch { }
         }
@@ -334,11 +480,82 @@ namespace DescendersModMenu.Mods
             _modifierStored = false;
             _originalModifier = VisualModifier.None;
             CurrentPreset = 0;
+            RainIntensityLevel = 5;
+            _cachedRainPS = null;
+            _defaultEmissionRates = null;
             _skyComp = null;
             _cycleField = null;
             _hourField = null;
             _idsLoaded = false;
             _cachedEffectLists = null;
+        }
+
+        // Called by TLJ patch immediately after fresh EffectInstances are spawned
+        public static void ApplyIntensityToEffectList(EffectList effectList)
+        {
+            if (!StormEnabled) return;
+            try
+            {
+                float mult = RainMultipliers[RainIntensityLevel - 1];
+                if (System.Math.Abs(mult - 1f) < 0.001f) return; // default — no change needed
+
+                // Read ltpCVSt — the list of active particle EffectInstances just populated
+                System.Reflection.FieldInfo ltpField = typeof(EffectList).GetField("ltpCVSt",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+                if ((object)ltpField == null) return;
+
+                System.Collections.Generic.List<EffectInstance> instances =
+                    ltpField.GetValue(effectList) as System.Collections.Generic.List<EffectInstance>;
+                if ((object)instances == null || instances.Count == 0) return;
+
+                System.Reflection.FieldInfo psField = typeof(EffectInstance).GetField(
+                    "\u007FJm\u007DD\u0060\u007B",
+                    BindingFlags.Public | BindingFlags.Instance);
+                if ((object)psField == null) return;
+
+                for (int i = 0; i < instances.Count; i++)
+                {
+                    if ((object)instances[i] == null) continue;
+                    ParticleSystem[] pss = psField.GetValue(instances[i]) as ParticleSystem[];
+                    if ((object)pss == null) continue;
+                    for (int j = 0; j < pss.Length; j++)
+                    {
+                        if ((object)pss[j] == null) continue;
+                        try
+                        {
+                            var em = pss[j].emission;
+                            float rod = em.rateOverDistance.mode == ParticleSystemCurveMode.Constant
+                                ? em.rateOverDistance.constant : em.rateOverDistance.curveMultiplier;
+                            float rot = em.rateOverTime.mode == ParticleSystemCurveMode.Constant
+                                ? em.rateOverTime.constant : em.rateOverTime.curveMultiplier;
+
+                            if (rod > 0f)
+                            {
+                                // Convert to rateOverTime and apply intensity
+                                em.rateOverDistance = 0f;
+                                em.rateOverTime = rod * 10f * mult;
+                            }
+                            else if (rot > 0f)
+                            {
+                                em.rateOverTime = rot * mult;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Error("[SkyColours] ApplyIntensityToEffectList: " + ex.Message);
+            }
+        }
+    }
+
+    public static class SkyColours_TLJPatch
+    {
+        public static void Postfix(EffectList __instance)
+        {
+            SkyColours.ApplyIntensityToEffectList(__instance);
         }
     }
 

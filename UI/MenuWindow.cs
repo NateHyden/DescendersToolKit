@@ -15,6 +15,7 @@ namespace DescendersModMenu.UI
         private static Image accelBar, msBar, landBar, fovBar;
         private static Image bailTrack; private static RectTransform bailKnob;
         private static Text slowVal, srtVal, nswVal, smobVal;
+        private static Text slowSpeedVal; private static Image slowSpeedBar;
         private static Image slowTrack; private static RectTransform slowKnob;
         private static Image srtTrack; private static RectTransform srtKnob;
         private static Image nswTrack; private static RectTransform nswKnob;
@@ -29,7 +30,7 @@ namespace DescendersModMenu.UI
         // Sidebar nav — maps nav index to page number
         // Groups: BIKE(Stats,Move,Bike) | WORLD(World,Silly) | TOOLS(ESP,Score,Unlock) | SYSTEM(Info)
         private static readonly int[] PageOrder = { 1, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
-        private static readonly string[] NavLabels = { "Stats", "Move", "Bike", "Graphics", "World", "Silly", "Outfit", "Chat", "Avalanche", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info" };
+        private static readonly string[] NavLabels = { "General", "Move", "Bike", "Graphics", "World", "Silly", "Outfit", "Chat", "Avalanche", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info" };
         private static readonly string[] GroupLabels = { "BIKE", null, null, "WORLD", null, "TOOLS", null, null, null, null, null, "SYSTEM" };
 
         private static Image[] _navBars = new Image[15];
@@ -133,7 +134,7 @@ namespace DescendersModMenu.UI
                 vbBdr.GetComponent<Image>().raycastTarget = false;
                 UIHelpers.Fill(UIHelpers.RT(vbBdr));
                 vbBdr.AddComponent<LayoutElement>().ignoreLayout = true;
-                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.0.0", 10,
+                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.1.0", 10,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                 UIHelpers.Fill(UIHelpers.RT(verTxt.gameObject));
 
@@ -366,13 +367,11 @@ namespace DescendersModMenu.UI
             autoBalVal = UIHelpers.Txt("ABV", abTogRow.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
             autoBalVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
             UIHelpers.Toggle(abTogRow.transform, "ABT", () => { AutoBalance.Toggle(); RefreshAll(); }, out autoBalTrack, out autoBalKnob);
-
-            var abStrRow = UIHelpers.StatRow("  Strength", pg);
-            autoBalBar = UIHelpers.MakeBar("ABB", abStrRow.transform, (AutoBalance.StrengthLevel - 1) / 9f);
-            autoBalStrVal = UIHelpers.Txt("ABS", abStrRow.transform, AutoBalance.StrengthLevel.ToString(), 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
+            autoBalBar = UIHelpers.MakeBar("ABB", abTogRow.transform, (AutoBalance.StrengthLevel - 1) / 9f);
+            autoBalStrVal = UIHelpers.Txt("ABS", abTogRow.transform, AutoBalance.StrengthLevel.ToString(), 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
             autoBalStrVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
-            UIHelpers.SmallBtn(abStrRow.transform, "-", () => { AutoBalance.StrengthDecrease(); RefreshAll(); });
-            UIHelpers.SmallBtn(abStrRow.transform, "+", () => { AutoBalance.StrengthIncrease(); RefreshAll(); });
+            UIHelpers.SmallBtn(abTogRow.transform, "-", () => { AutoBalance.StrengthDecrease(); RefreshAll(); });
+            UIHelpers.SmallBtn(abTogRow.transform, "+", () => { AutoBalance.StrengthIncrease(); RefreshAll(); });
 
             var br = UIHelpers.StatRow("Bike", pg);
             UIHelpers.SmallBtn(br.transform, "\u25C0", () => { BikeSwitcher.PreviousBike(); RefreshAll(); });
@@ -391,6 +390,12 @@ namespace DescendersModMenu.UI
             slowVal = UIHelpers.Txt("SMV", smr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
             slowVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
             UIHelpers.Toggle(smr.transform, "SMT", () => { SlowMotion.Toggle(); RefreshAll(); }, out slowTrack, out slowKnob);
+            slowSpeedBar = UIHelpers.MakeBar("SmSB", smr.transform, (SlowMotion.Level - 1) / 8f);
+            slowSpeedVal = UIHelpers.Txt("SmSV", smr.transform, SlowMotion.DisplayValue, 11,
+                FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
+            slowSpeedVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+            UIHelpers.SmallBtn(smr.transform, "-", () => { SlowMotion.Decrease(); RefreshAll(); });
+            UIHelpers.SmallBtn(smr.transform, "+", () => { SlowMotion.Increase(); RefreshAll(); });
             var smHint = UIHelpers.Txt("SMH", smr.transform, "F2", 10, FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
             smHint.gameObject.AddComponent<LayoutElement>().preferredWidth = 22;
 
@@ -398,20 +403,6 @@ namespace DescendersModMenu.UI
             smobVal = UIHelpers.Txt("SbV", smobr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
             smobVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
             UIHelpers.Toggle(smobr.transform, "SbT", () => { SlowMoOnBail.Toggle(); RefreshAll(); }, out smobTrack, out smobKnob);
-
-            var tsr = UIHelpers.StatRow("Top Speed", pg);
-            topSpeedVal = UIHelpers.Txt("TSV", tsr.transform, TopSpeed.DisplayValue, 12,
-                FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var tsle = topSpeedVal.gameObject.AddComponent<LayoutElement>();
-            tsle.flexibleWidth = 1; tsle.preferredHeight = 20; tsle.flexibleHeight = 0;
-            UIHelpers.ActionBtn(tsr.transform, "Reset", () => { TopSpeed.Reset(); RefreshAll(); }, 52);
-
-            var srtr = UIHelpers.StatRow("Speedrun Timer", pg);
-            srtVal = UIHelpers.Txt("SrV", srtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-            srtVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-            UIHelpers.Toggle(srtr.transform, "SrT", () => { SpeedrunTimer.Toggle(); RefreshAll(); }, out srtTrack, out srtKnob);
-            UIHelpers.ActionBtn(srtr.transform, "Reset", () => { SpeedrunTimer.ResetTime(); }, 52);
-            UIHelpers.InfoBox(pg, "Requires Speedrun Timer ON in Settings > Gameplay.");
 
             var nswr = UIHelpers.StatRow("No Speed Wobbles", pg);
             nswVal = UIHelpers.Txt("NwV", nswr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
@@ -426,6 +417,20 @@ namespace DescendersModMenu.UI
                 FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
             var stle = sessionTimeVal.gameObject.AddComponent<LayoutElement>();
             stle.flexibleWidth = 1; stle.preferredHeight = 20; stle.flexibleHeight = 0;
+
+            var tsr = UIHelpers.StatRow("Top Speed", pg);
+            topSpeedVal = UIHelpers.Txt("TSV", tsr.transform, TopSpeed.DisplayValue, 12,
+                FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
+            var tsle = topSpeedVal.gameObject.AddComponent<LayoutElement>();
+            tsle.flexibleWidth = 1; tsle.preferredHeight = 20; tsle.flexibleHeight = 0;
+            UIHelpers.ActionBtn(tsr.transform, "Reset", () => { TopSpeed.Reset(); RefreshAll(); }, 52);
+
+            var srtr = UIHelpers.StatRow("Speedrun Timer", pg);
+            srtVal = UIHelpers.Txt("SrV", srtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+            srtVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+            UIHelpers.Toggle(srtr.transform, "SrT", () => { SpeedrunTimer.Toggle(); RefreshAll(); }, out srtTrack, out srtKnob);
+            UIHelpers.ActionBtn(srtr.transform, "Reset", () => { SpeedrunTimer.ResetTime(); }, 52);
+            UIHelpers.InfoBox(pg, "Requires Speedrun Timer ON in Settings > Gameplay.");
 
             var bcr = UIHelpers.StatRow("Bails", pg);
             bailCountVal = UIHelpers.Txt("BcV", bcr.transform, SessionTrackers.BailCountDisplay, 12,
@@ -593,6 +598,8 @@ namespace DescendersModMenu.UI
             bool slow = SlowMotion.Enabled;
             if (slowVal) { slowVal.text = slow ? "ON" : "OFF"; slowVal.color = slow ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(slowTrack, slowKnob, slow);
+            if (slowSpeedVal) slowSpeedVal.text = SlowMotion.DisplayValue;
+            UIHelpers.SetBar(slowSpeedBar, (SlowMotion.Level - 1) / 8f);
         }
 
         // Lightweight per-frame update for live tracker values

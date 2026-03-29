@@ -44,7 +44,6 @@ namespace DescendersModMenu.Mods
     public static class CutBrakes_Patch
     {
         // Cached field: NYsPlot on Vehicle is the brake input
-        private static FieldInfo _nysProp = null;
         private static FieldInfo _vehicleField = null;
 
         public static void Postfix(VehicleController __instance)

@@ -44,6 +44,7 @@ namespace DescendersModMenu.BikeStats
 
         // ── Toggles ────────────────────────────────────────────────────
         public bool SlowMotionEnabled = false;
+        public int SlowMotionLevel = 5;
         public bool CutBrakesEnabled = false;
         public bool NoSpeedCapEnabled = false;
         public bool ReverseSteerEnabled = false;
@@ -55,6 +56,12 @@ namespace DescendersModMenu.BikeStats
         public bool SpeedrunTimerEnabled = false;
         public bool SlowMoOnBailEnabled = false;
         public bool GhostReplayEnabled = false;
+
+        // ── New mods ───────────────────────────────────────────────────
+        public bool WheelieAngleLimitEnabled = false;
+        public int WheelieAngleLimitLevel = 5;
+        public bool AirControlEnabled = false;
+        public int AirControlLevel = 5;
 
         // ── Floats ─────────────────────────────────────────────────────
         public float FlyMoveSpeed = 30f;

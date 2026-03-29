@@ -18,7 +18,6 @@ namespace DescendersModMenu.Mods
         private static FieldInfo _propsField;  // ttXJk{h
         private static bool _resolved;
         private static bool _tagged;
-        private static bool _typesFound;
 
         // Obfuscated names — exact unicode from decompiler
         private static readonly string PhotonNetName = "upVWa\u0084E";
