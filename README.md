@@ -82,6 +82,20 @@ System info, mod status with live OK/FAILED indicators, hotkey reference
 ---
 
 ## Changelog
+### v3.2.0
+v3.1.1 — Bug Fixes
+
+FOV now has an on/off toggle and correctly restores default FOV when turned off
+FOV now works across all camera views, not just the default
+Acceleration now has an on/off toggle instead of applying permanently
+Max Speed now has an on/off toggle instead of applying permanently
+Landing Impact completely reworked — now actually reduces bails on hard landings
+Landing Impact now has an on/off toggle
+Rotation Speed, Hop Force, Wheelie Force and Lean Strength all have individual on/off toggles
+Wheel Size now has an on/off toggle — preset buttons no longer auto-enable it
+Ice Grip now has a description label
+Mod Chat header now shows an Experimental badge
+
 
 ### v3.1.0
 - **General tab** renamed from Stats
