@@ -1,112 +1,143 @@
 using System.Reflection;
-using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
 
 namespace DescendersModMenu.Mods
 {
-    [HarmonyPatch(typeof(PlayerInfoImpact), "OnImpact", new[] { typeof(float) })]
+    // Landing Impact — raises the minimum impact speed required to trigger a bail.
+    //
+    // Root cause of why the old approach did nothing:
+    //   PlayerInfoImpact.OnImpact  = health point loss (roguelite lives system).
+    //   Cyclist.aQkwp...()         = actual physical bail trigger.
+    //   These are two separate systems. We had patched the wrong one.
+    //
+    // The bail trigger in Cyclist checks:
+    //   if (impactForce > Jk\u0080l\u007Fg\u007D && speed * 2f > cxW\u005Em\u005Bm) Bail();
+    //   cxW\u005Em\u005Bm = 15f (default min bail speed)
+    //
+    // Raising cxW\u005Em\u005Bm means you need a much harder hit to fall off.
+    // At level 10 the threshold is so high that normal riding never triggers it.
+
     public static class LandingImpact
     {
-        private static float _originalImpactScale = -1f;
-        private static FieldInfo _impactScaleField = null;
+        public static bool Enabled { get; private set; } = false;
+        public static int Level { get; private set; } = 5;
 
-        public static int Level { get; private set; } = 1;
-
-        public static void Increase()
+        // Level 1 = default (15f), Level 10 = 200f — effectively no bail
+        private static float GetThreshold()
         {
-            if (Level < 10)
-            {
-                Level++;
-                MelonLogger.Msg("[LandingImpact] Level -> " + Level);
-                Apply();
-            }
+            return Mathf.Lerp(15f, 200f, (Level - 1) / 9f);
+        }
+        public static string DisplayValue
+        {
+            get { return ((int)GetThreshold()).ToString(); }
         }
 
-        public static void Decrease()
+        private static readonly float DefaultThreshold = 15f;
+        private static FieldInfo _threshField = null;
+        private static Cyclist _cachedCyclist = null;
+
+        public static void Toggle()
         {
-            if (Level > 1)
-            {
-                Level--;
-                MelonLogger.Msg("[LandingImpact] Level -> " + Level);
-                Apply();
-            }
+            Enabled = !Enabled;
+            if (Enabled) Apply(); else Restore();
+            MelonLogger.Msg("[LandingImpact] -> " + (Enabled ? "ON (threshold " + GetThreshold() + ")" : "OFF"));
         }
+
+        public static void Increase() { if (Level < 10) Level++; if (Enabled) Apply(); }
+        public static void Decrease() { if (Level > 1) Level--; if (Enabled) Apply(); }
 
         public static void SetLevel(int level)
         {
             if (level < 1) level = 1;
             if (level > 10) level = 10;
             Level = level;
-            MelonLogger.Msg("[LandingImpact] SetLevel -> " + Level);
-            Apply();
-        }
-
-        private static FieldInfo FindImpactScaleField(Vehicle vehicle)
-        {
-            if ((object)_impactScaleField != null)
-                return _impactScaleField;
-
-            FieldInfo[] fields = vehicle.GetType().GetFields(
-                BindingFlags.Public | BindingFlags.Instance
-            );
-
-            for (int i = 0; i < fields.Length; i++)
-            {
-                FieldInfo f = fields[i];
-
-                // Use string comparison on type name to avoid Type.op_Inequality
-                if (!string.Equals(f.FieldType.Name, "Single", System.StringComparison.Ordinal))
-                    continue;
-
-                object val = f.GetValue(vehicle);
-                if ((object)val == null) continue;
-
-                float fval = (float)val;
-
-                if (Mathf.Approximately(fval, 500f))
-                {
-                    MelonLogger.Msg("[LandingImpact] Found impact scale field: " + f.Name);
-                    _impactScaleField = f;
-                    return f;
-                }
-            }
-
-            MelonLogger.Warning("[LandingImpact] Could not find impact scale field (public float == 500).");
-            return null;
+            if (Enabled) Apply();
         }
 
         public static void Apply()
         {
+            if (!Enabled) return;
             try
             {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) { MelonLogger.Warning("[LandingImpact] Player_Human not found."); return; }
-                Vehicle vehicle = player.GetComponent<Vehicle>();
-                if ((object)vehicle == null) { MelonLogger.Warning("[LandingImpact] Vehicle not found."); return; }
-                FieldInfo field = FindImpactScaleField(vehicle);
-                if ((object)field == null) return;
-                if (_originalImpactScale < 0f)
-                {
-                    _originalImpactScale = (float)field.GetValue(vehicle);
-                    MelonLogger.Msg("[LandingImpact] Captured default: " + _originalImpactScale);
-                }
-                float newValue = _originalImpactScale / Level;
-                field.SetValue(vehicle, newValue);
-                MelonLogger.Msg("[LandingImpact] Impact scale " + _originalImpactScale + " -> " + newValue + " (Level " + Level + ")");
+                Cyclist c = GetCyclist();
+                if ((object)c == null) return;
+                FieldInfo f = GetField(c);
+                if ((object)f == null) return;
+                f.SetValue(c, GetThreshold());
+                MelonLogger.Msg("[LandingImpact] Bail threshold -> " + GetThreshold());
             }
-            catch (System.Exception ex) { MelonLogger.Error("[LandingImpact] Apply: " + ex.Message); }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Error("[LandingImpact] Apply: " + ex.Message);
+            }
         }
 
-        public static void Prefix(PlayerInfoImpact __instance, ref float __0)
+        private static void Restore()
         {
-            if ((object)__instance == null || !__instance.IsHumanControlled())
-                return;
+            try
+            {
+                Cyclist c = GetCyclist();
+                if ((object)c == null || (object)_threshField == null) return;
+                _threshField.SetValue(c, DefaultThreshold);
+                MelonLogger.Msg("[LandingImpact] Restored default threshold: " + DefaultThreshold);
+            }
+            catch { }
+        }
 
-            if (Level <= 1)
-                return;
+        public static void Reset()
+        {
+            if (Enabled) Restore();
+            Enabled = false;
+            _cachedCyclist = null;
+            _threshField = null;
+        }
 
-            __0 = __0 / Level;
+        private static Cyclist GetCyclist()
+        {
+            if ((object)_cachedCyclist != null) return _cachedCyclist;
+            GameObject player = GameObject.Find("Player_Human");
+            if ((object)player == null) return null;
+            _cachedCyclist = player.GetComponent<Cyclist>();
+            return _cachedCyclist;
+        }
+
+        private static FieldInfo GetField(Cyclist c)
+        {
+            if ((object)_threshField != null) return _threshField;
+
+            // Strategy 1: known obfuscated name — confirmed from assembly decompile
+            // cxW\u005Em\u005Bm = public float, default 15f, under [Header("Bailing")]
+            _threshField = typeof(Cyclist).GetField("cxW\u005Em\u005Bm",
+                BindingFlags.Public | BindingFlags.Instance);
+            if ((object)_threshField != null)
+            {
+                MelonLogger.Msg("[LandingImpact] Found bail threshold field by name.");
+                return _threshField;
+            }
+
+            // Strategy 2: scan for a public float whose current value is ~15f
+            // (the default — only works reliably on first call before any modification)
+            FieldInfo[] fields = typeof(Cyclist).GetFields(
+                BindingFlags.Public | BindingFlags.Instance);
+            for (int i = 0; i < fields.Length; i++)
+            {
+                if (!string.Equals(fields[i].FieldType.Name, "Single",
+                    System.StringComparison.Ordinal)) continue;
+                object val = fields[i].GetValue(c);
+                if ((object)val == null) continue;
+                float f = (float)val;
+                if (f >= 14f && f <= 16f)
+                {
+                    _threshField = fields[i];
+                    MelonLogger.Msg("[LandingImpact] Found bail threshold via scan: "
+                        + fields[i].Name + " = " + f);
+                    return _threshField;
+                }
+            }
+
+            MelonLogger.Warning("[LandingImpact] Could not find bail threshold field.");
+            return null;
         }
     }
 }
