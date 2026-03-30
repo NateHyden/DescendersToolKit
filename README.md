@@ -1,6 +1,4 @@
-# Descenders Mod Menu
-
-A MelonLoader mod menu for Descenders with 15 tabs covering bike physics, world controls, session tools, score manipulation and fun extras. Toggle with **F6**.
+“Descenders ToolKit — Sandbox & Testing Framework for Bike Physics, World Simulation, and Gameplay Experimentation”
 
 ---
 
