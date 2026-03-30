@@ -137,3 +137,8 @@ System info, mod status with live OK/FAILED indicators, hotkey reference
 ---
 *https://www.nexusmods.com/descenders/mods/7*
 *Built by NateHyden — [Discord](https://discord.gg/rHvCrBdqaR)*
+
+## License
+This project is source-available for learning and contribution purposes.
+You may not redistribute modified versions or claim this project as your own.
+See LICENSE file for full terms.
