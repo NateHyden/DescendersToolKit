@@ -172,8 +172,8 @@ namespace DescendersModMenu.UI
 
             UIHelpers.Divider(vlg.transform);
             UIHelpers.SectionHeader("TOOLKIT", vlg.transform);
-            MakeInfoRow2("Version", "3.2.0", vlg.transform, UIHelpers.Accent);
-            MakeInfoRow2("Output DLL", "DescendersModMenu.dll", vlg.transform);
+            MakeInfoRow2("Version", "3.5.0", vlg.transform, UIHelpers.Accent);
+            MakeInfoRow2("Output DLL", "DescendersToolKit.dll", vlg.transform);
             MakeInfoRow2("Author", "NateHyden", vlg.transform);
         }
 
@@ -279,7 +279,7 @@ namespace DescendersModMenu.UI
             heroVlg.childAlignment = TextAnchor.UpperLeft;
             heroVlg.childForceExpandWidth = true; heroVlg.childForceExpandHeight = false;
 
-            var heroTitle = UIHelpers.Txt("HT", hero.transform, "DESCENDERS MOD MENU", 15,
+            var heroTitle = UIHelpers.Txt("HT", hero.transform, "DESCENDERS TOOLKIT", 15,
                 FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
             heroTitle.gameObject.AddComponent<LayoutElement>().preferredHeight = 22;
 

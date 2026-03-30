@@ -41,6 +41,12 @@ namespace DescendersModMenu.UI
         private static Image slowSpeedBar, slowTrack;
         private static RectTransform slowKnob;
         // Slow Mo on Bail / No Speed Wobbles / Speedrun Timer
+        // Quick Brake UI fields
+        private static Text _brakeTogVal = null;
+        private static Image _brakeTrack = null;
+        private static RectTransform _brakeKnob = null;
+        private static Image _brakeLevelBar = null;
+        private static Text _brakeLevelVal = null;
         private static Text smobVal, nswVal, srtVal;
         private static Image smobTrack, nswTrack, srtTrack;
         private static RectTransform smobKnob, nswKnob, srtKnob;
@@ -111,43 +117,44 @@ namespace DescendersModMenu.UI
                 ht2RT.pivot = new Vector2(0, 1); ht2RT.sizeDelta = new Vector2(0, 2); ht2RT.anchoredPosition = Vector2.zero;
                 hTopBar2.AddComponent<LayoutElement>().ignoreLayout = true;
 
-                var tkLbl = UIHelpers.Txt("TK", hdr.transform, "TOOLKIT", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextDim);
-                var tkrt = UIHelpers.RT(tkLbl.gameObject);
-                tkrt.anchorMin = new Vector2(0f, 0f); tkrt.anchorMax = new Vector2(0f, 1f);
-                tkrt.pivot = new Vector2(0f, 0.5f);
-                tkrt.offsetMin = new Vector2(0f, 0f); tkrt.offsetMax = new Vector2(UIHelpers.SidebarW, 0f);
-
                 var title = UIHelpers.Txt("T", hdr.transform, "DESCENDERS", 18, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.TextLight);
                 var trt = UIHelpers.RT(title.gameObject);
                 trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
-                trt.offsetMin = new Vector2(UIHelpers.SidebarW + 16, 0); trt.offsetMax = new Vector2(-220, 0);
+                trt.offsetMin = new Vector2(16, 0); trt.offsetMax = new Vector2(-220, 0);
 
-                var sub = UIHelpers.Txt("Sub", hdr.transform, "MOD MENU", 18, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
+                var sub = UIHelpers.Txt("Sub", hdr.transform, "TOOLKIT", 18, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
                 var subrt = UIHelpers.RT(sub.gameObject);
                 subrt.anchorMin = Vector2.zero; subrt.anchorMax = Vector2.one;
-                subrt.offsetMin = new Vector2(UIHelpers.SidebarW + 170, 0); subrt.offsetMax = new Vector2(-80, 0);
+                subrt.offsetMin = new Vector2(155, 0); subrt.offsetMax = new Vector2(-80, 0);
 
                 var slash = UIHelpers.Panel("HSlash", hdr.transform, UIHelpers.Accent);
                 var slrt = UIHelpers.RT(slash);
                 slrt.anchorMin = new Vector2(0, 0.5f); slrt.anchorMax = new Vector2(0, 0.5f);
                 slrt.pivot = new Vector2(0, 0.5f); slrt.sizeDelta = new Vector2(2, 28);
-                slrt.anchoredPosition = new Vector2(UIHelpers.SidebarW + 310, 0);
+                slrt.anchoredPosition = new Vector2(275, 0);
 
                 var verBadge = UIHelpers.Panel("VBadge", hdr.transform, UIHelpers.AccentDim, UIHelpers.BtnSp);
                 var vbrt = UIHelpers.RT(verBadge);
                 vbrt.anchorMin = new Vector2(0, 0.5f); vbrt.anchorMax = new Vector2(0, 0.5f);
                 vbrt.pivot = new Vector2(0, 0.5f); vbrt.sizeDelta = new Vector2(58f, 20f);
-                vbrt.anchoredPosition = new Vector2(UIHelpers.SidebarW + 322, 0);
+                vbrt.anchoredPosition = new Vector2(288, 0);
                 var vbBdr = UIHelpers.Panel("VBBdr", verBadge.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
                 vbBdr.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(vbBdr));
                 vbBdr.AddComponent<LayoutElement>().ignoreLayout = true;
-                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.2.0", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.5.0", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                 UIHelpers.Fill(UIHelpers.RT(verTxt.gameObject));
 
+                // ── Header save/load/reset buttons ─────────────────
+                // Sit in the gap between version badge and right edge
                 var byTxt = UIHelpers.Txt("By", hdr.transform, "Created by NateHyden", 9, FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
                 var byrt = UIHelpers.RT(byTxt.gameObject);
-                byrt.anchorMin = Vector2.zero; byrt.anchorMax = Vector2.one;
-                byrt.offsetMin = Vector2.zero; byrt.offsetMax = new Vector2(-14, 0);
+                byrt.anchorMin = new Vector2(1, 0f); byrt.anchorMax = new Vector2(1, 1f);
+                byrt.pivot = new Vector2(1, 0.5f);
+                byrt.offsetMin = new Vector2(-160, 0); byrt.offsetMax = new Vector2(-14, 0);
+                byrt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+                HeaderBtn(hdr.transform, "SAVE", 360, () => StatsManager.SaveStats());
+                HeaderBtn(hdr.transform, "LOAD", 420, () => { StatsManager.LoadStats(); RefreshAll(); });
+                HeaderBtn(hdr.transform, "RESET", 480, () => { StatsManager.ResetStats(); RefreshAll(); });
 
                 // Body
                 var body = UIHelpers.Obj("Body", win.transform);
@@ -398,6 +405,51 @@ namespace DescendersModMenu.UI
             nswVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
             UIHelpers.Toggle(nswr.transform, "NwT", () => { GameModifierMods.NoSpeedWobblesToggle(); RefreshAll(); }, out nswTrack, out nswKnob);
 
+            // ── QUICK ACTIONS ─────────────────────────────────────────
+            UIHelpers.Divider(pg);
+            UIHelpers.SectionHeader("QUICK ACTIONS", pg);
+            // ── Brake toggle row ─────────────────────────────────────
+            var brakeRow = UIHelpers.StatRow("Quick Brake", pg);
+            _brakeTogVal = UIHelpers.Txt("BkTV", brakeRow.transform, "OFF", 11,
+                FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+            _brakeTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+            UIHelpers.Toggle(brakeRow.transform, "BkT", () =>
+            {
+                QuickBrake.Toggle();
+                RefreshAll();
+            }, out _brakeTrack, out _brakeKnob);
+            _brakeLevelBar = UIHelpers.MakeBar("BkB", brakeRow.transform, (QuickBrake.Level - 1) / 9f);
+            _brakeLevelVal = UIHelpers.Txt("BkLV", brakeRow.transform,
+                QuickBrake.Level == 10 ? "MAX" : QuickBrake.Level.ToString(), 11,
+                FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
+            _brakeLevelVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+            UIHelpers.SmallBtn(brakeRow.transform, "-", () =>
+            { QuickBrake.Decrease(); RefreshAll(); });
+            UIHelpers.SmallBtn(brakeRow.transform, "+", () =>
+            { QuickBrake.Increase(); RefreshAll(); });
+            UIHelpers.InfoBox(pg, "Level 1-9: fast drag deceleration. Level 10 (MAX): truly instant stop.");
+            // ── Launch button row ─────────────────────────────────────
+            var qar = UIHelpers.StatRow("Actions", pg);
+            // Super Launch — fires player forward+up, does NOT touch any mod state
+            UIHelpers.ActionBtn(qar.transform, "Launch", () =>
+            {
+                try
+                {
+                    GameObject player = GameObject.Find("Player_Human");
+                    if ((object)player == null) return;
+                    Vehicle v = player.GetComponent<Vehicle>();
+                    if ((object)v == null) return;
+                    System.Reflection.MethodInfo setVel = typeof(Vehicle).GetMethod(
+                        "SetVelocity",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if ((object)setVel == null) return;
+                    Vector3 launchVec = player.transform.forward * 80f + Vector3.up * 20f;
+                    setVel.Invoke(v, new object[] { launchVec });
+                }
+                catch (System.Exception ex) { MelonLogger.Error("[SuperLaunch] " + ex.Message); }
+            }, 60);
+            UIHelpers.InfoBox(pg, "Launch: fires you forward at high speed.");
+
             UIHelpers.Divider(pg);
             UIHelpers.SectionHeader("SESSION", pg);
 
@@ -442,18 +494,30 @@ namespace DescendersModMenu.UI
             pgfle.flexibleWidth = 1; pgfle.preferredHeight = 20; pgfle.flexibleHeight = 0;
             UIHelpers.ActionBtn(pgfr.transform, "Reset", () => { SessionTrackers.ResetGForce(); RefreshAll(); }, 52);
 
-            UIHelpers.Divider(pg);
-            var botRow = UIHelpers.Obj("BotRow", pg);
-            botRow.AddComponent<LayoutElement>().preferredHeight = 40;
-            var bhlg = botRow.AddComponent<HorizontalLayoutGroup>();
-            bhlg.spacing = 6; bhlg.padding = new RectOffset(0, 0, 4, 4);
-            bhlg.childAlignment = TextAnchor.MiddleCenter;
-            bhlg.childForceExpandWidth = true; bhlg.childForceExpandHeight = true;
-            BotBtn("Save", botRow.transform, UIHelpers.NeonBlue, () => StatsManager.SaveStats());
-            BotBtn("Load", botRow.transform, UIHelpers.NeonBlue, () => { StatsManager.LoadStats(); RefreshAll(); });
-            BotBtn("Reset", botRow.transform, UIHelpers.NeonBlue, () => { StatsManager.ResetStats(); RefreshAll(); });
 
             UIHelpers.AddScrollForwarders(content.transform);
+        }
+
+        private static void HeaderBtn(Transform hdr, string lbl, float x, UnityEngine.Events.UnityAction clk)
+        {
+            var g = UIHelpers.Obj(lbl + "HB", hdr);
+            var rt = UIHelpers.RT(g);
+            rt.anchorMin = new Vector2(0, 0.5f); rt.anchorMax = new Vector2(0, 0.5f);
+            rt.pivot = new Vector2(0, 0.5f);
+            rt.sizeDelta = new Vector2(52, 22);
+            rt.anchoredPosition = new Vector2(x, 0);
+            var im = g.AddComponent<Image>(); im.sprite = UIHelpers.BtnSp;
+            im.type = Image.Type.Sliced; im.color = UIHelpers.WinOuter;
+            var btn = g.AddComponent<Button>(); btn.onClick.AddListener(clk);
+            var bc = btn.colors;
+            bc.normalColor = Color.white; bc.highlightedColor = new Color(1.1f, 1.1f, 1.1f, 1f);
+            bc.pressedColor = new Color(0.75f, 0.75f, 0.75f, 1f); bc.colorMultiplier = 1; btn.colors = bc;
+            var bdr = UIHelpers.Panel(lbl + "HBBdr", g.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
+            bdr.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(bdr));
+            bdr.AddComponent<LayoutElement>().ignoreLayout = true;
+            var t = UIHelpers.Txt(lbl + "HBT", g.transform, lbl, 9, FontStyle.Bold,
+                TextAnchor.MiddleCenter, UIHelpers.TextLight);
+            UIHelpers.Fill(UIHelpers.RT(t.gameObject));
         }
 
         private static void BotBtn(string lbl, Transform p, Color bg, UnityEngine.Events.UnityAction clk)
@@ -529,6 +593,13 @@ namespace DescendersModMenu.UI
             UIHelpers.SetToggle(landTrack, landKnob, liOn);
             if (landVal) landVal.text = LandingImpact.DisplayValue;
             UIHelpers.SetBar(landBar, (LandingImpact.Level - 1) / 9f);
+
+            // ── Quick Brake ───────────────────────────────────────────
+            bool qbOn = QuickBrake.Enabled;
+            if (_brakeTogVal) { _brakeTogVal.text = qbOn ? "ON" : "OFF"; _brakeTogVal.color = qbOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_brakeTrack, _brakeKnob, qbOn);
+            if (_brakeLevelBar) UIHelpers.SetBar(_brakeLevelBar, (QuickBrake.Level - 1) / 9f);
+            if (_brakeLevelVal) { _brakeLevelVal.text = QuickBrake.Level == 10 ? "MAX" : QuickBrake.Level.ToString(); }
 
             // ── No Bail ───────────────────────────────────────────────
             bool bail = NoBail.Enabled;

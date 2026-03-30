@@ -83,6 +83,25 @@ namespace DescendersModMenu.BikeStats
                     AirControlEnabled = AirControl.Enabled,
                     AirControlLevel = AirControl.Level,
 
+                    // General toggles
+                    AccelerationEnabled = Acceleration.Enabled,
+                    MaxSpeedEnabled = MaxSpeedMultiplier.Enabled,
+                    LandingImpactEnabled = LandingImpact.Enabled,
+                    FovEnabled = FOV.Enabled,
+                    AutoBalanceEnabled = AutoBalance.Enabled,
+                    AutoBalanceStrengthLevel = AutoBalance.StrengthLevel,
+                    NoSpeedWobblesEnabled = GameModifierMods.NoSpeedWobblesEnabled,
+
+                    // Movement toggles
+                    SpinEnabled = Movement.SpinEnabled,
+                    HopEnabled = Movement.HopEnabled,
+                    WheelieEnabled = Movement.WheelieEnabled,
+                    LeanEnabled = Movement.LeanEnabled,
+
+                    // Quick Brake
+                    QuickBrakeEnabled = QuickBrake.Enabled,
+                    QuickBrakeLevel = QuickBrake.Level,
+
                     // Floats
                     FlyMoveSpeed = FlyMode.MoveSpeed,
                     FlyClimbSpeed = FlyMode.ClimbSpeed,
@@ -173,6 +192,25 @@ namespace DescendersModMenu.BikeStats
                 if (data.WheelieAngleLimitEnabled && !WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
                 if (data.AirControlEnabled && !AirControl.Enabled) AirControl.Toggle();
 
+                // General toggles
+                if (data.AccelerationEnabled && !Acceleration.Enabled) Acceleration.Toggle();
+                if (data.MaxSpeedEnabled && !MaxSpeedMultiplier.Enabled) MaxSpeedMultiplier.Toggle();
+                if (data.LandingImpactEnabled && !LandingImpact.Enabled) LandingImpact.Toggle();
+                if (data.FovEnabled && !FOV.Enabled) FOV.Toggle();
+                AutoBalance.SetStrengthLevel(data.AutoBalanceStrengthLevel);
+                if (data.AutoBalanceEnabled && !AutoBalance.Enabled) AutoBalance.Toggle();
+                if (data.NoSpeedWobblesEnabled && !GameModifierMods.NoSpeedWobblesEnabled) GameModifierMods.NoSpeedWobblesToggle();
+
+                // Movement toggles
+                if (data.SpinEnabled && !Movement.SpinEnabled) Movement.ToggleSpin();
+                if (data.HopEnabled && !Movement.HopEnabled) Movement.ToggleHop();
+                if (data.WheelieEnabled && !Movement.WheelieEnabled) Movement.ToggleWheelie();
+                if (data.LeanEnabled && !Movement.LeanEnabled) Movement.ToggleLean();
+
+                // Quick Brake
+                QuickBrake.SetLevel(data.QuickBrakeLevel);
+                if (data.QuickBrakeEnabled && !QuickBrake.Enabled) QuickBrake.Toggle();
+
                 MelonLogger.Msg("[StatsManager] Loaded from: " + SaveFile);
             }
             catch (Exception ex)
@@ -240,6 +278,25 @@ namespace DescendersModMenu.BikeStats
                 if (SpeedrunTimer.Enabled) SpeedrunTimer.Toggle();
                 if (SlowMoOnBail.Enabled) SlowMoOnBail.Toggle();
                 if (GhostReplay.Enabled) GhostReplay.Toggle();
+
+                // General toggles
+                if (Acceleration.Enabled) Acceleration.Toggle();
+                if (MaxSpeedMultiplier.Enabled) MaxSpeedMultiplier.Toggle();
+                if (LandingImpact.Enabled) LandingImpact.Toggle();
+                if (FOV.Enabled) FOV.Toggle();
+                if (AutoBalance.Enabled) AutoBalance.Toggle();
+                AutoBalance.SetStrengthLevel(5);
+                if (GameModifierMods.NoSpeedWobblesEnabled) GameModifierMods.NoSpeedWobblesToggle();
+
+                // Movement toggles
+                if (Movement.SpinEnabled) Movement.ToggleSpin();
+                if (Movement.HopEnabled) Movement.ToggleHop();
+                if (Movement.WheelieEnabled) Movement.ToggleWheelie();
+                if (Movement.LeanEnabled) Movement.ToggleLean();
+
+                // Quick Brake
+                if (QuickBrake.Enabled) QuickBrake.Toggle();
+                QuickBrake.SetLevel(5);
 
                 MelonLogger.Msg("[StatsManager] Reset to defaults.");
             }

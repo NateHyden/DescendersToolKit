@@ -8,11 +8,11 @@ namespace DescendersModMenu
 {
     public static class BuildInfo
     {
-        public const string Name = "ModMenu";
-        public const string Description = "Modkit for Descenders";
+        public const string Name = "DescendersToolKit";
+        public const string Description = "A modding toolkit for Descenders";
         public const string Author = "NateHyden";
         public const string Company = null;
-        public const string Version = "3.2.0";
+        public const string Version = "3.5.0";
         public const string DownloadLink = null;
     }
 
@@ -49,6 +49,8 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedCap.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("NoSpeedCap", false, ex.Message); }
             try { NoSpeedCap.ApplyVCPatch(harmony); DiagnosticsManager.Report("NoSpeedCap (VC)", true); }
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedCap.ApplyVCPatch: " + ex.Message); DiagnosticsManager.Report("NoSpeedCap (VC)", false, ex.Message); }
+            try { QuickBrake.ApplyPatch(harmony); DiagnosticsManager.Report("QuickBrake", true); }
+            catch (System.Exception ex) { MelonLogger.Error("QuickBrake.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("QuickBrake", false, ex.Message); }
             try { CutBrakes.ApplyPatch(harmony); DiagnosticsManager.Report("CutBrakes", true); }
             catch (System.Exception ex) { MelonLogger.Error("CutBrakes.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("CutBrakes", false, ex.Message); }
             try { ReverseSteering.ApplyPatch(harmony); DiagnosticsManager.Report("ReverseSteering", true); }
@@ -146,6 +148,8 @@ namespace DescendersModMenu
         {
             MelonLogger.Msg("OnSceneWasUnloaded: " + buildIndex + " | " + sceneName);
             SlowMotion.Reset();
+            QuickBrake.Reset();
+            QuickBrake_Patch.ClearCache();
             CutBrakes.Reset();
             ReverseSteering.Reset();
             AutoBalance.Reset();
@@ -263,6 +267,8 @@ namespace DescendersModMenu
         {
             MenuUI.RestoreCursor();
             SlowMotion.Reset();
+            QuickBrake.Reset();
+            QuickBrake_Patch.ClearCache();
             MelonLogger.Msg("OnApplicationQuit");
         }
     }

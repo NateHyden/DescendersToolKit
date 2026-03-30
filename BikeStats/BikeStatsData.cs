@@ -5,18 +5,40 @@ namespace DescendersModMenu.BikeStats
     [Serializable]
     public class BikeStatsData
     {
-        // ── Bike / Stats (original) ────────────────────────────────────
+        // ── Bike / Stats ───────────────────────────────────────────────
         public int AccelerationLevel = 1;
+        public bool AccelerationEnabled = false;
         public int MaxSpeedLevel = 1;
+        public bool MaxSpeedEnabled = false;
         public int LandingImpactLevel = 1;
+        public bool LandingImpactEnabled = false;
         public bool NoBailEnabled = false;
         public int BikeIndex = 0;
 
+        // ── FOV ────────────────────────────────────────────────────────
+        public int FovLevel = 5;
+        public bool FovEnabled = false;
+
+        // ── Auto Balance ───────────────────────────────────────────────
+        public bool AutoBalanceEnabled = false;
+        public int AutoBalanceStrengthLevel = 5;
+
+        // ── No Speed Wobbles ───────────────────────────────────────────
+        public bool NoSpeedWobblesEnabled = false;
+
+        // ── Quick Brake ────────────────────────────────────────────────
+        public bool QuickBrakeEnabled = false;
+        public int QuickBrakeLevel = 5;
+
         // ── Movement ───────────────────────────────────────────────────
         public int SpinLevel = 1;
+        public bool SpinEnabled = false;
         public int HopLevel = 1;
+        public bool HopEnabled = false;
         public int WheelieLevel = 1;
+        public bool WheelieEnabled = false;
         public int LeanLevel = 1;
+        public bool LeanEnabled = false;
 
         // ── Suspension ─────────────────────────────────────────────────
         public int SuspTravelLevel = 5;
@@ -31,7 +53,6 @@ namespace DescendersModMenu.BikeStats
         public int IcePhysicsLevel = 1;
 
         // ── World / Graphics ───────────────────────────────────────────
-        public int FovLevel = 5;
         public int GravityLevel = 5;
         public int TimeOfDayLevel = 4;
         public int SkyPreset = 0;
@@ -41,6 +62,12 @@ namespace DescendersModMenu.BikeStats
         public int WideTyresLevel = 5;
         public bool StickyTyresEnabled = false;
         public float StickyForce = 150f;
+
+        // ── Wheelie Angle Limit / Air Control ──────────────────────────
+        public bool WheelieAngleLimitEnabled = false;
+        public int WheelieAngleLimitLevel = 5;
+        public bool AirControlEnabled = false;
+        public int AirControlLevel = 5;
 
         // ── Toggles ────────────────────────────────────────────────────
         public bool SlowMotionEnabled = false;
@@ -56,12 +83,6 @@ namespace DescendersModMenu.BikeStats
         public bool SpeedrunTimerEnabled = false;
         public bool SlowMoOnBailEnabled = false;
         public bool GhostReplayEnabled = false;
-
-        // ── New mods ───────────────────────────────────────────────────
-        public bool WheelieAngleLimitEnabled = false;
-        public int WheelieAngleLimitLevel = 5;
-        public bool AirControlEnabled = false;
-        public int AirControlLevel = 5;
 
         // ── Floats ─────────────────────────────────────────────────────
         public float FlyMoveSpeed = 30f;
