@@ -82,6 +82,43 @@ System info, mod status with live OK/FAILED indicators, hotkey reference
 ---
 
 ## Changelog
+
+### v3.5.0
+v3.5.0 — Changelog
+Rebrand
+
+Renamed from Descenders Mod Menu to Descenders Toolkit
+Output DLL renamed to DescendersToolKit.dll — remove old DescendersModMenu.dll from your Mods folder
+Header updated to DESCENDERS TOOLKIT
+GitHub link updated to github.com/NateHyden/DescendersToolKit
+Info tab credits updated to match
+
+General Tab
+
+Added Quick Brake — toggle that amplifies the game's own brake system when holding brake. Level 1 is a subtle boost, level 10 is near-instant. Works on all surfaces including loose terrain
+Added Super Launch button — fires you forward at high speed in one press
+Save, Load and Reset buttons moved from the bottom of the General tab into the header bar so they are always visible on every tab
+
+Save System
+
+Fixed toggle states not saving — the following were previously saving level only, not their on/off state: FOV, Acceleration, Max Speed, Landing Impact, Auto Balance, No Speed Wobbles, Rotation Speed, Hop Force, Wheelie Force, Lean Strength
+Quick Brake enabled state and level now included in save/load/reset
+
+Info Tab
+
+Redesigned with four sub-tabs: System, Mod Status, Hotkeys, Credits
+Credits tab added with official links, attribution and build info
+
+Bug Fixes
+
+FOV now correctly restores default when toggled off
+FOV now works across all camera views including after switching camera angle
+Acceleration, Max Speed and Landing Impact now have proper on/off toggles instead of applying permanently
+Landing Impact completely reworked — now targets the actual bail threshold in Cyclist rather than the health system, so it genuinely reduces falls
+All four Movement mods now have individual on/off toggles
+Wheel Size preset buttons no longer auto-enable the mod
+Quick Brake previously caused the bike to be glued to the floor — fixed by only applying when brake input is detected
+
 ### v3.2.0
 v3.1.1 — Bug Fixes
 
