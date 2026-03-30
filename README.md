@@ -10,7 +10,7 @@
 ## Installation
 
 1. Install MelonLoader 0.5.7 for Descenders
-2. Download `DescendersModMenu.dll` from the [Releases](../../releases) page
+2. Download `DescendersToolkit.dll` from the [Releases](../../releases) page
 3. Drop it into `Descenders/Mods/`
 4. Launch the game
 
