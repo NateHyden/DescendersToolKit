@@ -1,193 +1,311 @@
-“Descenders ToolKit — Sandbox & Testing Framework for Bike Physics, World Simulation, and Gameplay Experimentation”
+# Descenders Toolkit
+
+**v3.5.0** — A modding toolkit for Descenders built from the ground up with a clean 15-tab sidebar overlay.
+
+> Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded.
+
+Physics tweaks, world controls, score tools, session trackers, ghost replay, avalanche mode, map changer, outfit presets, mod chat and plenty of chaos — all in one place.
 
 ---
 
 ## Requirements
 
-- [MelonLoader](https://melonwiki.xyz/) 0.5.7
+- [MelonLoader 0.5.7](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.7) (https://github.com/LavaGang/MelonLoader) *choose MelonLoader 0.5.7 from the drop down menu*
 - Descenders (Steam)
-
-## Installation
-
-1. Install MelonLoader 0.5.7 for Descenders
-2. Download `DescendersToolkit.dll` from the [Releases](../../releases) page
-3. Drop it into `Descenders/Mods/`
-4. Launch the game
 
 ---
 
-## Tabs & Features
+## Installation
 
-### General — Bike Physics & Session
-Acceleration, Max Speed, No Speed Cap, Landing Impact, No Bail, Bike Switcher, FOV, Slow Motion (with speed slider), Auto Balance, Session Timer, Bail Counter, Longest Airtime, Top Speed, Speedrun Timer, No Speed Wobbles
+1. Run the MelonLoader installer, select your Descenders executable and choose version **0.5.7** — it will not work on other versions
+2. Launch the game once to let MelonLoader populate, then close it
+3. Download `DescendersToolKit.dll` from the [Releases page](https://github.com/NateHyden/DescendersToolKit/releases)
+4. Drop it into `Descenders/Mods/`
+5. Launch the game and press **F6** to open the menu
 
-### Move — Movement
-Rotation Speed, Hop Force, Wheelie Force, Lean Strength, Wheelie Angle Limit, Air Control, Fakie Balance, Pump Strength, Ice Physics, Cut Brakes
-
-### Bike — Tuning
-Suspension Travel, Spring Stiffness, Spring Damping, Bike Size presets
-
-### Graphics — Visuals
-Bloom, Ambient Occlusion, Vignette, Depth of Field, Chromatic Aberration, Quality Presets (Low / Medium / High)
-
-### World — Environment
-Sky Colour presets, Storm, Gravity, Time of Day, Trees & Foliage, Music, Fog, Jump to Finish, Skip Song
-
-### Silly — Fun
-Player Size, Invisible Bike, Wheel Size, Wide Tyres, Sticky Tyres, Moon Mode, Giant Everyone, Invisible Player, Reverse Steering, Ice Grip, Fly Mode, Drunk Mode, Mirror Mode, Turbo Wind, No Mistakes
-
-### Outfit
-Save and load up to 3 full outfit presets
-
-### Chat
-Send and receive messages with other mod menu users in your session
-
-### Avalanche
-Boulders spawn above you and roll downhill. Configurable spawn rate, size, gravity, attraction force, difficulty scaling and instant-fail mode
-
-### Ghost Replay
-Records your run and plays it back as a ghost rider. F3 to toggle, F4 to save
-
-### MapChange
-Load any base game world or bike park directly without going through the main menu
-
-### ESP
-Player name labels, tracers, distance readout, teleport to player, teleport to checkpoint, mod user detection
-
-### Score
-Add or subtract REP, set trick multiplier (x1–x20, persists until reset)
-
-### Unlock
-Unlock all cosmetics, shortcuts, achievements and missions
-
-### Info
-System info, mod status with live OK/FAILED indicators, hotkey reference
+> If updating from an older version, delete `DescendersModMenu.dll` from your Mods folder first.
 
 ---
 
 ## Controls
 
 | Key | Action |
-|-----|--------|
-| F2 | Toggle slow motion |
-| F3 | Ghost Replay — toggle |
-| F4 | Ghost Replay — save run |
-| F6 | Toggle mod menu |
-| LS Click | Ghost Replay — set spawn marker |
-| RS Click | Ghost Replay — save run |
-| RS Dbl Click | Ghost Replay — toggle |
+|---|---|
+| F6 | Open / Close mod menu |
+| F2 | Toggle Slow Motion |
+| F3 / RS Dbl Click | Toggle Ghost Replay |
+| F4 / RS Click | Save Ghost Run |
+| LS Click | Set Ghost Replay spawn marker |
+| F10 (hold) | Speed Watcher — records live velocity to file |
+| F12 | Dump scene to Desktop |
+
+---
+
+## Tabs & Features
+
+### General — Bike Physics & Session
+
+The main hub. All settings persist to file via Save / Load / Reset buttons that are always visible in the header bar regardless of which tab you are on.
+
+**Bike Physics**
+- **Acceleration** — on/off toggle with 10-level slider
+- **Max Speed** — on/off toggle with 10-level slider, plus a full No Speed Cap toggle
+- **Landing Impact** — raises the impact speed required to trigger a bail. Level 10 makes you nearly impossible to knock off
+- **No Bail** — disables bailing entirely
+- **Auto Balance** — assists with staying upright, strength adjustable
+- **Bike Switcher** — cycle between Enduro, Downhill, Hardtail and BRNZL Enduro
+- **FOV** — on/off toggle with level slider; restores the exact default on disable, works across all camera views
+- **Slow Motion** — toggle with speed slider (0.1× to 0.9×); also F2 at any time
+- **Slow Mo on Bail** — automatically triggers slow motion when you bail
+- **No Speed Wobbles** — removes the high-speed steering wobble
+
+**Quick Actions**
+- **Quick Brake** — amplifies the game's own braking system while you hold brake. Works on all surfaces including loose terrain. Level 1 is a subtle boost, level 10 is near-instant
+- **Super Launch** — fires you forward and upward at high speed in one press
+
+**Session Trackers**
+- **Session Timer** — live MM:SS counter from when you load in
+- **Top Speed** — records your highest speed this session; saves to `UserData/DescendersModMenu/TopSpeed.txt`
+- **Speedrun Timer** — integrates with the in-game timer
+- **Bail Counter** — tracks actual crashes, not resets
+- **Longest Airtime** — tracks your longest single airtime
+- **G-Force** — live G-Force readout updated in real time
+- **Peak G-Force** — records the highest G-Force hit this session
+
+---
+
+### ESP — Players & Teleport
+
+- Player name labels with distance readout
+- ESP Tracers — draws lines to all nearby players
+- **Teleport to Player** — warps to a selected player; score is preserved
+- **Teleport to Last Checkpoint** — snaps back to your last triggered checkpoint
+- **Mod Users** — scans for and highlights other Descenders Toolkit users in your session
+
+---
+
+### Info — Diagnostics & Reference
+
+Four sub-tabs:
+- **System** — Unity version, MelonLoader version, scripting backend, toolkit version and DLL name
+- **Mod Status** — every mod listed with OK / FAILED status and error details
+- **Hotkeys** — full key binding reference
+- **Credits** — GitHub, Nexus links and build info
+
+---
+
+### Unlock
+
+- Unlock all cosmetics — bikes, helmets, jerseys and more
+- Unlock all world shortcuts
+- Unlock all Steam achievements
+- Mark all missions as complete
+
+---
+
+### Score
+
+- Add REP — +100, +500, +1K, +5K, +10K, +50K, +100K
+- Remove REP — -100, -500, -1K, -5K, -10K
+- **Trick Multiplier** — x1, x2, x5, x10 or x20; locked in until you manually reset to x1
+
+---
+
+### Move — Bike Handling
+
+Every mod has its own independent on/off toggle and level slider.
+
+**Movement**
+- **Rotation Speed** — how fast the bike rotates in the air
+- **Hop Force** — bunny hop power
+- **Wheelie Force** — how aggressively the front wheel pulls up
+- **Lean Strength** — left/right lean sensitivity
+
+**Balance & Physics**
+- **Wheelie Angle Limit** — caps maximum pitch angle during wheelies (20° to 65°)
+- **Air Control** — damps rotation while airborne; higher = more stable landings
+- **Pump Strength** — how much speed you generate from pumping
+
+**Misc**
+- **Cut Brakes** — removes all braking force; resets automatically on scene change
+
+---
+
+### World — Environment
+
+**Sky**
+- Sky Colour presets — Normal, Blood Red, Alien Green, Synthwave, Midnight, Toxic
+- Storm — dark sky with wind and rain
+- Gravity — level 1 is floaty, level 5 is default (-17.5 m/s²), level 10 is heavy
+
+**Environment**
+- Time of Day — Dawn to Night
+- Trees & Foliage — toggle
+- Music — toggle; restores exact volume on unmute
+- Fog — toggle; saves and restores original density
+
+**Level**
+- Jump to Finish — instantly triggers the finish line
+- Skip Song
+
+---
+
+### Bike — Tuning
+
+**Suspension** — Travel, Stiffness, Damping (all 10-level sliders; level 5 = stock)
+
+**Bike Size** — Giant, Big, Default, Small, Tiny
+
+---
+
+### Silly — Fun & Chaos
+
+**Player** — Size presets (Giant / Big / Default / Small / Tiny), Invisible Player
+
+**Bike** — Invisible Bike, Wheel Size (toggle + Small/Default/Large), Wide Tyres (20-level slider), Sticky Tyres (grip any surface including walls and ceilings)
+
+**Presets** — Moon Mode (low gravity + max suspension; saves and restores your settings on deactivate)
+
+**Multiplayer** — Giant Everyone (scales all other players to Giant / Default / Tiny)
+
+**Controls** — Reverse Steering, Ice Grip (removes all tyre grip), Mirror Mode (flips the world left/right), Fly Mode (detach and fly freely), Drunk Mode (FOV wobble)
+
+**World** — Invisible Player, Turbo Wind, No Mistakes (sideways wall/rock impacts launch you backward)
+
+---
+
+### Graphics — Visuals
+
+**Post Processing** — Toggle Bloom, Ambient Occlusion, Vignette, Depth of Field, Chromatic Aberration individually
+
+**Quality** — Low, Medium, High, Ultra presets
+
+---
+
+### Outfit — Presets
+
+- Three named preset slots — save your full current outfit to any slot
+- Load any preset instantly during a session
+- Rename slots by clicking the name, typing and pressing Enter
+- Delete individual presets
+
+---
+
+### Chat — Mod Users *(Experimental)*
+
+- Send and receive messages with other Descenders Toolkit users in your session
+- Scrollable log with timestamps and player names
+- Only visible to other mod users
+
+---
+
+### Avalanche
+
+- Boulders (or cubes) spawn above you and roll downhill
+- Configurable spawn rate, max hazards, boulder size, spawn distance, height and radius
+- Adjustable extra gravity and forward impulse
+- Survival timer, Instant Fail on Hit mode, Difficulty Scaling
+- Only works in procedural worlds — not bike parks
+
+---
+
+### Ghost Replay
+
+- Records your run in real time and plays it back as a transparent ghost rider
+- Save your best run to disk — persists between sessions for racing against yourself
+- Clear saved run button
+- Ghost HUD overlay showing recording status and run length
+- Toggle: F3 or double-click RS — Save: F4 or RS click — Set spawn: LS click
+- Max recording length ~5 minutes
+
+---
+
+### Map Changer
+
+- Load any base game world directly — Highlands, Forest, Canyon, Desert, Peaks, Jungle, Ridges, Hell and more
+- Browse and load Bike Park and Freeride Workshop maps
+- No main menu required
+
+---
+
+## Save System
+
+All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Saved: all levels, all toggle states, tyre settings, suspension, graphics state, sky preset, fly mode speeds, ghost replay alpha and more.
+
+---
+
+## Notes
+
+- Intended for single-player and private sessions
+- Suspension sliders default to level 5 — stock game behaviour
+- No Speed Cap removes the hard-coded 55 km/h input limit; you still need to lean to accelerate
+- Cut Brakes resets automatically on scene change
+- Moon Mode saves your gravity and suspension before activating and restores them on deactivate
+- No Mistakes only triggers on sideways wall and rock impacts, not landings
+- Ghost Replay records every 2 frames; max ~5 minutes. Saves persist until cleared
+- Avalanche Mode only works in procedural worlds, not bike parks
+- If the mod does not load, check your MelonLoader log in the game folder
 
 ---
 
 ## Changelog
 
 ### v3.5.0
-v3.5.0 — Changelog
-Rebrand
-
-Renamed from Descenders Mod Menu to Descenders Toolkit
-Output DLL renamed to DescendersToolKit.dll — remove old DescendersModMenu.dll from your Mods folder
-Header updated to DESCENDERS TOOLKIT
-GitHub link updated to github.com/NateHyden/DescendersToolKit
-Info tab credits updated to match
-
-General Tab
-
-Added Quick Brake — toggle that amplifies the game's own brake system when holding brake. Level 1 is a subtle boost, level 10 is near-instant. Works on all surfaces including loose terrain
-Added Super Launch button — fires you forward at high speed in one press
-Save, Load and Reset buttons moved from the bottom of the General tab into the header bar so they are always visible on every tab
-
-Save System
-
-Fixed toggle states not saving — the following were previously saving level only, not their on/off state: FOV, Acceleration, Max Speed, Landing Impact, Auto Balance, No Speed Wobbles, Rotation Speed, Hop Force, Wheelie Force, Lean Strength
-Quick Brake enabled state and level now included in save/load/reset
-
-Info Tab
-
-Redesigned with four sub-tabs: System, Mod Status, Hotkeys, Credits
-Credits tab added with official links, attribution and build info
-
-Bug Fixes
-
-FOV now correctly restores default when toggled off
-FOV now works across all camera views including after switching camera angle
-Acceleration, Max Speed and Landing Impact now have proper on/off toggles instead of applying permanently
-Landing Impact completely reworked — now targets the actual bail threshold in Cyclist rather than the health system, so it genuinely reduces falls
-All four Movement mods now have individual on/off toggles
-Wheel Size preset buttons no longer auto-enable the mod
-Quick Brake previously caused the bike to be glued to the floor — fixed by only applying when brake input is detected
+- Rebranded from Descenders Mod Menu to Descenders Toolkit — DLL is now `DescendersToolKit.dll`
+- Added Quick Brake — uses the game's own brake input so it works on all surfaces, adjustable strength from subtle to near-instant
+- Added Super Launch one-press button
+- Save / Load / Reset moved to the header bar — always accessible from every tab
+- Info tab redesigned as four sub-tabs: System, Mod Status, Hotkeys, Credits
+- Fixed toggle states not saving for FOV, Acceleration, Max Speed, Landing Impact, Auto Balance, No Speed Wobbles and all four Movement mods
+- Quick Brake enabled state and level now included in save and load
 
 ### v3.2.0
-v3.1.1 — Bug Fixes
-
-FOV now has an on/off toggle and correctly restores default FOV when turned off
-FOV now works across all camera views, not just the default
-Acceleration now has an on/off toggle instead of applying permanently
-Max Speed now has an on/off toggle instead of applying permanently
-Landing Impact completely reworked — now actually reduces bails on hard landings
-Landing Impact now has an on/off toggle
-Rotation Speed, Hop Force, Wheelie Force and Lean Strength all have individual on/off toggles
-Wheel Size now has an on/off toggle — preset buttons no longer auto-enable it
-Ice Grip now has a description label
-Mod Chat header now shows an Experimental badge
-
+- FOV toggle added — restores default on disable, works across all camera views
+- Acceleration and Max Speed now have on/off toggles
+- Landing Impact reworked — targets the actual bail speed threshold in the physics engine
+- All four Movement mods now have individual on/off toggles
+- Wheel Size preset buttons no longer auto-enable the mod
+- Mod Chat Experimental badge added
 
 ### v3.1.0
-- **General tab** renamed from Stats
-- Top Speed and Speedrun Timer moved into the Session section
-- Slow Motion speed slider added (0.1x–0.9x, on same row as toggle)
-- Auto Balance strength merged onto same row
-- No Speed Wobbles completely rewritten — now works reliably via direct Vehicle physics patch
-- **Wheelie Balance** replaced with **Wheelie Angle Limit** — actually caps your pitch angle during a wheelie (20°–65°)
-- **In-Air Correction** replaced with **Air Control** — smoothly damps rotation while airborne
-- Graphics quality presets fixed to use correct Unity indices, Current label now updates on selection
-- Gravity range extended (level 1 = −2.0 up to level 10 = −40.0), default hint shown inline
-- Sky colour active preset merged onto the colour row
-- Storm kept as a clean on/off toggle
-- Wide Tyres width controls merged onto the same row
-- No Mistakes sensitivity lowered, inline description added
-- Drunk Mode camera roll smoothed
-- Score tab: REP rows merged, negative score buttons added, trick multiplier now actually works and stays locked until reset
-- Ghost Replay hotkeys added to Info tab
-- Hotkey badge width auto-sizes to text content
-- All mods now listed in Mod Status with proper FAILED reporting if a patch fails to load
-- Build warnings cleared
+- Slow Motion speed slider and Auto Balance strength control
+- No Speed Wobbles rewritten via direct Vehicle physics patch
+- Wheelie Angle Limit and Air Control replace old Wheelie Balance and In-Air Correction
+- Graphics quality presets fixed
+- Gravity range extended
+- Negative REP buttons, working Trick Multiplier
+- Full mod status list with OK/FAILED reporting
 
 ### v3.0.0
 - Expanded to 15 tabs — Ghost Replay, Avalanche, Map Changer, Outfit Presets, Mod Chat, Graphics
 - Storm mode, Sky Colour presets, Wide Tyres, Sticky Tyres, Fly Mode, Drunk Mode, Mirror Mode
 - Mod Users detection in ESP tab
-- Fixed Invisible Bike / Invisible Player restoring wrong renderers on toggle-off
 
 ### v2.1.0
 - New sidebar navigation UI
-- Invisible Bike, Moon Mode, Wheel Size, No Mistakes, Session Trackers added
-- Top Speed matches in-game speedo exactly, persists to file
-- Info tab tracks 34+ mods
+- Invisible Bike, Moon Mode, Wheel Size, No Mistakes, Session Trackers
+- Top Speed matches in-game speedo, persists to file
 
 ### v2.0.0
 - World, Bike and Silly tabs added
 - Cut Brakes, Suspension tuning, Balance modifiers, Teleport to Checkpoint
-- Menu widened to 700px
 
 ### v1.0.0
 - Initial release
 
 ---
 
-## Notes
+## Links
 
-- **No Speed Cap** — removes the hard-coded 55 km/h input limit. You still need to lean forward to accelerate.
-- **Ghost Replay** — records every 2 frames, max ~5 minutes. Saves persist until you clear or overwrite them.
-- **Avalanche Mode** — only works in procedural worlds, not bike parks.
-- **Save / Load / Reset** on the General tab persists your settings to `UserData/DescendersModMenu/BikeStats.json`.
-- **Top Speed** saves your all-time record to `UserData/DescendersModMenu/TopSpeed.txt`. Only the Reset button clears it.
+- **Nexus Mods:** [nexusmods.com/descenders/mods/7](https://www.nexusmods.com/descenders/mods/7)
+- **Discord:** [discord.gg/rHvCrBdqaR](https://discord.gg/rHvCrBdqaR)
 
 ---
-*https://www.nexusmods.com/descenders/mods/7*
-*Built by NateHyden — [Discord](https://discord.gg/rHvCrBdqaR)*
 
 ## License
-This project is source-available for learning and contribution purposes.
-You may not redistribute modified versions or claim this project as your own.
-See LICENSE file for full terms.
+
+Source-available for learning and contribution purposes. You may not redistribute modified versions or claim this project as your own. See the [LICENSE](LICENSE) file for full terms.
+
+---
+
+*Built by NateHyden*
