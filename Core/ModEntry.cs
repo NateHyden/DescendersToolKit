@@ -24,6 +24,29 @@ namespace DescendersModMenu
         private bool _pendingRStickSave = false;
         private float _rStickSaveTime = 0f;
 
+        // ── Deferred mod reapply after map change ─────────────────────────
+        private bool _pendingReapply;
+        private bool _reapplyFlyMode;
+        private bool _reapplyDrunkMode;
+        private bool _reapplyMirrorMode;
+        private bool _reapplyWideTyres;
+        private bool _reapplyFov;
+        private bool _reapplySpeedrunTimer;
+        private bool _reapplyAcceleration;
+        private bool _reapplyMaxSpeed;
+        private bool _reapplyLandingImpact;
+        private bool _reapplyMoveSpin;
+        private bool _reapplyMoveHop;
+        private bool _reapplyMoveWheelie;
+        private bool _reapplyMoveLean;
+        // Graphics: save "was disabled" — Reset() puts them all back to true,
+        // so on the new scene we need to toggle OFF any that the user had turned off.
+        private bool _reapplyBloomOff;
+        private bool _reapplyAOOff;
+        private bool _reapplyVigOff;
+        private bool _reapplyDOFOff;
+        private bool _reapplyCABOff;
+
         public override void OnInitializeMelon()
         {
             MelonLogger.Msg("OnApplicationStart");
@@ -75,6 +98,8 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("WheelieAngleLimit patch: " + ex.Message); DiagnosticsManager.Report("WheelieAngleLimit", false, ex.Message); }
             try { MapChanger.ApplyPatch(harmony); DiagnosticsManager.Report("MapChanger", true); }
             catch (System.Exception ex) { MelonLogger.Warning("MapChanger.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("MapChanger", false, ex.Message); }
+            try { NoBail.ApplyPatch(harmony); }
+            catch (System.Exception ex) { MelonLogger.Error("NoBail.ApplyPatch: " + ex.Message); }
 
 
             try { OutfitPresets.Init(); }
@@ -151,6 +176,39 @@ namespace DescendersModMenu
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
         {
             MelonLogger.Msg("OnSceneWasUnloaded: " + buildIndex + " | " + sceneName);
+
+            // ── Save toggle states before reset ───────────────────────────
+            bool wasSlowMotion = SlowMotion.Enabled;
+            bool wasFlyMode = FlyMode.Enabled;
+            bool wasIceMode = IceMode.Enabled;
+            bool wasCutBrakes = CutBrakes.Enabled;
+            bool wasStickyTyres = StickyTyres.Enabled;
+            bool wasAirControl = AirControl.Enabled;
+            bool wasDrunkMode = DrunkMode.Enabled;
+            bool wasMirrorMode = MirrorMode.Enabled;
+            bool wasReverseSteering = ReverseSteering.Enabled;
+            bool wasAutoBalance = AutoBalance.Enabled;
+            bool wasLandingImpact = LandingImpact.Enabled;
+            bool wasQuickBrake = QuickBrake.Enabled;
+            bool wasSlowMoOnBail = SlowMoOnBail.Enabled;
+            bool wasWheelieAngle = WheelieAngleLimit.Enabled;
+            bool wasMaxSpeed = MaxSpeedMultiplier.Enabled;
+            bool wasWideTyres = WideTyres.Enabled;
+            bool wasAcceleration = Acceleration.Enabled;
+            bool wasMoveSpin = Movement.SpinEnabled;
+            bool wasMoveHop = Movement.HopEnabled;
+            bool wasMoveWheelie = Movement.WheelieEnabled;
+            bool wasMoveLean = Movement.LeanEnabled;
+            bool wasNoSpeedWobbles = GameModifierMods.NoSpeedWobblesEnabled;
+            bool wasFov = FOV.Enabled;
+            bool wasSpeedrunTimer = SpeedrunTimer.Enabled;
+            // Graphics: save which effects the user had DISABLED (Reset() restores all to true)
+            bool bloomWasOff = !GraphicsSettings.BloomEnabled;
+            bool aoWasOff = !GraphicsSettings.AmbientOccEnabled;
+            bool vigWasOff = !GraphicsSettings.VignetteEnabled;
+            bool dofWasOff = !GraphicsSettings.DepthOfFieldEnabled;
+            bool cabWasOff = !GraphicsSettings.ChromaticAbEnabled;
+
             SlowMotion.Reset();
             QuickBrake.Reset();
             QuickBrake_Patch.ClearCache();
@@ -192,10 +250,80 @@ namespace DescendersModMenu
             LandingImpact.Reset();        // clears Enabled flag
             NoBail.ClearCache();
             Page9UI.ResetWheelSize();
+
+            // ── Restore immediate toggles (no player/camera needed) ───────
+            // Harmony patches just need Enabled=true, they re-check each call.
+            // Global Unity values (Time.timeScale) persist across scenes.
+            if (wasSlowMotion) SlowMotion.Toggle();
+            if (wasCutBrakes) CutBrakes.Toggle();
+            if (wasReverseSteering) ReverseSteering.Toggle();
+            if (wasAutoBalance) AutoBalance.Toggle();
+            if (wasQuickBrake) QuickBrake.Toggle();
+            if (wasWheelieAngle) WheelieAngleLimit.Toggle();
+            if (wasNoSpeedWobbles) GameModifierMods.NoSpeedWobblesToggle();
+            if (wasSlowMoOnBail) SlowMoOnBail.Toggle();
+            if (wasIceMode) IceMode.Toggle();    // Harmony patch, null-safe
+            if (wasStickyTyres) StickyTyres.Toggle(); // pure flag, FixedTick does the work
+            if (wasAirControl) AirControl.Toggle();  // pure flag, FixedTick does the work
+
+            // ── Queue deferred toggles (need player/camera to exist) ──────
+            _reapplyFlyMode = wasFlyMode;
+            _reapplyDrunkMode = wasDrunkMode;
+            _reapplyMirrorMode = wasMirrorMode;
+            _reapplyWideTyres = wasWideTyres;
+            _reapplyFov = wasFov;
+            _reapplySpeedrunTimer = wasSpeedrunTimer;
+            _reapplyAcceleration = wasAcceleration;
+            _reapplyMaxSpeed = wasMaxSpeed;
+            _reapplyLandingImpact = wasLandingImpact;
+            _reapplyMoveSpin = wasMoveSpin;
+            _reapplyMoveHop = wasMoveHop;
+            _reapplyMoveWheelie = wasMoveWheelie;
+            _reapplyMoveLean = wasMoveLean;
+            _reapplyBloomOff = bloomWasOff;
+            _reapplyAOOff = aoWasOff;
+            _reapplyVigOff = vigWasOff;
+            _reapplyDOFOff = dofWasOff;
+            _reapplyCABOff = cabWasOff;
+            _pendingReapply = wasFlyMode || wasDrunkMode || wasMirrorMode || wasWideTyres ||
+                              wasFov || wasSpeedrunTimer || wasAcceleration || wasMaxSpeed ||
+                              wasLandingImpact || wasMoveSpin || wasMoveHop || wasMoveWheelie || wasMoveLean ||
+                              bloomWasOff || aoWasOff || vigWasOff || dofWasOff || cabWasOff;
         }
 
         public override void OnUpdate()
         {
+            // ── Deferred mod reapply once player exists after map change ──
+            if (_pendingReapply)
+            {
+                try
+                {
+                    if ((object)GameObject.Find("Player_Human") != null)
+                    {
+                        _pendingReapply = false;
+                        if (_reapplyFlyMode) { _reapplyFlyMode = false; FlyMode.Toggle(); }
+                        if (_reapplyDrunkMode) { _reapplyDrunkMode = false; DrunkMode.Toggle(); }
+                        if (_reapplyMirrorMode) { _reapplyMirrorMode = false; MirrorMode.Toggle(); }
+                        if (_reapplyWideTyres) { _reapplyWideTyres = false; WideTyres.Toggle(); }
+                        if (_reapplyFov) { _reapplyFov = false; FOV.Toggle(); }
+                        if (_reapplySpeedrunTimer) { _reapplySpeedrunTimer = false; SpeedrunTimer.Toggle(); }
+                        if (_reapplyAcceleration) { _reapplyAcceleration = false; Acceleration.Toggle(); }
+                        if (_reapplyMaxSpeed) { _reapplyMaxSpeed = false; MaxSpeedMultiplier.Toggle(); }
+                        if (_reapplyLandingImpact) { _reapplyLandingImpact = false; LandingImpact.Toggle(); }
+                        if (_reapplyMoveSpin) { _reapplyMoveSpin = false; Movement.ToggleSpin(); }
+                        if (_reapplyMoveHop) { _reapplyMoveHop = false; Movement.ToggleHop(); }
+                        if (_reapplyMoveWheelie) { _reapplyMoveWheelie = false; Movement.ToggleWheelie(); }
+                        if (_reapplyMoveLean) { _reapplyMoveLean = false; Movement.ToggleLean(); }
+                        // Graphics: Reset() restores all to true, so toggle OFF any the user had disabled
+                        if (_reapplyBloomOff) { _reapplyBloomOff = false; GraphicsSettings.ToggleBloom(); }
+                        if (_reapplyAOOff) { _reapplyAOOff = false; GraphicsSettings.ToggleAO(); }
+                        if (_reapplyVigOff) { _reapplyVigOff = false; GraphicsSettings.ToggleVignette(); }
+                        if (_reapplyDOFOff) { _reapplyDOFOff = false; GraphicsSettings.ToggleDOF(); }
+                        if (_reapplyCABOff) { _reapplyCABOff = false; GraphicsSettings.ToggleChromatic(); }
+                    }
+                }
+                catch (System.Exception ex) { MelonLogger.Error("PendingReapply: " + ex.Message); _pendingReapply = false; }
+            }
             try
             {
                 if (Input.GetKeyDown(KeyCode.F3))
