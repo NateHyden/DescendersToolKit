@@ -98,11 +98,8 @@ namespace DescendersModMenu.Mods
             OffsetLR = 0f;
             OffsetFB = 0f;
             OffsetUD = 0f;
-            if ((object)_rb != null)
-            {
-                _rb.ResetCenterOfMass();
-                _rb = null;
-            }
+            try { if ((object)_rb != null) _rb.ResetCenterOfMass(); } catch { }
+            _rb = null;
         }
     }
 }
