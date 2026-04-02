@@ -41,6 +41,98 @@ namespace DescendersModMenu.Mods
             get { return BailCount.ToString(); }
         }
 
+        // ── Checkpoint Counter ────────────────────────────────────────
+        public static int CheckpointCount { get; private set; } = 0;
+        private static int _lastCpIndex = -1;
+
+        // ]w\u0082Jbz} is an AUTO-PROPERTY on VehicleEvents, NOT a field.
+        // Must use GetProperties(), not GetFields().
+        private static System.Reflection.PropertyInfo _cpIndexProp = null;
+        private static bool _cpPropSearchDone = false;
+
+        private static VehicleEvents _cachedVE = null;
+
+        public static string CheckpointCountDisplay
+        {
+            get { return CheckpointCount.ToString(); }
+        }
+
+        // Poll VehicleEvents.]w\u0082Jbz} (auto-property, furthest checkpoint index) each frame.
+        // When the value increases a checkpoint was crossed.
+        public static void CheckpointTick()
+        {
+            try
+            {
+                // ── 1. Ensure we have a live VehicleEvents instance ──────────
+                if ((object)_cachedVE == null || !(bool)(UnityEngine.Object)_cachedVE)
+                {
+                    _cachedVE = UnityEngine.Object.FindObjectOfType<VehicleEvents>();
+                    if ((object)_cachedVE == null) return;
+                    _cpIndexProp = null;
+                    _cpPropSearchDone = false;
+                }
+
+                // ── 2. Find the ]w\u0082Jbz} PROPERTY (not a field!) ─────────
+                if ((object)_cpIndexProp == null && !_cpPropSearchDone)
+                {
+                    _cpPropSearchDone = true;
+                    var props = typeof(VehicleEvents).GetProperties(
+                        System.Reflection.BindingFlags.Public |
+                        System.Reflection.BindingFlags.NonPublic |
+                        System.Reflection.BindingFlags.Instance);
+
+                    for (int p = 0; p < props.Length; p++)
+                    {
+                        if (!props[p].CanRead) continue;
+                        if (!string.Equals(props[p].PropertyType.Name, "Int32",
+                            System.StringComparison.Ordinal)) continue;
+                        string n = props[p].Name;
+                        // ]w\u0082Jbz} — ']' = 93, 'w' = 119
+                        if (n.Length >= 2 && n[0] == ']' && n[1] == 'w')
+                        {
+                            _cpIndexProp = props[p];
+                            break;
+                        }
+                    }
+                }
+
+                if ((object)_cpIndexProp == null) return;
+
+                // ── 3. Read value and detect crossings ───────────────────────
+                int idx = (int)_cpIndexProp.GetValue(_cachedVE, null);
+
+                if (_lastCpIndex < 0)
+                {
+                    _lastCpIndex = idx;
+                    return;
+                }
+
+                if (idx > _lastCpIndex)
+                {
+                    CheckpointCount += 1;
+                }
+                else if (idx == 0 && _lastCpIndex > 0)
+                {
+                    // Respawn reset — don't decrement count
+                }
+
+                _lastCpIndex = idx;
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Error("[CP] Exception: " + ex.Message);
+                _cachedVE = null;
+                _cpIndexProp = null;
+                _cpPropSearchDone = false;
+            }
+        }
+
+        public static void OnCheckpointDetected()
+        {
+            CheckpointCount++;
+            MelonLogger.Msg("[SessionTrackers] Checkpoint #" + CheckpointCount);
+        }
+
         // Called by Harmony postfix on Cyclist.Bail()
         public static void OnBailDetected()
         {
@@ -195,6 +287,11 @@ namespace DescendersModMenu.Mods
         {
             _sessionStartTime = -1f;
             BailCount = 0;
+            CheckpointCount = 0;
+            _lastCpIndex = -1;
+            _cachedVE = null;
+            _cpIndexProp = null;
+            _cpPropSearchDone = false;
             _lastBailTime = -999f;
             LongestAirtime = 0f;
             _currentAirtimeStart = -1f;
@@ -210,6 +307,7 @@ namespace DescendersModMenu.Mods
         }
 
         public static void ResetBails() { BailCount = 0; _lastBailTime = -999f; }
+        public static void ResetCheckpoints() { CheckpointCount = 0; _lastCpIndex = -1; }
         public static void ResetAirtime() { LongestAirtime = 0f; _currentAirtimeStart = -1f; }
         public static void ResetGForce() { PeakGForce = 0f; CurrentGForce = 0f; }
 
@@ -241,6 +339,18 @@ namespace DescendersModMenu.Mods
                 MelonLogger.Error("[SessionTrackers] ApplyBailPatch: " + ex.Message);
             }
         }
+        public static void ApplyCheckpointPatch(HarmonyLib.Harmony harmony)
+        {
+            // Checkpoint counting uses polling via Tick() — no Harmony patch needed.
+        }
+    }
+
+    // Harmony postfix on VehicleEvents.E\u0081\u007EPyeF(int)
+    // Fires only when a checkpoint is genuinely hit (after all index guards).
+    // Checkpoint counting is done via polling in SessionTrackers.Tick()
+    public static class CheckpointDetector_Patch
+    {
+        public static void Postfix() { }
     }
 
     // Harmony postfix on Cyclist.Bail()

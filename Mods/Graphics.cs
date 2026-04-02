@@ -14,6 +14,21 @@ namespace DescendersModMenu.Mods
 
         public static string[] QualityNames = { "Low", "Medium", "High", "Ultra" };
 
+        // Quality level recorded on first scene init — before any mod touches it
+        private static int _defaultQuality = -1;
+
+        public static void CaptureDefaultQuality()
+        {
+            if (_defaultQuality < 0)
+                _defaultQuality = QualitySettings.GetQualityLevel();
+        }
+
+        public static void RestoreDefaultQuality()
+        {
+            if (_defaultQuality >= 0)
+                SetQuality(_defaultQuality);
+        }
+
         private static MonoBehaviour _ppb = null;
         private static object _profile = null;
 

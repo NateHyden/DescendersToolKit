@@ -58,9 +58,23 @@ namespace DescendersModMenu.UI
         private static Image _stickyTrack; private static RectTransform _stickyKnob;
         private static Text _stickyVal;
 
+        // ── Set Player Name ───────────────────────────────────────
+        private static string _nameBuffer = "";
+        private static Text _nameInputText = null;
+        private static Text _nameCursor = null;
+        private static Text _nameActiveText = null;
+        private static string _activeName = "";
+        private const int NameMaxLength = 20;
+        private const int NameDisplayChars = 18;
+
         // ── Ice Mode ──────────────────────────────────────────────────
         private static Image _iceModeTrack; private static RectTransform _iceModeKnob;
         private static Text _iceModeVal;
+
+        // ── Camera Shake ─────────────────────────────────────────────
+        private static Text _shakeVal, _shakeTogVal;
+        private static Image _shakeBar, _shakeTrack;
+        private static RectTransform _shakeKnob;
 
         // ── Drunk / Fly / Mirror ──────────────────────────────────────
         private static Image _drunkTrack; private static RectTransform _drunkKnob; private static Text _drunkVal;
@@ -246,6 +260,24 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.Divider(pg9);
 
+                // ── CAMERA ────────────────────────────────────────────
+                UIHelpers.SectionHeader("CAMERA", pg9);
+
+                var csr = UIHelpers.StatRow("Camera Shake", pg9);
+                _shakeBar = UIHelpers.MakeBar("ShB", csr.transform, (CameraShake.Level - 1) / 9f);
+                _shakeVal = UIHelpers.Txt("ShV", csr.transform, CameraShake.DisplayValue, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _shakeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
+                _shakeTogVal = UIHelpers.Txt("ShTV", csr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _shakeTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                Image shakeTrack; RectTransform shakeKnob;
+                UIHelpers.Toggle(csr.transform, "ShT", () => { CameraShake.Toggle(); RefreshAll(); }, out shakeTrack, out shakeKnob);
+                UIHelpers.SmallBtn(csr.transform, "-", () => { CameraShake.Decrease(); RefreshAll(); });
+                UIHelpers.SmallBtn(csr.transform, "+", () => { CameraShake.Increase(); RefreshAll(); });
+                _shakeTrack = shakeTrack; _shakeKnob = shakeKnob;
+                UIHelpers.InfoBox(pg9, "Level 5 = default. Amplifies camera shake at speed. Level 10 = 4x default.");
+
+                UIHelpers.Divider(pg9);
+
                 // ── WORLD ─────────────────────────────────────────────
                 UIHelpers.SectionHeader("WORLD", pg9);
 
@@ -280,6 +312,68 @@ namespace DescendersModMenu.UI
                     _explodingProps = ExplodingProps.Enabled;
                     RefreshAll();
                 }, out _explodeTrack, out _explodeKnob);
+
+                UIHelpers.Divider(pg9);
+
+                // ── IDENTITY ──────────────────────────────────────────
+                UIHelpers.SectionHeader("IDENTITY", pg9);
+
+                // Input row
+                var nameInputRow = UIHelpers.Obj("NameInputRow", pg9);
+                nameInputRow.AddComponent<UnityEngine.UI.Image>().color = UIHelpers.RowBg;
+                var nirLe = nameInputRow.AddComponent<LayoutElement>();
+                nirLe.preferredHeight = 36; nirLe.minHeight = 36;
+                var nirHlg = nameInputRow.AddComponent<HorizontalLayoutGroup>();
+                nirHlg.padding = new RectOffset(8, 8, 4, 4);
+                nirHlg.spacing = 6; nirHlg.childAlignment = TextAnchor.MiddleLeft;
+                nirHlg.childForceExpandHeight = true; nirHlg.childForceExpandWidth = false;
+
+                var nameBg = UIHelpers.Obj("NmBg", nameInputRow.transform);
+                nameBg.AddComponent<UnityEngine.UI.Image>().color = UIHelpers.WinOuter;
+                var nbgLe = nameBg.AddComponent<LayoutElement>();
+                nbgLe.flexibleWidth = 1; nbgLe.minHeight = 26; nbgLe.preferredHeight = 26;
+                var nbgHlg = nameBg.AddComponent<HorizontalLayoutGroup>();
+                nbgHlg.padding = new RectOffset(8, 8, 0, 0);
+                nbgHlg.childAlignment = TextAnchor.MiddleLeft;
+                nbgHlg.childForceExpandWidth = true; nbgHlg.childForceExpandHeight = true;
+
+                _nameInputText = UIHelpers.Txt("NmIT", nameBg.transform, "Enter name...",
+                    11, FontStyle.Normal, TextAnchor.MiddleLeft, UIHelpers.TextDim);
+                _nameInputText.horizontalOverflow = HorizontalWrapMode.Overflow;
+                _nameInputText.verticalOverflow = VerticalWrapMode.Truncate;
+                _nameInputText.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+                // Green dot — anchored to far right, never moves with text
+                _nameCursor = UIHelpers.Txt("NmCur", nameBg.transform, "\u25CF",
+                    10, FontStyle.Normal, TextAnchor.MiddleCenter, UIHelpers.OnColor);
+                _nameCursor.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+                var ncRT = UIHelpers.RT(_nameCursor.gameObject);
+                ncRT.anchorMin = new Vector2(1, 0); ncRT.anchorMax = new Vector2(1, 1);
+                ncRT.pivot = new Vector2(1, 0.5f);
+                ncRT.sizeDelta = new Vector2(14, 0);
+                ncRT.anchoredPosition = new Vector2(-6, 0);
+                _nameCursor.gameObject.SetActive(false);
+
+                UIHelpers.ActionBtn(nameInputRow.transform, "Set", () =>
+                {
+                    string name = _nameBuffer.Trim();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        DevCommandsGameplay.SetName(name);
+                        _activeName = name;
+                        _nameBuffer = "";
+                        MelonLogger.Msg("[Identity] Name set: " + name);
+                        RefreshAll();
+                    }
+                }, 46);
+
+                // Active name display
+                var nameActiveRow = UIHelpers.StatRow("Active Name", pg9);
+                _nameActiveText = UIHelpers.Txt("NmAV", nameActiveRow.transform, "—",
+                    11, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.TextDim);
+                _nameActiveText.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+                UIHelpers.InfoBox(pg9, "Name updates in chat and in other players’ ESP. Resets on map change.");
 
                 RefreshAll();
                 UIHelpers.AddScrollForwarders(pg9);
@@ -541,6 +635,65 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleTurboWind: " + ex.Message); }
         }
 
+        // ── Identity keyboard tick ───────────────────────────────
+        // Called from ModEntry.OnUpdate every frame while menu is open.
+        public static void IdentityTick()
+        {
+            if ((object)_nameInputText == null) return;
+            foreach (char ch in Input.inputString)
+            {
+                if (ch == '\b')
+                {
+                    if (_nameBuffer.Length > 0)
+                        _nameBuffer = _nameBuffer.Substring(0, _nameBuffer.Length - 1);
+                }
+                else if (ch == '\n' || ch == '\r')
+                {
+                    string name = _nameBuffer.Trim();
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        DevCommandsGameplay.SetName(name);
+                        _activeName = name;
+                        _nameBuffer = "";
+                        MelonLogger.Msg("[Identity] Name set via Enter: " + name);
+                        RefreshAll();
+                    }
+                }
+                else if (_nameBuffer.Length < NameMaxLength)
+                {
+                    _nameBuffer += ch;
+                }
+            }
+
+            if (_nameBuffer.Length > 0)
+            {
+                string display = _nameBuffer.Length > NameDisplayChars
+                    ? "..." + _nameBuffer.Substring(_nameBuffer.Length - NameDisplayChars + 3)
+                    : _nameBuffer;
+                _nameInputText.text = display;
+                _nameInputText.color = UIHelpers.TextLight;
+            }
+            else
+            {
+                _nameInputText.text = "Enter name...";
+                _nameInputText.color = UIHelpers.TextDim;
+            }
+
+            // Green dot pulses when buffer has content
+            if ((object)_nameCursor != null)
+            {
+                bool typing = _nameBuffer.Length > 0;
+                _nameCursor.gameObject.SetActive(typing);
+                if (typing)
+                {
+                    float alpha = Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4f));
+                    Color col = UIHelpers.OnColor;
+                    col.a = alpha;
+                    _nameCursor.color = col;
+                }
+            }
+        }
+
         // ── RefreshAll ────────────────────────────────────────────────
         public static void RefreshAll()
         {
@@ -594,6 +747,22 @@ namespace DescendersModMenu.UI
             bool stOn = StickyTyres.Enabled;
             if (_stickyVal) { _stickyVal.text = stOn ? "ON" : "OFF"; _stickyVal.color = stOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_stickyTrack, _stickyKnob, stOn);
+
+            // Camera Shake
+            bool shOn = CameraShake.Enabled;
+            if (_shakeTogVal) { _shakeTogVal.text = shOn ? "ON" : "OFF"; _shakeTogVal.color = shOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_shakeTrack, _shakeKnob, shOn);
+            if (_shakeVal) _shakeVal.text = CameraShake.DisplayValue;
+            UIHelpers.SetBar(_shakeBar, (CameraShake.Level - 1) / 9f);
+
+            // Identity — active name display
+            if ((object)_nameActiveText != null)
+            {
+                if (!string.IsNullOrEmpty(_activeName))
+                { _nameActiveText.text = _activeName; _nameActiveText.color = UIHelpers.OnColor; }
+                else
+                { _nameActiveText.text = "—"; _nameActiveText.color = UIHelpers.TextDim; }
+            }
         }
     }
 }

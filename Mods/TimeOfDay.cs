@@ -27,6 +27,14 @@ namespace DescendersModMenu.Mods
             Apply();
         }
 
+        // Used by Save/Load — stores the level without touching the game world
+        public static void SetLevelSilent(int level)
+        {
+            if (level < 1) level = 1;
+            if (level > 10) level = 10;
+            Level = level;
+        }
+
         public static void Apply()
         {
             try

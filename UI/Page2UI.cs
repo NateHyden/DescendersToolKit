@@ -1,4 +1,4 @@
-using DescendersModMenu.Mods;
+﻿using DescendersModMenu.Mods;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +11,8 @@ namespace DescendersModMenu.UI
         private static Image espTrk, distTrk, tracTrk;
         private static RectTransform espKnb, distKnb, tracKnb;
         private static Text _modUsersText;
+        private static int _cpIndex = 0;
+        private static Text _cpIndexText = null;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -69,12 +71,42 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.Divider(pg.transform);
                 UIHelpers.SectionHeader("CHECKPOINT", pg.transform);
+                UIHelpers.InfoBox(pg.transform, "Ride through at least one checkpoint to activate teleport.");
 
                 var cpr = UIHelpers.StatRow("Last Checkpoint", pg.transform);
                 UIHelpers.ActionBtnOrange(cpr.transform, "Teleport", () =>
                 {
                     try { TeleportToCheckpoint.Teleport(); }
                     catch (System.Exception ex) { MelonLogger.Error("[TeleportCP]: " + ex.Message); }
+                }, 76);
+
+                // ── Teleport by index ─────────────────────────────
+                var cpir = UIHelpers.StatRow("By Index", pg.transform);
+                UIHelpers.SmallBtn(cpir.transform, "◀", () =>
+                {
+                    int count = TeleportToCheckpoint.CheckpointCount;
+                    if (count > 0) { _cpIndex = (_cpIndex - 1 + count) % count; RefreshCpIndex(); }
+                });
+
+                var cpiBg = UIHelpers.Obj("CpIBg", cpir.transform);
+                cpiBg.AddComponent<Image>().color = UIHelpers.WinOuter;
+                var cpiBgLe = cpiBg.AddComponent<LayoutElement>();
+                cpiBgLe.preferredWidth = 52; cpiBgLe.minWidth = 52; cpiBgLe.preferredHeight = 26;
+                _cpIndexText = UIHelpers.Txt("CpIT", cpiBg.transform, "0 / 0",
+                    11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextLight);
+                UIHelpers.Fill(UIHelpers.RT(_cpIndexText.gameObject));
+
+                UIHelpers.SmallBtn(cpir.transform, "▶", () =>
+                {
+                    int count = TeleportToCheckpoint.CheckpointCount;
+                    if (count > 0) { _cpIndex = (_cpIndex + 1) % count; RefreshCpIndex(); }
+                });
+                UIHelpers.ActionBtnOrange(cpir.transform, "Teleport", () =>
+                {
+                    int count = TeleportToCheckpoint.CheckpointCount;
+                    if (count == 0) { MelonLogger.Warning("[TeleportCP] No checkpoints."); return; }
+                    _cpIndex = UnityEngine.Mathf.Clamp(_cpIndex, 0, count - 1);
+                    TeleportToCheckpoint.TeleportByIndex(_cpIndex);
                 }, 76);
 
                 UIHelpers.Divider(pg.transform);
@@ -102,6 +134,7 @@ namespace DescendersModMenu.UI
             Upd(espVal, espTrk, espKnb, ESP.Enabled);
             Upd(distVal, distTrk, distKnb, ESP.ShowDistance);
             Upd(tracVal, tracTrk, tracKnb, ESP.ShowTracers);
+            RefreshCpIndex();
         }
 
         private static void RefreshModUsers()
@@ -122,6 +155,17 @@ namespace DescendersModMenu.UI
                 txt += users[i].Name + "  [v" + users[i].Version + "]";
             }
             _modUsersText.text = txt;
+        }
+
+        private static void RefreshCpIndex()
+        {
+            if ((object)_cpIndexText == null) return;
+            int count = TeleportToCheckpoint.CheckpointCount;
+            if (count == 0)
+            { _cpIndexText.text = "No CPs"; _cpIndexText.color = UIHelpers.TextDim; return; }
+            _cpIndex = UnityEngine.Mathf.Clamp(_cpIndex, 0, count - 1);
+            _cpIndexText.text = (_cpIndex + 1) + " / " + count;
+            _cpIndexText.color = UIHelpers.TextLight;
         }
 
         private static void Upd(Text l, Image t, RectTransform k, bool on)

@@ -106,6 +106,42 @@ namespace DescendersModMenu.BikeStats
                     FlyMoveSpeed = FlyMode.MoveSpeed,
                     FlyClimbSpeed = FlyMode.ClimbSpeed,
                     GhostAlpha = GhostReplay.GhostAlpha,
+
+                    // Menu Customiser
+                    MenuPositionPreset = MenuCustomiser.PositionPreset,
+                    MenuScaleLevel = MenuCustomiser.ScaleLevel,
+                    MenuOpacityLevel = MenuCustomiser.OpacityLevel,
+
+                    // Bike Torch
+                    BikeTorchEnabled = BikeTorch.Enabled,
+                    BikeTorchIntensityIndex = BikeTorch.IntensityIndex,
+
+                    // Camera Shake
+                    CameraShakeEnabled = CameraShake.Enabled,
+                    CameraShakeLevel = CameraShake.Level,
+
+                    // Center of Mass
+                    CenterOfMassLR = CenterOfMass.OffsetLR,
+                    CenterOfMassFB = CenterOfMass.OffsetFB,
+                    CenterOfMassUD = CenterOfMass.OffsetUD,
+
+                    // Exploding Props
+                    ExplodingPropsEnabled = ExplodingProps.Enabled,
+
+                    // Near Miss Sensitivity
+                    NearMissEnabled = NearMissSensitivity.Enabled,
+                    NearMissLevel = NearMissSensitivity.Level,
+
+                    // Graphics
+                    GraphicsBloomEnabled = GraphicsSettings.BloomEnabled,
+                    GraphicsAmbientOccEnabled = GraphicsSettings.AmbientOccEnabled,
+                    GraphicsVignetteEnabled = GraphicsSettings.VignetteEnabled,
+                    GraphicsDepthOfFieldEnabled = GraphicsSettings.DepthOfFieldEnabled,
+                    GraphicsChromaticAbEnabled = GraphicsSettings.ChromaticAbEnabled,
+
+                    // Sky Storm / Rain
+                    StormEnabled = SkyColours.StormEnabled,
+                    RainIntensityLevel = SkyColours.RainIntensityLevel,
                 };
 
                 string json = JsonUtility.ToJson(data, true);
@@ -167,8 +203,8 @@ namespace DescendersModMenu.BikeStats
                 GameModifierMods.SetIcePhysicsLevel(data.IcePhysicsLevel);
                 FOV.SetLevel(data.FovLevel);
                 Gravity.SetLevel(data.GravityLevel);
-                TimeOfDay.SetLevel(data.TimeOfDayLevel);
-                SkyColours.ApplyPreset(data.SkyPreset);
+                TimeOfDay.SetLevelSilent(data.TimeOfDayLevel);
+                if (data.SkyPreset != 0) SkyColours.ApplyPreset(data.SkyPreset);
                 WideTyres.SetLevel(data.WideTyresLevel);
 
                 // Toggles — only enable if saved true, don't double-toggle
@@ -211,6 +247,44 @@ namespace DescendersModMenu.BikeStats
                 QuickBrake.SetLevel(data.QuickBrakeLevel);
                 if (data.QuickBrakeEnabled && !QuickBrake.Enabled) QuickBrake.Toggle();
 
+                // Menu Customiser
+                MenuCustomiser.PositionPreset = data.MenuPositionPreset;
+                MenuCustomiser.ScaleLevel = data.MenuScaleLevel;
+                MenuCustomiser.OpacityLevel = data.MenuOpacityLevel;
+                MenuCustomiser.Apply();
+
+                // Bike Torch
+                BikeTorch.IntensityIndex = data.BikeTorchIntensityIndex;
+                if (data.BikeTorchEnabled && !BikeTorch.Enabled) BikeTorch.Toggle();
+
+                // Camera Shake
+                CameraShake.SetLevel(data.CameraShakeLevel);
+                if (data.CameraShakeEnabled && !CameraShake.Enabled) CameraShake.Toggle();
+
+                // Center of Mass
+                CenterOfMass.SetLR(data.CenterOfMassLR);
+                CenterOfMass.SetFB(data.CenterOfMassFB);
+                CenterOfMass.SetUD(data.CenterOfMassUD);
+
+                // Exploding Props
+                if (data.ExplodingPropsEnabled && !ExplodingProps.Enabled) ExplodingProps.Toggle();
+
+                // Near Miss Sensitivity
+                NearMissSensitivity.SetLevel(data.NearMissLevel);
+                if (data.NearMissEnabled && !NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
+
+                // Graphics
+                if (data.GraphicsBloomEnabled != GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
+                if (data.GraphicsAmbientOccEnabled != GraphicsSettings.AmbientOccEnabled) GraphicsSettings.ToggleAO();
+                if (data.GraphicsVignetteEnabled != GraphicsSettings.VignetteEnabled) GraphicsSettings.ToggleVignette();
+                if (data.GraphicsDepthOfFieldEnabled != GraphicsSettings.DepthOfFieldEnabled) GraphicsSettings.ToggleDOF();
+                if (data.GraphicsChromaticAbEnabled != GraphicsSettings.ChromaticAbEnabled) GraphicsSettings.ToggleChromatic();
+
+                // Sky Storm / Rain
+                SkyColours.SetRainIntensityLevel(data.RainIntensityLevel);
+                if (data.StormEnabled && !SkyColours.StormEnabled) SkyColours.ToggleStorm();
+                else if (!data.StormEnabled && SkyColours.StormEnabled) SkyColours.ToggleStorm();
+
                 MelonLogger.Msg("[StatsManager] Loaded from: " + SaveFile);
             }
             catch (Exception ex)
@@ -252,8 +326,8 @@ namespace DescendersModMenu.BikeStats
                 // World / Graphics
                 FOV.SetLevel(5);
                 Gravity.SetLevel(5);
-                TimeOfDay.SetLevel(4);
-                SkyColours.ApplyPreset(0);
+                TimeOfDay.SetLevelSilent(4);
+                SkyColours.SetPresetSilent(0);
                 WideTyres.SetLevel(5);
 
                 // Floats
@@ -297,6 +371,37 @@ namespace DescendersModMenu.BikeStats
                 // Quick Brake
                 if (QuickBrake.Enabled) QuickBrake.Toggle();
                 QuickBrake.SetLevel(5);
+
+                // Bike Torch
+                if (BikeTorch.Enabled) BikeTorch.Toggle();
+                BikeTorch.IntensityIndex = 2;
+
+                // Camera Shake
+                if (CameraShake.Enabled) CameraShake.Toggle();
+                CameraShake.SetLevel(5);
+
+                // Center of Mass
+                CenterOfMass.SetLR(0f);
+                CenterOfMass.SetFB(0f);
+                CenterOfMass.SetUD(0f);
+
+                // Exploding Props
+                if (ExplodingProps.Enabled) ExplodingProps.Toggle();
+
+                // Near Miss Sensitivity
+                if (NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
+                NearMissSensitivity.SetLevel(5);
+
+                // Graphics (reset to all enabled)
+                if (!GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
+                if (!GraphicsSettings.AmbientOccEnabled) GraphicsSettings.ToggleAO();
+                if (!GraphicsSettings.VignetteEnabled) GraphicsSettings.ToggleVignette();
+                if (!GraphicsSettings.DepthOfFieldEnabled) GraphicsSettings.ToggleDOF();
+                if (!GraphicsSettings.ChromaticAbEnabled) GraphicsSettings.ToggleChromatic();
+
+                // Sky Storm / Rain
+                if (SkyColours.StormEnabled) SkyColours.ToggleStorm();
+                SkyColours.SetRainIntensityLevel(5);
 
                 MelonLogger.Msg("[StatsManager] Reset to defaults.");
             }

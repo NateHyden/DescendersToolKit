@@ -21,7 +21,7 @@ namespace DescendersModMenu.UI
             {
                 prevLock = Cursor.lockState; prevVis = Cursor.visible;
                 Cursor.lockState = CursorLockMode.None; Cursor.visible = true;
-                if (MenuWindow.RootCanvasGroup != null) MenuWindow.RootCanvasGroup.alpha = 1f;
+                if (MenuWindow.RootCanvasGroup != null) MenuWindow.RootCanvasGroup.alpha = Mods.MenuCustomiser.CurrentOpacity;
             }
             else RestoreCursor();
         }

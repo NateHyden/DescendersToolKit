@@ -132,7 +132,7 @@ namespace DescendersModMenu.Mods
 
         public static void ClearCache()
         {
-            if ((object)_rb != null) _rb.drag = _origDrag;
+            try { if ((object)_rb != null) _rb.drag = _origDrag; } catch { }
             _vehicleField = null;
             _rb = null;
             _origDrag = 0f;

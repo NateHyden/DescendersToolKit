@@ -88,5 +88,41 @@ namespace DescendersModMenu.BikeStats
         public float FlyMoveSpeed = 30f;
         public float FlyClimbSpeed = 20f;
         public float GhostAlpha = 0.45f;
+
+        // ── Menu Customiser ────────────────────────────────────────────
+        public int MenuPositionPreset = 0;  // 0=Center 1=TopLeft 2=TopRight
+        public int MenuScaleLevel = 3;      // index into scale array (3 = 100%)
+        public int MenuOpacityLevel = 8;    // index into opacity array (8 = 100%)
+
+        // ── Bike Torch ─────────────────────────────────────────────────
+        public bool BikeTorchEnabled = false;
+        public int BikeTorchIntensityIndex = 2;
+
+        // ── Camera Shake ───────────────────────────────────────────────
+        public bool CameraShakeEnabled = false;
+        public int CameraShakeLevel = 5;
+
+        // ── Center of Mass ─────────────────────────────────────────────
+        public float CenterOfMassLR = 0f;
+        public float CenterOfMassFB = 0f;
+        public float CenterOfMassUD = 0f;
+
+        // ── Exploding Props ────────────────────────────────────────────
+        public bool ExplodingPropsEnabled = false;
+
+        // ── Near Miss Sensitivity ──────────────────────────────────────
+        public bool NearMissEnabled = false;
+        public int NearMissLevel = 5;
+
+        // ── Graphics ───────────────────────────────────────────────────
+        public bool GraphicsBloomEnabled = true;
+        public bool GraphicsAmbientOccEnabled = true;
+        public bool GraphicsVignetteEnabled = true;
+        public bool GraphicsDepthOfFieldEnabled = true;
+        public bool GraphicsChromaticAbEnabled = true;
+
+        // ── Sky Storm / Rain ───────────────────────────────────────────
+        public bool StormEnabled = false;
+        public int RainIntensityLevel = 5;
     }
 }

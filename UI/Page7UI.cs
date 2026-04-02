@@ -25,6 +25,11 @@ namespace DescendersModMenu.UI
         private static Image _fogTrack;
         private static RectTransform _fogKnob;
 
+        // Torch
+        private static Text _torchVal, _torchIntLbl;
+        private static Image _torchTrack;
+        private static RectTransform _torchKnob;
+
         public static bool TreesEnabled = true;
         public static bool MusicEnabled = true;
         public static bool FogEnabled = true;
@@ -87,7 +92,7 @@ namespace DescendersModMenu.UI
                 _skyPresetVal = UIHelpers.Txt("SkV", skpr.transform, SkyColours.PresetNames[0], 11,
                     FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
                 _skyPresetVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 60;
-                UIHelpers.ActionBtn(skpr.transform, "Normal", () => { SkyColours.ApplyPreset(0); RefreshAll(); }, 46);
+                UIHelpers.ActionBtn(skpr.transform, "Default", () => { SkyColours.RestoreDefault(); RefreshAll(); }, 50);
                 UIHelpers.ActionBtn(skpr.transform, "Blood Red", () => { SkyColours.ApplyPreset(1); RefreshAll(); }, 58);
                 UIHelpers.ActionBtn(skpr.transform, "Alien", () => { SkyColours.ApplyPreset(2); RefreshAll(); }, 40);
                 UIHelpers.ActionBtn(skpr.transform, "Synthwave", () => { SkyColours.ApplyPreset(3); RefreshAll(); }, 60);
@@ -98,6 +103,32 @@ namespace DescendersModMenu.UI
                 _stormVal = UIHelpers.Txt("StmV", stmr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _stormVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(stmr.transform, "StmT", () => { SkyColours.ToggleStorm(); RefreshAll(); }, out _stormTrack, out _stormKnob);
+
+
+                // ── Torch ─────────────────────────────────────────────
+                UIHelpers.SectionHeader("TORCH", pg7);
+
+                var tchr = UIHelpers.StatRow("Headlight", pg7);
+                _torchVal = UIHelpers.Txt("TchV", tchr.transform, "OFF", 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _torchVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(tchr.transform, "TchT",
+                    () => { BikeTorch.Toggle(); RefreshAll(); },
+                    out _torchTrack, out _torchKnob);
+
+                var tcir = UIHelpers.StatRow("Intensity", pg7);
+                UIHelpers.SmallBtn(tcir.transform, "\u25C0",
+                    () => { BikeTorch.PrevIntensity(); RefreshAll(); });
+                _torchIntLbl = UIHelpers.Txt("TchIV", tcir.transform,
+                    BikeTorch.IntensityDisplay, 12,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _torchIntLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 56;
+                UIHelpers.SmallBtn(tcir.transform, "\u25B6",
+                    () => { BikeTorch.NextIntensity(); RefreshAll(); });
+
+                UIHelpers.InfoBox(pg7,
+                    "Enables the bike's headlight. If the game has no built-in light, " +
+                    "a spotlight is added to the front of the bike.");
 
                 UIHelpers.Divider(pg7);
 
@@ -160,6 +191,7 @@ namespace DescendersModMenu.UI
                     RefreshAll();
                 }, out _fogTrack, out _fogKnob);
 
+                UIHelpers.Divider(pg7);
                 UIHelpers.Divider(pg7);
 
                 // ── Level Tools ───────────────────────────────────────────
@@ -303,6 +335,11 @@ namespace DescendersModMenu.UI
             bool storm = SkyColours.StormEnabled;
             if (_stormVal) { _stormVal.text = storm ? "ON" : "OFF"; _stormVal.color = storm ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_stormTrack, _stormKnob, storm);
+
+            bool torch = BikeTorch.Enabled;
+            if (_torchVal) { _torchVal.text = torch ? "ON" : "OFF"; _torchVal.color = torch ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_torchTrack, _torchKnob, torch);
+            if (_torchIntLbl) _torchIntLbl.text = BikeTorch.IntensityDisplay;
         }
     }
 }

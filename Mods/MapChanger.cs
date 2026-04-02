@@ -39,6 +39,7 @@ namespace DescendersModMenu.Mods
         private static FieldInfo _currentLevelFld = null; // vebf81kn on session data
         private static MethodInfo _pushState = null; // StateMachine.PushState(Vt)
         private static object _vtGenerating = null; // Vt.Generating
+        private static object _vtSandbox = null; // Vt.Sandbox
 
         // ── Build map list ────────────────────────────────────────────
         public static void BuildMapList()
@@ -152,6 +153,8 @@ namespace DescendersModMenu.Mods
         private static int _pendingLoad = -1;
         private static float _loadTimer = 0f;
         private static int _scoreToRestore = 0;
+        private static float _suppressTimer = 0f; // keeps Last Stand suppressed after seed load
+        public static string LastLoadedSeed { get; private set; } = "";
         private static float _restoreTimer = 0f;
 
         public static void GoToMap(int index)
@@ -188,6 +191,11 @@ namespace DescendersModMenu.Mods
                     _scoreToRestore = 0;
                 }
             }
+            if (_suppressTimer > 0f)
+            {
+                _suppressTimer -= Time.deltaTime;
+                SuppressInactivityWarning();
+            }
         }
 
         private static void ExecuteLoad(int index)
@@ -200,12 +208,15 @@ namespace DescendersModMenu.Mods
 
                 if (!map.IsBikePark)
                 {
-                    // Suppress Last Stand banner before dropping the session
+                    // Try LoadLevel with world only (no -1 level suffix).
+                    // "5-1" = career level 1 of Hell. "5" alone may load freeride.
+                    // Also try LoadLevelFromSeed with the world index string.
                     SuppressInactivityWarning();
-                    // Base world load via DevCommands (numeric seed format)
-                    string str = map.WorldInt + "-1";
-                    MelonLogger.Msg("[MapChanger] LoadLevel: " + str);
-                    DevCommandsGameplay.LoadLevel(str);
+                    string worldStr = map.WorldInt.ToString();
+                    MelonLogger.Msg("[MapChanger] Base world load attempt: worldStr=" + worldStr);
+                    // Attempt 1: LoadLevel with just world index (no career suffix)
+                    DevCommandsGameplay.LoadLevel(worldStr);
+                    MelonLogger.Msg("[MapChanger] Base world: LoadLevel(" + worldStr + ") called");
                     return;
                 }
 
@@ -414,6 +425,8 @@ namespace DescendersModMenu.Mods
                 {
                     var vtType = _pushState.GetParameters()[0].ParameterType;
                     _vtGenerating = System.Enum.Parse(vtType, "Generating");
+                    if (System.Enum.IsDefined(vtType, "Sandbox"))
+                        _vtSandbox = System.Enum.Parse(vtType, "Sandbox");
                 }
                 if ((object)_pushState == null || (object)_vtGenerating == null)
                 {
@@ -433,7 +446,7 @@ namespace DescendersModMenu.Mods
             }
         }
 
-        public static void OnSceneInitialized() { }
+        public static void OnSceneInitialized() { CacheCurrentLevelSeed(); }
 
         // ── Harmony patch — fires when UI_FreerideBikeParks.OnEnable runs ──
         // OnEnable reads GameData.Mg^xbWZ directly, so by the time it fires
@@ -556,5 +569,149 @@ namespace DescendersModMenu.Mods
             catch { }
             return 0;
         }
+
+        // ── Read live session seed ────────────────────────────────────
+        // Reads SessionManager.\u0083ESVMoz.vebf\u0081kn.digk\u0084\u007FK() — the actual seed
+        // used to generate the current map, regardless of how it was loaded.
+        private static MethodInfo _seedGetterMethod = null;
+        private static string _cachedSeedString = "";
+
+        // Called once from ModEntry.OnSceneWasInitialized — reads and caches the
+        // seed for the newly loaded map. Zero per-frame cost.
+        public static void CacheCurrentLevelSeed()
+        {
+            _cachedSeedString = "";
+            _seedGetterMethod = null;
+            try
+            {
+                SessionManager sm = UnityEngine.Object.FindObjectOfType<SessionManager>();
+                if ((object)sm == null) return;
+
+                if ((object)_sessionDataFld == null || (object)_currentLevelFld == null)
+                    ResolveReflection();
+                if ((object)_sessionDataFld == null || (object)_currentLevelFld == null) return;
+
+                object sessionData = _sessionDataFld.GetValue(sm);
+                if ((object)sessionData == null) return;
+
+                object levelInfo = _currentLevelFld.GetValue(sessionData);
+                if ((object)levelInfo == null) return;
+
+                // Find digk\u0084\u007FK — the only public no-arg method returning long
+                MethodInfo[] methods = levelInfo.GetType().GetMethods(
+                    BindingFlags.Public | BindingFlags.Instance);
+                for (int i = 0; i < methods.Length; i++)
+                {
+                    if (!string.Equals(methods[i].ReturnType.Name, "Int64",
+                        System.StringComparison.Ordinal)) continue;
+                    if (methods[i].GetParameters().Length != 0) continue;
+                    _seedGetterMethod = methods[i];
+                    break;
+                }
+                if ((object)_seedGetterMethod == null) return;
+
+                object seed = _seedGetterMethod.Invoke(levelInfo, null);
+                if ((object)seed != null)
+                {
+                    _cachedSeedString = seed.ToString();
+                    MelonLogger.Msg("[MapChanger] Cached map seed: " + _cachedSeedString);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Error("[MapChanger] CacheCurrentLevelSeed: " + ex.Message);
+            }
+        }
+
+        public static string GetCurrentLevelSeed() { return _cachedSeedString; }
+        // Uses the exact same path as bike park loading — proven to work
+        // without Last Stand. Parses seed string -> FmDOWdg -> StartNewSession(World, Sandbox)
+        public static void LoadFromSeed(string seed)
+        {
+            try
+            {
+                if (!ResolveReflection()) return;
+
+                // Parse seed string to long (take first segment before any dash)
+                long seedNum;
+                string[] parts = seed.Split('-');
+                if (!long.TryParse(parts[0].Trim(), out seedNum))
+                { MelonLogger.Error("[MapChanger] LoadFromSeed: could not parse \"" + seed + "\" as a number."); return; }
+
+                // Convert seed to level info via FmDOWdg
+                object levelInfo = _fmDOWdg.Invoke(null, new object[] { seedNum });
+                if ((object)levelInfo == null)
+                { MelonLogger.Error("[MapChanger] LoadFromSeed: FmDOWdg returned null for seed=" + seedNum); return; }
+
+                // Get the World from levelInfo (g^ErFwSM public field)
+                System.Reflection.FieldInfo worldFld = levelInfo.GetType().GetField(
+                    "g\u005ErFwSM", BindingFlags.Public | BindingFlags.Instance);
+                if ((object)worldFld == null)
+                { MelonLogger.Error("[MapChanger] LoadFromSeed: g^ErFwSM field not found."); return; }
+                object world = worldFld.GetValue(levelInfo);
+
+                object smInstance = GetSingleton(typeof(SessionManager));
+                object stInstance = GetSingleton(typeof(StateMachine));
+                if ((object)smInstance == null || (object)stInstance == null)
+                { MelonLogger.Error("[MapChanger] LoadFromSeed: SessionManager or StateMachine null."); return; }
+
+                _suppressTimer = 5f;
+                SuppressInactivityWarning();
+
+                // Set HCqxy = -1 on ALL players before StartNewSession.
+                // StartNewSession loops GetAllPlayersImpact() and calls ResetPlayer() on each.
+                // ResetPlayer: if session is Sandbox, sets obpDRQw = HCqxy.
+                // HCqxy defaults to 0 -> obpDRQw=0 -> IsLastStand()=true -> LAST STAND banner.
+                try
+                {
+                    object pip = GetSingleton(typeof(PlayerManager));
+                    if ((object)pip != null)
+                    {
+                        var getAllImpact = typeof(PlayerManager).GetMethod("GetAllPlayersImpact",
+                            BindingFlags.Public | BindingFlags.Instance);
+                        if ((object)getAllImpact != null)
+                        {
+                            var players = getAllImpact.Invoke(pip, null) as System.Array;
+                            if ((object)players != null)
+                            {
+                                System.Reflection.FieldInfo hcqFld = null;
+                                foreach (object player in players)
+                                {
+                                    if ((object)player == null) continue;
+                                    if ((object)hcqFld == null)
+                                        hcqFld = player.GetType().GetField(
+                                            "HCqxy",
+                                            BindingFlags.Public | BindingFlags.Instance);
+                                    if ((object)hcqFld != null)
+                                        hcqFld.SetValue(player, -1);
+                                }
+                            }
+                        }
+                    }
+                }
+                catch { }
+
+                // StartNewSession(World, Sandbox, -1, null) — identical to bike park path
+                _startNewSession.Invoke(smInstance,
+                    new object[] { (World)world, _sandboxValue, -1, null });
+
+                // Set session currentLevel to the seed-derived level info
+                object sessionData = _sessionDataFld.GetValue(smInstance);
+                if ((object)sessionData == null)
+                { MelonLogger.Error("[MapChanger] LoadFromSeed: session data null after StartNewSession."); return; }
+                _currentLevelFld.SetValue(sessionData, levelInfo);
+
+                SuppressInactivityWarning();
+
+                // Push Generating state to start the world load
+                _pushState.Invoke(stInstance, new object[] { _vtGenerating });
+
+                LastLoadedSeed = seed;
+                MelonLogger.Msg("[MapChanger] LoadFromSeed: \"" + seed + "\" world=" + world + " (Sandbox/freeride)");
+            }
+            catch (System.Exception ex)
+            { MelonLogger.Error("[MapChanger] LoadFromSeed: " + ex.Message); }
+        }
+
     }
 }

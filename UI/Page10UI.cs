@@ -13,7 +13,6 @@ namespace DescendersModMenu.UI
         private static Image _dofTrack; private static RectTransform _dofKnob; private static Text _dofVal;
         private static Image _cabTrack; private static RectTransform _cabKnob; private static Text _cabVal;
         private static Text _qualityVal;
-        private static string _selectedQuality = "Fantastic"; // default matches game default
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -63,10 +62,11 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("QUALITY", pg.transform);
 
                 var qr = UIHelpers.StatRow("Preset", pg.transform);
-                UIHelpers.ActionBtn(qr.transform, "Low", () => { GraphicsSettings.SetQuality(0); _selectedQuality = "Low"; RefreshAll(); }, 44);
-                UIHelpers.ActionBtn(qr.transform, "Medium", () => { GraphicsSettings.SetQuality(1); _selectedQuality = "Medium"; RefreshAll(); }, 56);
-                UIHelpers.ActionBtn(qr.transform, "High", () => { GraphicsSettings.SetQuality(2); _selectedQuality = "High"; RefreshAll(); }, 44);
-                UIHelpers.ActionBtn(qr.transform, "Ultra", () => { GraphicsSettings.SetQuality(3); _selectedQuality = "Ultra"; RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Low", () => { GraphicsSettings.SetQuality(0); RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Medium", () => { GraphicsSettings.SetQuality(1); RefreshAll(); }, 56);
+                UIHelpers.ActionBtn(qr.transform, "High", () => { GraphicsSettings.SetQuality(2); RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Ultra", () => { GraphicsSettings.SetQuality(3); RefreshAll(); }, 44);
+                UIHelpers.ActionBtn(qr.transform, "Default", () => { GraphicsSettings.RestoreDefaultQuality(); RefreshAll(); }, 54);
 
                 var qvr = UIHelpers.StatRow("Current", pg.transform);
                 _qualityVal = UIHelpers.Txt("QlV", qvr.transform, "—", 11, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
@@ -105,7 +105,11 @@ namespace DescendersModMenu.UI
             UIHelpers.SetToggle(_cabTrack, _cabKnob, cab);
 
             if (_qualityVal)
-                _qualityVal.text = _selectedQuality;
+            {
+                int q = GraphicsSettings.GetCurrentQuality();
+                string[] names = { "Low", "Medium", "High", "Ultra" };
+                _qualityVal.text = (q >= 0 && q < names.Length) ? names[q] : QualitySettings.names[q];
+            }
         }
     }
 }

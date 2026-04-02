@@ -55,13 +55,14 @@ namespace DescendersModMenu.UI
         // Session
         private static Text topSpeedVal;
         private static Text sessionTimeVal, bailCountVal, airtimeVal, gforceVal, peakGforceVal;
+        private static Text checkpointCountVal;
 
         // ── Pages ─────────────────────────────────────────────────────
         private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15;
         private static int cur = 1;
 
         private static readonly int[] PageOrder = { 1, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
-        private static readonly string[] NavLabels = { "General", "Move", "Bike", "Graphics", "World", "Silly", "Outfit", "Chat", "Avalanche", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info" };
+        private static readonly string[] NavLabels = { "General", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info/Customise" };
         private static readonly string[] GroupLabels = { "BIKE", null, null, "WORLD", null, "TOOLS", null, null, null, null, null, "SYSTEM" };
 
         private static Image[] _navBars = new Image[15];
@@ -70,6 +71,12 @@ namespace DescendersModMenu.UI
         private static UnityEngine.UI.Image _infoTabDot;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
+        public static RectTransform RootRT { get; private set; }
+
+        // ── Header button flash ───────────────────────────────────────
+        private static Image _hdrSaveImg, _hdrLoadImg, _hdrResetImg;
+        private static Image _hdrFlashImg = null;
+        private static float _hdrFlashTimer = 0f;
 
         // ─────────────────────────────────────────────────────────────
         public static GameObject CreateMenu()
@@ -93,6 +100,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.Pin(UIHelpers.RT(root), new Vector2(.5f, .5f), new Vector2(.5f, .5f),
                     Vector2.zero, new Vector2(UIHelpers.WinW, UIHelpers.WinH));
                 RootCanvasGroup = root.AddComponent<CanvasGroup>();
+                RootRT = UIHelpers.RT(root);
 
                 var win = UIHelpers.Panel("Win", root.transform, UIHelpers.WinPanel, UIHelpers.WinSp);
                 UIHelpers.Fill(UIHelpers.RT(win));
@@ -141,20 +149,24 @@ namespace DescendersModMenu.UI
                 var vbBdr = UIHelpers.Panel("VBBdr", verBadge.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
                 vbBdr.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(vbBdr));
                 vbBdr.AddComponent<LayoutElement>().ignoreLayout = true;
-                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.5.0", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.6.0", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                 UIHelpers.Fill(UIHelpers.RT(verTxt.gameObject));
 
-                // ── Header save/load/reset buttons ─────────────────
-                // Sit in the gap between version badge and right edge
-                var byTxt = UIHelpers.Txt("By", hdr.transform, "Created by NateHyden", 9, FontStyle.Normal, TextAnchor.MiddleRight, UIHelpers.TextDim);
+                // "Created by NateHyden" — pinned to top-right corner
+                var byTxt = UIHelpers.Txt("By", hdr.transform, "Created by NateHyden", 9, FontStyle.Normal, TextAnchor.UpperRight, UIHelpers.TextDim);
                 var byrt = UIHelpers.RT(byTxt.gameObject);
-                byrt.anchorMin = new Vector2(1, 0f); byrt.anchorMax = new Vector2(1, 1f);
-                byrt.pivot = new Vector2(1, 0.5f);
-                byrt.offsetMin = new Vector2(-160, 0); byrt.offsetMax = new Vector2(-14, 0);
+                byrt.anchorMin = new Vector2(1, 1); byrt.anchorMax = new Vector2(1, 1);
+                byrt.pivot = new Vector2(1, 1);
+                byrt.sizeDelta = new Vector2(160, 16);
+                byrt.anchoredPosition = new Vector2(-8, -3);
                 byrt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
-                HeaderBtn(hdr.transform, "SAVE", 360, () => StatsManager.SaveStats());
-                HeaderBtn(hdr.transform, "LOAD", 420, () => { StatsManager.LoadStats(); RefreshAll(); });
-                HeaderBtn(hdr.transform, "RESET", 480, () => { StatsManager.ResetStats(); RefreshAll(); });
+
+                // SAVE / LOAD / RESET — centred in the gap between version badge and "Created by"
+                // Badge right edge ~346px, Created by left edge ~632px, gap centre ~489px.
+                // 3 × 52px buttons + 2 × 8px gaps = 172px. First left edge = 489 - 86 = 403px.
+                _hdrSaveImg = HeaderBtn(hdr.transform, "SAVE", 403f, () => { StatsManager.SaveStats(); FlashHeader(_hdrSaveImg); });
+                _hdrLoadImg = HeaderBtn(hdr.transform, "LOAD", 463f, () => { StatsManager.LoadStats(); RefreshAll(); FlashHeader(_hdrLoadImg); });
+                _hdrResetImg = HeaderBtn(hdr.transform, "RESET", 523f, () => { StatsManager.ResetStats(); RefreshAll(); FlashHeader(_hdrResetImg); });
 
                 // Body
                 var body = UIHelpers.Obj("Body", win.transform);
@@ -233,11 +245,12 @@ namespace DescendersModMenu.UI
                 pg10 = UIHelpers.Obj("P10", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg10)); Page10UI.CreatePage(pg10.transform);
                 pg11 = UIHelpers.Obj("P11", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg11)); Page11UI.CreatePage(pg11.transform);
                 pg12 = UIHelpers.Obj("P12", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg12)); Page12UI.CreatePage(pg12.transform);
-                pg13 = UIHelpers.Obj("P13", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg13)); Page13UI.CreatePage(pg13.transform);
+                pg13 = UIHelpers.Obj("P13", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg13)); PageModesUI.CreatePage(pg13.transform);
                 pg14 = UIHelpers.Obj("P14", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg14)); Page14UI.CreatePage(pg14.transform);
                 pg15 = UIHelpers.Obj("P15", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg15)); Page15UI.CreatePage(pg15.transform);
 
                 RefreshAll(); RefreshTabs();
+                Mods.MenuCustomiser.LoadFromFile();
                 cv.SetActive(false);
                 return cv;
             }
@@ -451,7 +464,31 @@ namespace DescendersModMenu.UI
             UIHelpers.InfoBox(pg, "Launch: fires you forward at high speed.");
 
             UIHelpers.Divider(pg);
-            UIHelpers.SectionHeader("SESSION", pg);
+
+            // ── SESSION header with Reset All button ──────────────────
+            var sessionHdr = UIHelpers.Obj("SessionHdr", pg);
+            var shLE = sessionHdr.AddComponent<LayoutElement>();
+            shLE.preferredHeight = 28; shLE.minHeight = 28; shLE.flexibleHeight = 0;
+            var shHlg = sessionHdr.AddComponent<HorizontalLayoutGroup>();
+            shHlg.spacing = 8;
+            shHlg.padding = new RectOffset(0, 8, 0, 0);
+            shHlg.childAlignment = TextAnchor.MiddleLeft;
+            shHlg.childForceExpandWidth = false;
+            shHlg.childForceExpandHeight = true;
+            var shBar = UIHelpers.Panel("SHBar", sessionHdr.transform, UIHelpers.Accent);
+            shBar.AddComponent<LayoutElement>().preferredWidth = 3;
+            var shTxt = UIHelpers.Txt("SHT", sessionHdr.transform, "SESSION", 11,
+                FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
+            shTxt.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+            UIHelpers.ActionBtn(sessionHdr.transform, "Reset All", () =>
+            {
+                TopSpeed.Reset();
+                SessionTrackers.ResetBails();
+                SessionTrackers.ResetCheckpoints();
+                SessionTrackers.ResetAirtime();
+                SessionTrackers.ResetGForce();
+                RefreshAll();
+            }, 68);
 
             var str = UIHelpers.StatRow("Session Timer", pg);
             sessionTimeVal = UIHelpers.Txt("StV", str.transform, SessionTrackers.SessionTimeDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
@@ -477,6 +514,14 @@ namespace DescendersModMenu.UI
             bcle.flexibleWidth = 1; bcle.preferredHeight = 20; bcle.flexibleHeight = 0;
             UIHelpers.ActionBtn(bcr.transform, "Reset", () => { SessionTrackers.ResetBails(); RefreshAll(); }, 52);
 
+            var cpcr = UIHelpers.StatRow("Checkpoints", pg);
+            checkpointCountVal = UIHelpers.Txt("CpCV", cpcr.transform,
+                SessionTrackers.CheckpointCountDisplay, 12, FontStyle.Bold,
+                TextAnchor.MiddleRight, UIHelpers.Accent);
+            var cpcle = checkpointCountVal.gameObject.AddComponent<LayoutElement>();
+            cpcle.flexibleWidth = 1; cpcle.preferredHeight = 20; cpcle.flexibleHeight = 0;
+            UIHelpers.ActionBtn(cpcr.transform, "Reset", () => { SessionTrackers.ResetCheckpoints(); RefreshAll(); });
+
             var atr = UIHelpers.StatRow("Longest Airtime", pg);
             airtimeVal = UIHelpers.Txt("AtV", atr.transform, SessionTrackers.AirtimeDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
             var atle = airtimeVal.gameObject.AddComponent<LayoutElement>();
@@ -498,7 +543,7 @@ namespace DescendersModMenu.UI
             UIHelpers.AddScrollForwarders(content.transform);
         }
 
-        private static void HeaderBtn(Transform hdr, string lbl, float x, UnityEngine.Events.UnityAction clk)
+        private static Image HeaderBtn(Transform hdr, string lbl, float x, UnityEngine.Events.UnityAction clk)
         {
             var g = UIHelpers.Obj(lbl + "HB", hdr);
             var rt = UIHelpers.RT(g);
@@ -507,17 +552,15 @@ namespace DescendersModMenu.UI
             rt.sizeDelta = new Vector2(52, 22);
             rt.anchoredPosition = new Vector2(x, 0);
             var im = g.AddComponent<Image>(); im.sprite = UIHelpers.BtnSp;
-            im.type = Image.Type.Sliced; im.color = UIHelpers.WinOuter;
+            im.type = Image.Type.Sliced; im.color = UIHelpers.NeonBlue;
             var btn = g.AddComponent<Button>(); btn.onClick.AddListener(clk);
             var bc = btn.colors;
-            bc.normalColor = Color.white; bc.highlightedColor = new Color(1.1f, 1.1f, 1.1f, 1f);
-            bc.pressedColor = new Color(0.75f, 0.75f, 0.75f, 1f); bc.colorMultiplier = 1; btn.colors = bc;
-            var bdr = UIHelpers.Panel(lbl + "HBBdr", g.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
-            bdr.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(bdr));
-            bdr.AddComponent<LayoutElement>().ignoreLayout = true;
+            bc.normalColor = Color.white; bc.highlightedColor = new Color(1.2f, 1.2f, 1.2f, 1f);
+            bc.pressedColor = new Color(0.65f, 0.65f, 0.65f, 1f); bc.colorMultiplier = 1; btn.colors = bc;
             var t = UIHelpers.Txt(lbl + "HBT", g.transform, lbl, 9, FontStyle.Bold,
-                TextAnchor.MiddleCenter, UIHelpers.TextLight);
+                TextAnchor.MiddleCenter, new Color(0f, 0f, 0f, 1f));
             UIHelpers.Fill(UIHelpers.RT(t.gameObject));
+            return im;
         }
 
         private static void BotBtn(string lbl, Transform p, Color bg, UnityEngine.Events.UnityAction clk)
@@ -542,7 +585,9 @@ namespace DescendersModMenu.UI
             if (pg5) pg5.SetActive(cur == 5); if (pg6) pg6.SetActive(cur == 6);
             if (pg7) pg7.SetActive(cur == 7); if (pg8) pg8.SetActive(cur == 8);
             if (pg9) pg9.SetActive(cur == 9); if (pg10) pg10.SetActive(cur == 10);
-            if (pg11) pg11.SetActive(cur == 11); if (pg12) pg12.SetActive(cur == 12);
+            if (pg11) pg11.SetActive(cur == 11);
+            // Cancel outfit rename when navigating away from outfit page
+            if (cur != 11) Page11UI.CancelRename(); if (pg12) pg12.SetActive(cur == 12);
             if (pg13) pg13.SetActive(cur == 13); if (pg14) pg14.SetActive(cur == 14);
             if (pg15) pg15.SetActive(cur == 15);
 
@@ -659,9 +704,20 @@ namespace DescendersModMenu.UI
             if (topSpeedVal) topSpeedVal.text = TopSpeed.DisplayValue;
             if (sessionTimeVal) sessionTimeVal.text = SessionTrackers.SessionTimeDisplay;
             if (bailCountVal) bailCountVal.text = SessionTrackers.BailCountDisplay;
+            if (checkpointCountVal) checkpointCountVal.text = SessionTrackers.CheckpointCountDisplay;
             if (airtimeVal) airtimeVal.text = SessionTrackers.AirtimeDisplay;
             if (gforceVal) gforceVal.text = SessionTrackers.GForceDisplay;
             if (peakGforceVal) peakGforceVal.text = SessionTrackers.PeakGForceDisplay;
+        }
+
+        private static void FlashHeader(Image img)
+        {
+            if ((object)img == null) return;
+            if ((object)_hdrFlashImg != null && (object)_hdrFlashImg != (object)img)
+                _hdrFlashImg.color = UIHelpers.NeonBlue;
+            _hdrFlashImg = img;
+            _hdrFlashTimer = 1.5f;
+            img.color = UIHelpers.OnColor;
         }
 
         public static void TickLive()
@@ -669,9 +725,20 @@ namespace DescendersModMenu.UI
             if (topSpeedVal) topSpeedVal.text = TopSpeed.DisplayValue;
             if (sessionTimeVal) sessionTimeVal.text = SessionTrackers.SessionTimeDisplay;
             if (bailCountVal) bailCountVal.text = SessionTrackers.BailCountDisplay;
+            if (checkpointCountVal) checkpointCountVal.text = SessionTrackers.CheckpointCountDisplay;
             if (airtimeVal) airtimeVal.text = SessionTrackers.AirtimeDisplay;
             if (gforceVal) gforceVal.text = SessionTrackers.GForceDisplay;
             if (peakGforceVal) peakGforceVal.text = SessionTrackers.PeakGForceDisplay;
+
+            if (_hdrFlashTimer > 0f)
+            {
+                _hdrFlashTimer -= UnityEngine.Time.deltaTime;
+                if (_hdrFlashTimer <= 0f && (object)_hdrFlashImg != null)
+                {
+                    _hdrFlashImg.color = UIHelpers.NeonBlue;
+                    _hdrFlashImg = null;
+                }
+            }
         }
     }
 }

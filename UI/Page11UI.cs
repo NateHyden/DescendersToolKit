@@ -206,11 +206,25 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Page11] LeaveShed: " + ex.Message); }
         }
 
+        public static bool IsRenaming => _renamingSlot >= 0;
+
+        public static void CancelRename()
+        {
+            if (_renamingSlot >= 0 && _nameTexts[_renamingSlot] != null)
+                _nameTexts[_renamingSlot].color = UIHelpers.TextLight;
+            _renamingSlot = -1;
+            _renameBuffer = "";
+        }
+
         private static void StartRename(int slot)
         {
+            // Reset previous slot colour before switching
+            if (_renamingSlot >= 0 && _renamingSlot != slot)
+                if (_nameTexts[_renamingSlot] != null)
+                    _nameTexts[_renamingSlot].color = UIHelpers.TextLight;
             _renamingSlot = slot;
             _renameBuffer = OutfitPresets.GetName(slot);
-            if (_renameHint) _renameHint.text = "Renaming: " + _renameBuffer + "_  (Enter=confirm  Esc=cancel)";
+            if (_renameHint) _renameHint.text = "Type new name then press Enter to confirm  ·  Esc to cancel";
             if (_nameTexts[slot]) _nameTexts[slot].color = UIHelpers.Accent;
         }
 
@@ -241,8 +255,8 @@ namespace DescendersModMenu.UI
 
             if (_renamingSlot >= 0)
             {
-                if (_nameTexts[_renamingSlot]) _nameTexts[_renamingSlot].text = _renameBuffer + "_";
-                if (_renameHint) _renameHint.text = "Renaming: " + _renameBuffer + "_  (Enter=confirm  Esc=cancel)";
+                if (_nameTexts[_renamingSlot]) _nameTexts[_renamingSlot].text = _renameBuffer;
+                if (_renameHint) _renameHint.text = "Renaming: " + _renameBuffer + "  ·  Enter to confirm  Esc to cancel";
             }
         }
 

@@ -1,27 +1,24 @@
 using MelonLoader;
 using UnityEngine;
-using System.Reflection;
 
 namespace DescendersModMenu.Mods
 {
-    // Pushes each grounded wheel into the surface it's touching.
-    // Works on any surface — floor, wall, ceiling.
-    // Uses the wheel's own contact normal so it's always correct.
+    // Pushes the bike into whatever surface is beneath it.
+    // Uses a raycast along the bike's local-down axis so it works on
+    // floors, slopes, walls and ceilings — anywhere the bike is oriented.
     public static class StickyTyres
     {
         public static bool Enabled { get; private set; } = false;
 
-        // How hard to push the tyres into the surface.
-        // 25f ≈ enough to counteract gravity (9.81 * ~60kg bike mass).
-        // Raise to stick to walls/ceiling.
+        // How hard to push into the surface (Newtons, continuous force).
+        // 150 = good grip on ground/slopes.
+        // 500+ needed to hold on walls. 1000+ for ceilings.
         public static float SuctionForce = 150f;
 
-        private static PropertyInfo _wheelsProp = null; // Vehicle.OpYe84Kx  (Wheel[])  - property
-        private static PropertyInfo _rbProp = null; // Vehicle.gL]xTm    (Rigidbody) - property
-        private static PropertyInfo _isGroundedProp = null; // Wheel.TDEX{ib   (bool)      - property
-        private static PropertyInfo _contactPtProp = null; // Wheel.aU7FbDfg   (Vector3)   - property
-        private static FieldInfo _normalFld = null; // Wheel.WCWk5Ekn   (Vector3)   - private field
-        private static bool _resolved = false;
+        // Maximum distance the raycast will detect a surface.
+        private const float RayDistance = 2.5f;
+
+        private static Rigidbody _rb = null;
 
         public static void Toggle()
         {
@@ -32,98 +29,43 @@ namespace DescendersModMenu.Mods
         public static void FixedTick()
         {
             if (!Enabled) return;
-            if (!_resolved) { Resolve(); if (!_resolved) return; }
 
             try
             {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-
-                Vehicle vehicle = player.GetComponent<Vehicle>();
-                if ((object)vehicle == null) return;
-
-                Rigidbody rb = _rbProp.GetValue(vehicle, null) as Rigidbody;
-                if ((object)rb == null) return;
-
-                System.Array wheels = _wheelsProp.GetValue(vehicle, null) as System.Array;
-                if ((object)wheels == null) return;
-
-                // Count grounded wheels — only apply force while at least one tyre is touching
-                int groundedCount = 0;
-                foreach (var w in wheels)
+                // Cache rigidbody
+                if ((object)_rb == null)
                 {
-                    if ((object)w == null) continue;
-                    if ((bool)_isGroundedProp.GetValue(w, null)) groundedCount++;
+                    GameObject player = GameObject.Find("Player_Human");
+                    if ((object)player == null) return;
+                    _rb = player.GetComponentInChildren<Rigidbody>();
                 }
-                if (groundedCount == 0) return;
+                if ((object)_rb == null) return;
 
-                // Apply force at the centre of mass along the vehicle's local down axis.
-                // Using vehicle.transform.up (local up) negated so we push INTO whatever
-                // surface the bike is currently sitting on — floor, wall, or ceiling.
-                // Applying at COM (not contact points) avoids rotation/torque.
-                Vector3 force = -vehicle.transform.up * SuctionForce;
-                rb.AddForce(force, ForceMode.Force);
+                // Cast a ray from the bike's centre in its local-down direction.
+                // This automatically adapts to the bike's current orientation —
+                // tilted on a slope, pointing sideways on a wall, etc.
+                Vector3 origin = _rb.position;
+                Vector3 localDown = -_rb.transform.up;
+
+                RaycastHit hit;
+                if (Physics.Raycast(origin, localDown, out hit, RayDistance))
+                {
+                    // Push along the surface's own normal (INTO the surface).
+                    // Using hit.normal ensures the force is always perpendicular
+                    // to the actual geometry rather than just local-down.
+                    _rb.AddForce(-hit.normal * SuctionForce, ForceMode.Force);
+                }
             }
             catch (System.Exception ex)
             {
                 MelonLogger.Error("[StickyTyres] FixedTick: " + ex.Message);
-                Enabled = false;
-            }
-        }
-
-        private static void Resolve()
-        {
-            try
-            {
-                _wheelsProp = typeof(Vehicle).GetProperty(
-                    "OpYe\u0084Kx",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                _rbProp = typeof(Vehicle).GetProperty(
-                    "gL\u005DxT\u007Bm",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                System.Type wheelType = typeof(Wheel);
-
-                _isGroundedProp = wheelType.GetProperty(
-                    "TDEX\u007Bib",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                _contactPtProp = wheelType.GetProperty(
-                    "aU\u007FbDfg",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                _normalFld = wheelType.GetField(
-                    "WCWk\u005Ekn",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-
-                _resolved = (object)_wheelsProp != null
-                         && (object)_rbProp != null
-                         && (object)_isGroundedProp != null
-                         && (object)_contactPtProp != null
-                         && (object)_normalFld != null;
-
-                MelonLogger.Msg("[StickyTyres] Resolve: "
-                    + "wheels=" + ((object)_wheelsProp != null)
-                    + " rb=" + ((object)_rbProp != null)
-                    + " grounded=" + ((object)_isGroundedProp != null)
-                    + " contact=" + ((object)_contactPtProp != null)
-                    + " normal=" + ((object)_normalFld != null)
-                    + " -> " + (_resolved ? "OK" : "FAILED"));
-            }
-            catch (System.Exception ex)
-            {
-                MelonLogger.Error("[StickyTyres] Resolve: " + ex.Message);
-                _resolved = false;
             }
         }
 
         public static void Reset()
         {
             Enabled = false;
-            _resolved = false;
-            _wheelsProp = _rbProp = _isGroundedProp = _contactPtProp = null;
-            _normalFld = null;
+            _rb = null;
         }
     }
 }

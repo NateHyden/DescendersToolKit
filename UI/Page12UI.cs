@@ -13,6 +13,10 @@ namespace DescendersModMenu.UI
         private static Text _inputText = null;
         private static Text _statusText = null;
         private static Text _onlineText = null;
+        private static bool _chatFocused = false;
+        public static bool IsChatFocused => _chatFocused;
+        private static Text _chatCursor = null;
+        private static RectTransform _chatBoxRect = null;
 
         private const int DisplayChars = 48;
 
@@ -39,6 +43,7 @@ namespace DescendersModMenu.UI
                 hdrHlg.childAlignment = TextAnchor.MiddleLeft;
                 hdrHlg.childForceExpandWidth = false;
                 hdrHlg.childForceExpandHeight = false;
+                hdrHlg.padding = new RectOffset(8, 0, 0, 0);
 
                 // Accent bar — matches UIHelpers.SectionHeader style
                 var accentBar = UIHelpers.Panel("ABar", hdrRow.transform, UIHelpers.Accent);
@@ -134,6 +139,25 @@ namespace DescendersModMenu.UI
                 _inputText.verticalOverflow = VerticalWrapMode.Truncate;
                 var itLe = _inputText.gameObject.AddComponent<LayoutElement>();
                 itLe.flexibleWidth = 1; itLe.minWidth = 0;
+
+                // Flashing cursor dot
+                _chatCursor = UIHelpers.Txt("ChCur", inputBg.transform, "●",
+                    10, FontStyle.Normal, TextAnchor.MiddleCenter, UIHelpers.OnColor);
+                // ignoreLayout + anchor to far right so it never moves with text
+                _chatCursor.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+                var ccRT = UIHelpers.RT(_chatCursor.gameObject);
+                ccRT.anchorMin = new Vector2(1, 0); ccRT.anchorMax = new Vector2(1, 1);
+                ccRT.pivot = new Vector2(1, 0.5f);
+                ccRT.sizeDelta = new Vector2(14, 0);
+                ccRT.anchoredPosition = new Vector2(-6, 0);
+                _chatCursor.gameObject.SetActive(false);
+
+                // Click to focus
+                _chatBoxRect = UIHelpers.RT(inputBg);
+                var chatFocusBtn = inputBg.AddComponent<UnityEngine.UI.Button>();
+                chatFocusBtn.targetGraphic = inputBg.GetComponent<UnityEngine.UI.Image>();
+                chatFocusBtn.onClick.AddListener(() => { _chatFocused = true; });
+
                 var sendBtn = UIHelpers.Btn("SB", inputRow.transform, "SEND",
                     new Vector2(70, 26), 12, () => { SendMessage(); },
                     UIHelpers.NeonBlue, Color.black);
@@ -164,18 +188,50 @@ namespace DescendersModMenu.UI
         {
             if (ModChat.HasNewMessages) { RebuildMessages(); ModChat.ClearNewFlag(); }
             if ((object)_inputText == null) return;
-            foreach (char c in Input.inputString)
+
+            // Click-away to unfocus
+            if (_chatFocused && Input.GetMouseButtonDown(0))
             {
-                if (c == '\b') { if (_inputBuffer.Length > 0) _inputBuffer = _inputBuffer.Substring(0, _inputBuffer.Length - 1); }
-                else if (c == '\n' || c == '\r') { SendMessage(); return; }
-                else if (_inputBuffer.Length < ModChat.MaxLength) _inputBuffer += c;
+                if ((object)_chatBoxRect != null)
+                {
+                    Vector2 mp = Input.mousePosition;
+                    if (!RectTransformUtility.RectangleContainsScreenPoint(_chatBoxRect, mp, null))
+                        _chatFocused = false;
+                }
+            }
+
+            // Cursor pulse
+            if ((object)_chatCursor != null)
+            {
+                _chatCursor.gameObject.SetActive(_chatFocused);
+                if (_chatFocused)
+                {
+                    float alpha = Mathf.Abs(Mathf.Sin(Time.unscaledTime * 4f));
+                    Color col = UIHelpers.OnColor;
+                    col.a = alpha;
+                    _chatCursor.color = col;
+                }
+            }
+
+            if (_statusText) _statusText.text = _inputBuffer.Length + "/" + ModChat.MaxLength
+                + " characters — Click box to type — Only visible to mod users";
+            if (_onlineText) _onlineText.text = "● " + ModDetection.ModUsers.Count + " mod users online in this session";
+
+            if (!_chatFocused) return;
+
+            foreach (char ch in Input.inputString)
+            {
+                if (ch == '\b') { if (_inputBuffer.Length > 0) _inputBuffer = _inputBuffer.Substring(0, _inputBuffer.Length - 1); }
+                else if (ch == '\n' || ch == '\r') { SendMessage(); return; }
+                else if (ch == (char)27) { _chatFocused = false; return; }
+                else if (_inputBuffer.Length < ModChat.MaxLength) _inputBuffer += ch;
             }
             if (_inputBuffer.Length > 0)
             {
                 string display = _inputBuffer.Length > DisplayChars
                     ? _inputBuffer.Substring(_inputBuffer.Length - DisplayChars)
                     : _inputBuffer;
-                _inputText.text = display + "_";
+                _inputText.text = display;
                 _inputText.color = UIHelpers.TextLight;
             }
             else
@@ -183,8 +239,6 @@ namespace DescendersModMenu.UI
                 _inputText.text = "Type a message...";
                 _inputText.color = UIHelpers.TextDim;
             }
-            if (_statusText) _statusText.text = _inputBuffer.Length + "/" + ModChat.MaxLength + " \u2014 Enter to send \u2014 Only visible to mod users";
-            if (_onlineText) _onlineText.text = "\u25CF " + ModDetection.ModUsers.Count + " mod users online in this session";
         }
 
         private static void SendMessage()
@@ -192,6 +246,8 @@ namespace DescendersModMenu.UI
             string msg = _inputBuffer.Trim();
             _inputBuffer = "";
             if (string.IsNullOrEmpty(msg)) return;
+            _chatFocused = false;
+            if ((object)_inputText != null) { _inputText.text = "Type a message..."; _inputText.color = UIHelpers.TextDim; }
             ModChat.Send(msg);
         }
 

@@ -1,4 +1,4 @@
-using MelonLoader;
+ï»¿using MelonLoader;
 using UnityEngine;
 using System.Reflection;
 using HarmonyLib;
@@ -52,10 +52,16 @@ namespace DescendersModMenu.Mods
         public static int CurrentPreset { get; private set; } = 0;
         public static bool StormEnabled { get; private set; } = false;
 
-        // Rain intensity — scales particle emission rate on active storm EffectInstances
+        // Rain intensity ï¿½ scales particle emission rate on active storm EffectInstances
         // Level 1 = 0.5x (light), Level 5 = 1x (default), Level 10 = 3x (heavy)
         public static int RainIntensityLevel { get; private set; } = 5;
         private static readonly float[] RainMultipliers = { 0.5f, 0.65f, 0.8f, 0.9f, 1f, 1.3f, 1.7f, 2.0f, 2.5f, 3.0f };
+
+        public static void SetRainIntensityLevel(int v)
+        {
+            RainIntensityLevel = System.Math.Max(1, System.Math.Min(10, v));
+            if (StormEnabled) ApplyRainIntensity();
+        }
 
         public static void RainIntensityIncrease()
         {
@@ -169,6 +175,60 @@ namespace DescendersModMenu.Mods
         private static FieldInfo _cycleField = null;
         private static FieldInfo _hourField = null;
 
+        // Captured scene defaults â€” set once on scene init before any mod touches them
+        private static float _defaultHour = 12f;
+        private static bool _defaultsCaptured = false;
+
+        public static void CaptureSceneDefaults()
+        {
+            _defaultsCaptured = false;
+            _defaultHour = 12f;
+            try
+            {
+                MonoBehaviour[] all = Object.FindObjectsOfType<MonoBehaviour>();
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (!string.Equals(all[i].GetType().Name, "TOD_Sky",
+                        System.StringComparison.Ordinal)) continue;
+                    FieldInfo cf = all[i].GetType().GetField("Cycle",
+                        BindingFlags.Public | BindingFlags.Instance);
+                    if ((object)cf == null) break;
+                    object cycle = cf.GetValue(all[i]);
+                    if ((object)cycle == null) break;
+                    FieldInfo hf = cycle.GetType().GetField("Hour",
+                        BindingFlags.Public | BindingFlags.Instance);
+                    if ((object)hf == null) break;
+                    _defaultHour = (float)hf.GetValue(cycle);
+                    _defaultsCaptured = true;
+                    MelonLogger.Msg("[SkyColours] Captured default hour=" + _defaultHour);
+                    break;
+                }
+                if (!_defaultsCaptured)
+                {
+                    // TOD_Sky only exists in gameplay scenes, not the menu â€” skip silently
+                    _defaultHour = 12f;
+                }
+            }
+            catch (System.Exception ex)
+            {
+                MelonLogger.Error("[SkyColours] CaptureSceneDefaults: " + ex.Message);
+            }
+        }
+
+        // Restore sky to exactly what it was when the scene loaded
+        public static void RestoreDefault()
+        {
+            CurrentPreset = 0;
+            SetTODHour(_defaultsCaptured ? _defaultHour : 12f);
+            MelonLogger.Msg("[SkyColours] Restored default (hour=" + (_defaultsCaptured ? _defaultHour : 12f) + ")");
+        }
+
+        // Used by Save/Load â€” stores the preset index without touching the game world
+        public static void SetPresetSilent(int preset)
+        {
+            CurrentPreset = preset;
+        }
+
         public static void ApplyPatch(HarmonyLib.Harmony harmony)
         {
             try
@@ -201,7 +261,7 @@ namespace DescendersModMenu.Mods
                 harmony.Patch(lateUpdate, postfix: new HarmonyMethod(postfix));
                 MelonLogger.Msg("[SkyColours] Patched TOD_Sky.LateUpdate.");
 
-                // Patch TLJ\u0081Hrt — fires after game spawns fresh LoopingParticle instances
+                // Patch TLJ\u0081Hrt ï¿½ fires after game spawns fresh LoopingParticle instances
                 // We apply intensity immediately to the brand-new PS before anything else runs
                 MethodInfo tljMethod = typeof(EffectList).GetMethod("TLJ\u0081Hrt",
                     BindingFlags.NonPublic | BindingFlags.Instance);
@@ -213,7 +273,7 @@ namespace DescendersModMenu.Mods
                     MelonLogger.Msg("[SkyColours] Patched EffectList.TLJ (spawn hook).");
                 }
                 else
-                    MelonLogger.Warning("[SkyColours] TLJ method not found — intensity patch skipped.");
+                    MelonLogger.Warning("[SkyColours] TLJ method not found ï¿½ intensity patch skipped.");
 
                 DiagnosticsManager.Report("SkyColours", true);
             }
@@ -486,6 +546,7 @@ namespace DescendersModMenu.Mods
             _skyComp = null;
             _cycleField = null;
             _hourField = null;
+            _defaultsCaptured = false;
             _idsLoaded = false;
             _cachedEffectLists = null;
         }
@@ -497,9 +558,9 @@ namespace DescendersModMenu.Mods
             try
             {
                 float mult = RainMultipliers[RainIntensityLevel - 1];
-                if (System.Math.Abs(mult - 1f) < 0.001f) return; // default — no change needed
+                if (System.Math.Abs(mult - 1f) < 0.001f) return; // default ï¿½ no change needed
 
-                // Read ltpCVSt — the list of active particle EffectInstances just populated
+                // Read ltpCVSt ï¿½ the list of active particle EffectInstances just populated
                 System.Reflection.FieldInfo ltpField = typeof(EffectList).GetField("ltpCVSt",
                     BindingFlags.NonPublic | BindingFlags.Instance);
                 if ((object)ltpField == null) return;

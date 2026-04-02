@@ -12,7 +12,7 @@ namespace DescendersModMenu
         public const string Description = "A modding toolkit for Descenders";
         public const string Author = "NateHyden";
         public const string Company = null;
-        public const string Version = "3.5.0";
+        public const string Version = "3.6.0";
         public const string DownloadLink = null;
     }
 
@@ -65,6 +65,8 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("DrunkMode.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("DrunkMode", false, ex.Message); }
             try { SessionTrackers.ApplyBailPatch(harmony); DiagnosticsManager.Report("BailCounter", true); }
             catch (System.Exception ex) { MelonLogger.Error("BailPatch: " + ex.Message); DiagnosticsManager.Report("BailCounter", false, ex.Message); }
+            try { SessionTrackers.ApplyCheckpointPatch(harmony); DiagnosticsManager.Report("CheckpointCounter", true); }
+            catch (System.Exception ex) { MelonLogger.Error("CheckpointPatch: " + ex.Message); DiagnosticsManager.Report("CheckpointCounter", false, ex.Message); }
             try { GhostReplay.ApplyPatch(harmony); DiagnosticsManager.Report("GhostReplay", true); }
             catch (System.Exception ex) { MelonLogger.Error("GhostReplay.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("GhostReplay", false, ex.Message); }
             try { GameModifierMods.ApplyNoSpeedWobblesPatch(harmony); DiagnosticsManager.Report("NoSpeedWobbles", true); }
@@ -137,6 +139,8 @@ namespace DescendersModMenu
         public override void OnSceneWasInitialized(int buildindex, string sceneName)
         {
             MelonLogger.Msg("OnSceneWasInitialized: " + buildindex + " | " + sceneName);
+            SkyColours.CaptureSceneDefaults();    // must be before any mod changes sky
+            GraphicsSettings.CaptureDefaultQuality(); // only records once (first launch)
             GhostReplay.OnSceneInitialized();
             MapChanger.OnSceneInitialized();
             ExplodingProps.OnSceneInitialized(sceneName);
@@ -167,12 +171,18 @@ namespace DescendersModMenu
             SlowMoOnBail.Reset();
             SkyColours.Reset();
             GraphicsSettings.Reset();
+            EarthquakeMode.Reset();
+            PoliceChaseMode.Reset();
+            TrickAttackMode.Reset();
+            BoulderDodgeMode.Reset();
+            SurvivalMode.Reset();
             TopSpeed.ClearCache();
             SessionTrackers.Reset();
             ExplodingProps.Reset();
             StickyTyres.Reset();
             WheelieAngleLimit.Reset();
             AirControl.Reset();
+            CenterOfMass.Reset();
             ScoreManager.ResetMultiplier();
             // ── Fixed mods — now have proper Reset() ─────────────────
             FOV.Reset();                  // replaces FOV.ClearCache()
@@ -195,7 +205,12 @@ namespace DescendersModMenu
                 { GhostReplay.SaveRun(); Page14UI.RefreshAll(); }
 
                 if (Input.GetKeyDown(KeyCode.JoystickButton8))
-                { GhostReplay.SetSpawnMarker(); Page14UI.RefreshAll(); }
+                {
+                    if (SurvivalMode.Enabled && SurvivalMode.IsGameOver)
+                        SurvivalMode.ResetRun();
+                    else
+                    { GhostReplay.SetSpawnMarker(); Page14UI.RefreshAll(); }
+                }
 
                 if (Input.GetKeyDown(KeyCode.JoystickButton9))
                 {
@@ -228,10 +243,20 @@ namespace DescendersModMenu
             try { DrunkMode.Tick(); } catch { }
             try { Page11UI.Tick(); } catch { }
             try { Page12UI.Tick(); } catch { }
-            try { Page13UI.Tick(); } catch { }
+            try { Page3UI.Tick(); } catch { }
+            if (!Page11UI.IsRenaming && !Page12UI.IsChatFocused
+                && !Page15UI.IsSeedFocused && !PageModesUI.IsTAInputFocused)
+                try { Page9UI.IdentityTick(); } catch { }
+            try { SessionTrackers.CheckpointTick(); } catch { }
+            try { PageModesUI.Tick(); } catch { }
             try { AvalancheMode.Tick(); } catch { }
+            try { PoliceChaseMode.Tick(); } catch { }
+            try { TrickAttackMode.Tick(); } catch { }
+            try { BoulderDodgeMode.Tick(); } catch { }
+            try { SurvivalMode.Tick(); } catch { }
             try { GhostReplay.Tick(); } catch { }
             try { MapChanger.Tick(); } catch { }
+            try { Page15UI.SeedTick(); } catch { }
             try { Page14UI.Tick(); } catch { }
             try { SlowMoOnBail.Tick(); } catch { }
             try { ScoreManager.Tick(); } catch { }
@@ -244,8 +269,12 @@ namespace DescendersModMenu
         public override void OnFixedUpdate()
         {
             try { AvalancheMode.FixedTick(); } catch { }
+            try { EarthquakeMode.FixedTick(); } catch { }
+            try { PoliceChaseMode.FixedTick(); } catch { }
             try { StickyTyres.FixedTick(); } catch { }
             try { AirControl.FixedTick(); } catch { }
+            try { CenterOfMass.FixedTick(); } catch { }
+            try { BoulderDodgeMode.FixedTick(); } catch { }
         }
 
         public override void OnLateUpdate()
@@ -261,6 +290,9 @@ namespace DescendersModMenu
         {
             try { ESP.OnGUI(); } catch (System.Exception ex) { MelonLogger.Error("ESP.OnGUI: " + ex.Message); }
             try { GhostHUD.Draw(); } catch (System.Exception ex) { MelonLogger.Error("GhostHUD.Draw: " + ex.Message); }
+            try { PoliceHUD.Draw(); } catch { }
+            try { TrickAttackHUD.Draw(); } catch { }
+            try { SurvivalHUD.Draw(); } catch { }
         }
 
         public override void OnApplicationQuit()

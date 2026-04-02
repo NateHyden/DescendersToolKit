@@ -8,19 +8,32 @@ namespace DescendersModMenu.UI
     public static class Page3UI
     {
         // ── Sub-tab state ─────────────────────────────────────────────
-        private static int _activeTab = 0; // 0=System 1=Mod Status 2=Hotkeys 3=Credits
+        private static int _activeTab = 0; // 0=System 1=Mod Status 2=Hotkeys 3=Credits 4=Customise 5=Dev Tools
 
-        private static readonly string[] TabLabels = { "System", "Mod Status", "Hotkeys", "Credits" };
+        private static readonly string[] TabLabels = { "System", "Mod Status", "Hotkeys", "Credits", "Customise", "Dev Tools" };
 
         // Sub-tab bar buttons
-        private static Image[] _tabBgs = new Image[4];
-        private static Text[] _tabTxts = new Text[4];
+        private static Image[] _tabBgs = new Image[6];
+        private static Text[] _tabTxts = new Text[6];
 
         // Page root GameObjects
         private static GameObject _pgSystem;
         private static GameObject _pgStatus;
         private static GameObject _pgHotkeys;
         private static GameObject _pgCredits;
+        private static GameObject _pgCustomise;
+        private static GameObject _pgScanner;
+
+        // Customise tab refs
+        private static Text _custPosLbl;
+        private static Text _custScaleLbl;
+        private static Text _custOpacityLbl;
+        private static GameObject _custSavedRow;
+
+        // Scanner tab refs
+        private static RectTransform _scanContentRT;
+        private static Text _scanSummaryTxt;
+        private static Text _scanFileTxt;
 
         // System tab
         private static Text _unityVersionTxt;
@@ -119,6 +132,16 @@ namespace DescendersModMenu.UI
                 UIHelpers.Fill(UIHelpers.RT(_pgCredits));
                 BuildCreditsPage(_pgCredits.transform);
 
+                // ── Customise page ────────────────────────────────────
+                _pgCustomise = UIHelpers.Obj("PgCustomise", contentArea.transform);
+                UIHelpers.Fill(UIHelpers.RT(_pgCustomise));
+                BuildCustomisePage(_pgCustomise.transform);
+
+                // ── Scanner page ──────────────────────────────────────
+                _pgScanner = UIHelpers.Obj("PgScanner", contentArea.transform);
+                UIHelpers.Fill(UIHelpers.RT(_pgScanner));
+                BuildScannerPage(_pgScanner.transform);
+
                 SwitchTab(0);
                 Refresh();
             }
@@ -138,6 +161,8 @@ namespace DescendersModMenu.UI
             if ((object)_pgStatus != null) _pgStatus.SetActive(idx == 1);
             if ((object)_pgHotkeys != null) _pgHotkeys.SetActive(idx == 2);
             if ((object)_pgCredits != null) _pgCredits.SetActive(idx == 3);
+            if ((object)_pgCustomise != null) _pgCustomise.SetActive(idx == 4);
+            if ((object)_pgScanner != null) _pgScanner.SetActive(idx == 5);
 
             for (int i = 0; i < TabLabels.Length; i++)
             {
@@ -172,7 +197,7 @@ namespace DescendersModMenu.UI
 
             UIHelpers.Divider(vlg.transform);
             UIHelpers.SectionHeader("TOOLKIT", vlg.transform);
-            MakeInfoRow2("Version", "3.5.0", vlg.transform, UIHelpers.Accent);
+            MakeInfoRow2("Version", "3.6.0", vlg.transform, UIHelpers.Accent);
             MakeInfoRow2("Output DLL", "DescendersToolKit.dll", vlg.transform);
             MakeInfoRow2("Author", "NateHyden", vlg.transform);
         }
@@ -298,11 +323,292 @@ namespace DescendersModMenu.UI
             UIHelpers.InfoBox(vlg.transform,
                 "If you downloaded this from anywhere other than the official GitHub or Nexus page above, you may have an outdated or modified version.");
 
+            // Game credit
+            UIHelpers.SectionHeader("GAME", vlg.transform);
+            UIHelpers.InfoBox(vlg.transform,
+                "Descenders is created by Ragesquid and published by No More Robots. " +
+                "Huge credit to them for building such an incredible game that makes mods like this possible.");
+            MakeInfoRow2("Developer", "Ragesquid", vlg.transform, UIHelpers.Accent);
+            MakeInfoRow2("Publisher", "No More Robots", vlg.transform, UIHelpers.Accent);
+
             // Built with
             UIHelpers.SectionHeader("BUILT WITH", vlg.transform);
             MakeInfoRow2("MelonLoader", "0.5.7", vlg.transform);
             MakeInfoRow2("HarmonyLib", "2.x", vlg.transform);
             MakeInfoRow2("Unity Engine", "2017.4.40f1", vlg.transform);
+        }
+
+        // ── Customise page ────────────────────────────────────────────
+        // ── Scanner page ──────────────────────────────────────────────
+        private static void BuildScannerPage(Transform p)
+        {
+            var vlg = UIHelpers.Obj("ScanVlg", p);
+            UIHelpers.Fill(UIHelpers.RT(vlg));
+            var v = vlg.AddComponent<VerticalLayoutGroup>();
+            v.spacing = UIHelpers.RowGap;
+            v.padding = new RectOffset((int)UIHelpers.ContentPad, (int)UIHelpers.ContentPad, 8, 8);
+            v.childAlignment = TextAnchor.UpperCenter;
+            v.childForceExpandWidth = true; v.childForceExpandHeight = false;
+
+            UIHelpers.SectionHeader("DEV TOOLS — ASSEMBLY SCANNER", vlg.transform);
+            UIHelpers.InfoBox(vlg.transform,
+                "Checks every reflected field, property and method used by the mods.");
+            UIHelpers.InfoBox(vlg.transform,
+                "Run after a game update to confirm everything still works. " +
+                "Report is saved to UserData/DescendersModMenu/AssemblyReport.txt");
+
+            // Run button + summary on same row
+            var btnRow = UIHelpers.StatRow("", vlg.transform);
+            UIHelpers.ActionBtn(btnRow.transform, "Run Scan", () =>
+            {
+                Mods.AssemblyScanner.Run();
+                RebuildScanResults();
+            }, 72);
+            _scanSummaryTxt = UIHelpers.Txt("ScanSum", btnRow.transform, "Not run yet",
+                11, FontStyle.Normal, TextAnchor.MiddleLeft, UIHelpers.TextDim);
+            _scanSummaryTxt.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+            UIHelpers.Divider(vlg.transform);
+
+            // Scrollable results list
+            var scrollHost = UIHelpers.Obj("ScanScroll", vlg.transform);
+            var hostLE = scrollHost.AddComponent<LayoutElement>();
+            hostLE.flexibleHeight = 1; hostLE.minHeight = 100;
+            scrollHost.AddComponent<Image>().color = new Color(0.118f, 0.118f, 0.133f, 1f);
+            var sr = scrollHost.AddComponent<ScrollRect>();
+            sr.horizontal = false; sr.vertical = true;
+            sr.scrollSensitivity = 20f;
+            sr.movementType = ScrollRect.MovementType.Clamped;
+            sr.inertia = false;
+
+            var vpGO = UIHelpers.Obj("Viewport", scrollHost.transform);
+            var vpRT = UIHelpers.RT(vpGO);
+            vpRT.anchorMin = Vector2.zero; vpRT.anchorMax = Vector2.one;
+            vpRT.offsetMin = Vector2.zero; vpRT.offsetMax = Vector2.zero;
+            vpGO.AddComponent<Image>().color = new Color(0.118f, 0.118f, 0.133f, 0.01f);
+            vpGO.AddComponent<Mask>().showMaskGraphic = true;
+            sr.viewport = vpRT;
+
+            var contGO = UIHelpers.Obj("Content", vpGO.transform);
+            _scanContentRT = UIHelpers.RT(contGO);
+            _scanContentRT.anchorMin = new Vector2(0f, 1f);
+            _scanContentRT.anchorMax = new Vector2(1f, 1f);
+            _scanContentRT.pivot = new Vector2(0.5f, 1f);
+            _scanContentRT.anchoredPosition = Vector2.zero;
+            _scanContentRT.sizeDelta = new Vector2(0f, 100f);
+            sr.content = _scanContentRT;
+
+            var cVlg = contGO.AddComponent<VerticalLayoutGroup>();
+            cVlg.spacing = 2f;
+            cVlg.padding = new RectOffset(6, 6, 6, 6);
+            cVlg.childForceExpandWidth = true; cVlg.childForceExpandHeight = false;
+            cVlg.childAlignment = TextAnchor.UpperLeft;
+
+            // File path row at bottom
+            UIHelpers.Divider(vlg.transform);
+            _scanFileTxt = UIHelpers.Txt("ScanFile", vlg.transform,
+                "Report: UserData/DescendersModMenu/AssemblyReport.txt",
+                9, FontStyle.Italic, TextAnchor.MiddleLeft, UIHelpers.TextDim);
+            _scanFileTxt.gameObject.AddComponent<LayoutElement>().preferredHeight = 18;
+        }
+
+        private static void RebuildScanResults()
+        {
+            if ((object)_scanContentRT == null) return;
+
+            // Clear existing rows
+            for (int i = _scanContentRT.childCount - 1; i >= 0; i--)
+                UnityEngine.Object.DestroyImmediate(_scanContentRT.GetChild(i).gameObject);
+
+            var results = Mods.AssemblyScanner.Results;
+            const float ROW_H = 22f;
+            float totalH = 12f + results.Count * (ROW_H + 2f);
+            _scanContentRT.sizeDelta = new Vector2(0f, totalH);
+
+            string lastCat = "";
+            for (int i = 0; i < results.Count; i++)
+            {
+                var r = results[i];
+
+                // Category separator
+                if (!string.Equals(r.Category, lastCat, System.StringComparison.Ordinal))
+                {
+                    var catRow = UIHelpers.Obj("Cat_" + r.Category, _scanContentRT);
+                    var catle = catRow.AddComponent<LayoutElement>();
+                    catle.preferredHeight = ROW_H; catle.minHeight = ROW_H;
+                    var catTxt = UIHelpers.Txt("CatT", catRow.transform,
+                        r.Category.ToUpper(), 10, FontStyle.Bold,
+                        TextAnchor.MiddleLeft, UIHelpers.Accent);
+                    UIHelpers.Fill(UIHelpers.RT(catTxt.gameObject));
+                    lastCat = r.Category;
+                    totalH += ROW_H + 2f;
+                }
+
+                var row = UIHelpers.Obj("R" + i, _scanContentRT);
+                var rle = row.AddComponent<LayoutElement>();
+                rle.preferredHeight = ROW_H; rle.minHeight = ROW_H; rle.flexibleHeight = 0;
+                var hlg = row.AddComponent<HorizontalLayoutGroup>();
+                hlg.spacing = 6;
+                hlg.padding = new RectOffset(4, 4, 0, 0);
+                hlg.childAlignment = TextAnchor.MiddleLeft;
+                hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
+
+                // WARN = OK but flagged (amber), FAIL = red, OK = green
+                bool isWarn = r.OK && r.Detail.StartsWith("WARN", System.StringComparison.Ordinal);
+                Color dotCol = isWarn ? UIHelpers.Orange : (r.OK ? UIHelpers.OnColor : UIHelpers.OffColor);
+                Color textCol = isWarn ? UIHelpers.Orange : (r.OK ? UIHelpers.TextLight : UIHelpers.OffColor);
+
+                // Dot
+                var dot = UIHelpers.Obj("Dot", row.transform);
+                var dotImg = dot.AddComponent<Image>();
+                dotImg.sprite = UIHelpers.DotSp;
+                dotImg.color = dotCol;
+                var dle = dot.AddComponent<LayoutElement>();
+                dle.preferredWidth = 8; dle.minWidth = 8;
+                dle.preferredHeight = 8; dle.minHeight = 8;
+                dle.flexibleWidth = 0; dle.flexibleHeight = 0;
+
+                // Name — append detail for WARN/FAILED so user sees the reason
+                string displayName = r.Name;
+                if (isWarn)
+                    displayName = r.Name + "  ·  " + r.Detail.Substring(6); // strip "WARN: "
+                else if (!r.OK && r.Detail.Length > 0 && !string.Equals(r.Detail, "NOT FOUND", System.StringComparison.Ordinal))
+                    displayName = r.Name + "  ·  " + r.Detail;
+                var nameT = UIHelpers.Txt("N", row.transform, displayName, 10,
+                    FontStyle.Normal, TextAnchor.MiddleLeft, textCol);
+                nameT.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+
+                // Status
+                string stat = isWarn ? "WARN" : (r.OK ? "OK" : "FAILED");
+                var statT = UIHelpers.Txt("S", row.transform, stat, 10,
+                    FontStyle.Bold, TextAnchor.MiddleRight, dotCol);
+                statT.gameObject.AddComponent<LayoutElement>().preferredWidth = 48;
+            }
+
+            _scanContentRT.sizeDelta = new Vector2(0f, totalH);
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_scanContentRT);
+
+            // Update summary
+            if (_scanSummaryTxt)
+            {
+                int ok = Mods.AssemblyScanner.OKCount;
+                int fail = Mods.AssemblyScanner.FailCount;
+                _scanSummaryTxt.text = ok + " OK  " + (fail > 0 ? fail + " FAILED" : "0 failed");
+                _scanSummaryTxt.color = fail > 0 ? UIHelpers.OffColor : UIHelpers.OnColor;
+            }
+        }
+
+        private static void BuildCustomisePage(Transform p)
+        {
+            var vlg = UIHelpers.Obj("CustVlg", p);
+            UIHelpers.Fill(UIHelpers.RT(vlg));
+            var v = vlg.AddComponent<VerticalLayoutGroup>();
+            v.spacing = UIHelpers.RowGap;
+            v.padding = new RectOffset((int)UIHelpers.ContentPad, (int)UIHelpers.ContentPad, 8, 8);
+            v.childAlignment = TextAnchor.UpperCenter;
+            v.childForceExpandWidth = true; v.childForceExpandHeight = false;
+
+            var c = vlg.transform;
+
+            // ── How it works ──────────────────────────────────────────
+            UIHelpers.SectionHeader("HOW IT WORKS", c);
+            UIHelpers.InfoBox(c,
+                "Your layout saves automatically whenever you make a change.");
+            UIHelpers.InfoBox(c,
+                "It loads back every time you launch the game — no manual save needed.");
+            UIHelpers.InfoBox(c,
+                "Use Reset to go back to the default position, scale and opacity.");
+
+            UIHelpers.Divider(c);
+
+            // ── Position ──────────────────────────────────────────────
+            UIHelpers.SectionHeader("POSITION", c);
+
+            var posRow = UIHelpers.StatRow("Position", c);
+            UIHelpers.ActionBtn(posRow.transform, "Centre",
+                () => { Mods.MenuCustomiser.SetPosition(0); RefreshCustomise(); }, 52);
+            UIHelpers.ActionBtn(posRow.transform, "Top Left",
+                () => { Mods.MenuCustomiser.SetPosition(1); RefreshCustomise(); }, 58);
+            UIHelpers.ActionBtn(posRow.transform, "Top Right",
+                () => { Mods.MenuCustomiser.SetPosition(2); RefreshCustomise(); }, 60);
+            _custPosLbl = UIHelpers.Txt("CustPosV", posRow.transform,
+                Mods.MenuCustomiser.PositionLabels[Mods.MenuCustomiser.PositionPreset],
+                11, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
+            _custPosLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 60;
+
+            UIHelpers.Divider(c);
+
+            // ── Scale ─────────────────────────────────────────────────
+            UIHelpers.SectionHeader("SCALE", c);
+
+            var scaleRow = UIHelpers.StatRow("Scale", c);
+            UIHelpers.SmallBtn(scaleRow.transform, "\u25C0",
+                () => { Mods.MenuCustomiser.PrevScale(); RefreshCustomise(); });
+            _custScaleLbl = UIHelpers.Txt("CustScaleV", scaleRow.transform,
+                Mods.MenuCustomiser.ScaleDisplay,
+                12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+            _custScaleLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 52;
+            UIHelpers.SmallBtn(scaleRow.transform, "\u25B6",
+                () => { Mods.MenuCustomiser.NextScale(); RefreshCustomise(); });
+
+            UIHelpers.Divider(c);
+
+            // ── Opacity ───────────────────────────────────────────────
+            UIHelpers.SectionHeader("OPACITY", c);
+
+            var opacityRow = UIHelpers.StatRow("Opacity", c);
+            UIHelpers.SmallBtn(opacityRow.transform, "\u25C0",
+                () => { Mods.MenuCustomiser.PrevOpacity(); RefreshCustomise(); });
+            _custOpacityLbl = UIHelpers.Txt("CustOpacityV", opacityRow.transform,
+                Mods.MenuCustomiser.OpacityDisplay,
+                12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+            _custOpacityLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 52;
+            UIHelpers.SmallBtn(opacityRow.transform, "\u25B6",
+                () => { Mods.MenuCustomiser.NextOpacity(); RefreshCustomise(); });
+
+            UIHelpers.InfoBox(c, "Below 50% opacity the menu becomes hard to read.");
+
+            UIHelpers.Divider(c);
+
+            // ── Save / Reset buttons ──────────────────────────────────
+            var btnRow = UIHelpers.StatRow("", c);
+            UIHelpers.ActionBtn(btnRow.transform, "Save Now",
+                () => { Mods.MenuCustomiser.SaveToFile(); }, 72);
+            UIHelpers.ActionBtn(btnRow.transform, "Reset to Defaults",
+                () => { Mods.MenuCustomiser.Reset(); RefreshCustomise(); }, 120);
+
+            // ── Saved indicator (hidden until save fires) ─────────────
+            _custSavedRow = UIHelpers.Obj("SavedIndicator", c);
+            var siLE = _custSavedRow.AddComponent<LayoutElement>();
+            siLE.preferredHeight = 22; siLE.minHeight = 22;
+            var siHlg = _custSavedRow.AddComponent<HorizontalLayoutGroup>();
+            siHlg.childAlignment = TextAnchor.MiddleCenter;
+            siHlg.childForceExpandWidth = false;
+            siHlg.childForceExpandHeight = false;
+            siHlg.spacing = 6;
+
+            var dot = UIHelpers.Txt("SavedDot", _custSavedRow.transform,
+                "\u25CF", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OnColor);
+            dot.gameObject.AddComponent<LayoutElement>().preferredWidth = 12;
+
+            var savedLbl = UIHelpers.Txt("SavedLbl", _custSavedRow.transform,
+                "Layout saved", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OnColor);
+            savedLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
+
+            _custSavedRow.SetActive(false);
+
+            UIHelpers.AddScrollForwarders(c);
+            RefreshCustomise();
+        }
+
+        private static void RefreshCustomise()
+        {
+            if (_custPosLbl)
+                _custPosLbl.text = Mods.MenuCustomiser.PositionLabels[Mods.MenuCustomiser.PositionPreset];
+            if (_custScaleLbl)
+                _custScaleLbl.text = Mods.MenuCustomiser.ScaleDisplay;
+            if (_custOpacityLbl)
+                _custOpacityLbl.text = Mods.MenuCustomiser.OpacityDisplay;
         }
 
         // ── Helpers ───────────────────────────────────────────────────
@@ -372,6 +678,13 @@ namespace DescendersModMenu.UI
             var val = UIHelpers.Txt(label + "V", row.transform, url, 11,
                 FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.NeonBlue);
             val.gameObject.AddComponent<LayoutElement>().preferredWidth = 280;
+        }
+
+        // ── Tick ──────────────────────────────────────────────────────
+        public static void Tick()
+        {
+            if ((object)_custSavedRow != null)
+                _custSavedRow.SetActive(Mods.MenuCustomiser.ShowSavedIndicator);
         }
 
         // ── Refresh / Rebuild ─────────────────────────────────────────
