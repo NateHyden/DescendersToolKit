@@ -249,7 +249,7 @@ namespace DescendersModMenu
             Movement.Reset();             // restores all 4 movement fields
             LandingImpact.Reset();        // clears Enabled flag
             NoBail.ClearCache();
-            Page9UI.ResetWheelSize();
+            Page8UI.ResetWheelSize();
 
             // ── Restore immediate toggles (no player/camera needed) ───────
             // Harmony patches just need Enabled=true, they re-check each call.
@@ -411,7 +411,7 @@ namespace DescendersModMenu
             try { SkyColours.Tick(); } catch (System.Exception ex) { MelonLogger.Error("SkyColours.Tick: " + ex.Message); }
             try { DrunkMode.LateTick(); } catch { }
             try { WideTyres.Tick(); } catch { }
-            try { Page9UI.WheelSizeTick(); } catch { }
+            try { Page8UI.WheelSizeTick(); } catch { }
         }
 
         public override void OnGUI()

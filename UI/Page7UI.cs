@@ -25,11 +25,6 @@ namespace DescendersModMenu.UI
         private static Image _fogTrack;
         private static RectTransform _fogKnob;
 
-        // Torch
-        private static Text _torchVal, _torchIntLbl;
-        private static Image _torchTrack;
-        private static RectTransform _torchKnob;
-
         public static bool TreesEnabled = true;
         public static bool MusicEnabled = true;
         public static bool FogEnabled = true;
@@ -40,6 +35,20 @@ namespace DescendersModMenu.UI
         private static float _savedMusicVolume = 1f;
         private static float _savedFogDensity = -1f;
         private static bool _savedFogState = true;
+
+        // Turbo Wind
+        private static bool _turboWind = false;
+        private static float _savedWindMain = -1f;
+        private static Image _windTrack; private static RectTransform _windKnob;
+        private static Text _windVal;
+        private static System.Type _windZoneType = null;
+        private static System.Reflection.PropertyInfo _windMainProp = null;
+        private static System.Reflection.PropertyInfo _windTurbProp = null;
+
+        // No Mistakes (Exploding Props)
+        private static bool _explodingProps = false;
+        private static Image _explodeTrack; private static RectTransform _explodeKnob;
+        private static Text _explodeVal;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -105,31 +114,6 @@ namespace DescendersModMenu.UI
                 UIHelpers.Toggle(stmr.transform, "StmT", () => { SkyColours.ToggleStorm(); RefreshAll(); }, out _stormTrack, out _stormKnob);
 
 
-                // ── Torch ─────────────────────────────────────────────
-                UIHelpers.SectionHeader("TORCH", pg7);
-
-                var tchr = UIHelpers.StatRow("Headlight", pg7);
-                _torchVal = UIHelpers.Txt("TchV", tchr.transform, "OFF", 11,
-                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _torchVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(tchr.transform, "TchT",
-                    () => { BikeTorch.Toggle(); RefreshAll(); },
-                    out _torchTrack, out _torchKnob);
-
-                var tcir = UIHelpers.StatRow("Intensity", pg7);
-                UIHelpers.SmallBtn(tcir.transform, "\u25C0",
-                    () => { BikeTorch.PrevIntensity(); RefreshAll(); });
-                _torchIntLbl = UIHelpers.Txt("TchIV", tcir.transform,
-                    BikeTorch.IntensityDisplay, 12,
-                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
-                _torchIntLbl.gameObject.AddComponent<LayoutElement>().preferredWidth = 56;
-                UIHelpers.SmallBtn(tcir.transform, "\u25B6",
-                    () => { BikeTorch.NextIntensity(); RefreshAll(); });
-
-                UIHelpers.InfoBox(pg7,
-                    "Enables the bike's headlight. If the game has no built-in light, " +
-                    "a spotlight is added to the front of the bike.");
-
                 UIHelpers.Divider(pg7);
 
                 // ── Physics ───────────────────────────────────────────────
@@ -190,6 +174,28 @@ namespace DescendersModMenu.UI
                     ToggleFog(FogEnabled);
                     RefreshAll();
                 }, out _fogTrack, out _fogKnob);
+
+                var wr = UIHelpers.StatRow("Turbo Wind", pg7);
+                _windVal = UIHelpers.Txt("WnV", wr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _windVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(wr.transform, "WnT", () =>
+                {
+                    _turboWind = !_turboWind;
+                    ToggleTurboWind(_turboWind);
+                    RefreshAll();
+                }, out _windTrack, out _windKnob);
+
+                var er = UIHelpers.StatRow("No Mistakes", pg7);
+                _explodeVal = UIHelpers.Txt("ExV", er.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _explodeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                var erHint = UIHelpers.Txt("ExH", er.transform, "launch on impact", 9, FontStyle.Italic, TextAnchor.MiddleRight, UIHelpers.TextDim);
+                erHint.gameObject.AddComponent<LayoutElement>().preferredWidth = 90;
+                UIHelpers.Toggle(er.transform, "ExT", () =>
+                {
+                    ExplodingProps.Toggle();
+                    _explodingProps = ExplodingProps.Enabled;
+                    RefreshAll();
+                }, out _explodeTrack, out _explodeKnob);
 
                 UIHelpers.Divider(pg7);
                 UIHelpers.Divider(pg7);
@@ -290,6 +296,42 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Music] ToggleMusic: " + ex.Message); }
         }
 
+        private static void ToggleTurboWind(bool enabled)
+        {
+            try
+            {
+                if ((object)_windZoneType == null)
+                {
+                    System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+                    for (int a = 0; a < assemblies.Length; a++)
+                    {
+                        _windZoneType = assemblies[a].GetType("UnityEngine.WindZone");
+                        if ((object)_windZoneType != null) break;
+                    }
+                }
+                if ((object)_windZoneType == null) return;
+                UnityEngine.Object wz = GameObject.FindObjectOfType(_windZoneType);
+                if ((object)wz == null) return;
+                if ((object)_windMainProp == null)
+                    _windMainProp = _windZoneType.GetProperty("windMain", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if ((object)_windTurbProp == null)
+                    _windTurbProp = _windZoneType.GetProperty("windTurbulence", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (enabled)
+                {
+                    if (_savedWindMain < 0f && (object)_windMainProp != null)
+                        _savedWindMain = (float)_windMainProp.GetValue(wz, null);
+                    if ((object)_windMainProp != null) _windMainProp.SetValue(wz, 50f, null);
+                    if ((object)_windTurbProp != null) _windTurbProp.SetValue(wz, 1f, null);
+                }
+                else
+                {
+                    if ((object)_windMainProp != null) _windMainProp.SetValue(wz, _savedWindMain >= 0f ? _savedWindMain : 1f, null);
+                    if ((object)_windTurbProp != null) _windTurbProp.SetValue(wz, 0.5f, null);
+                }
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[World] ToggleTurboWind: " + ex.Message); }
+        }
+
         private static void ToggleFog(bool enabled)
         {
             try
@@ -331,15 +373,16 @@ namespace DescendersModMenu.UI
             if (_fogVal) { _fogVal.text = FogEnabled ? "ON" : "OFF"; _fogVal.color = FogEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_fogTrack, _fogKnob, FogEnabled);
 
+            if (_windVal) { _windVal.text = _turboWind ? "ON" : "OFF"; _windVal.color = _turboWind ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_windTrack, _windKnob, _turboWind);
+
+            if (_explodeVal) { _explodeVal.text = _explodingProps ? "ON" : "OFF"; _explodeVal.color = _explodingProps ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_explodeTrack, _explodeKnob, _explodingProps);
+
             if (_skyPresetVal) _skyPresetVal.text = SkyColours.PresetNames[SkyColours.CurrentPreset];
             bool storm = SkyColours.StormEnabled;
             if (_stormVal) { _stormVal.text = storm ? "ON" : "OFF"; _stormVal.color = storm ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_stormTrack, _stormKnob, storm);
-
-            bool torch = BikeTorch.Enabled;
-            if (_torchVal) { _torchVal.text = torch ? "ON" : "OFF"; _torchVal.color = torch ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_torchTrack, _torchKnob, torch);
-            if (_torchIntLbl) _torchIntLbl.text = BikeTorch.IntensityDisplay;
         }
     }
 }

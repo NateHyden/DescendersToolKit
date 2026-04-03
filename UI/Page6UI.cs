@@ -26,11 +26,6 @@ namespace DescendersModMenu.UI
         private static Image _nmBar, _nmTrack;
         private static RectTransform _nmKnob;
 
-        // ── Misc ──────────────────────────────────────────────────────
-        private static Text cutBrakesVal;
-        private static Image cutBrakesTrack;
-        private static RectTransform cutBrakesKnob;
-
         // ── Center of Mass ────────────────────────────────────────────
         private static Text _comLRVal, _comFBVal, _comUDVal;
         private static Image _comLRBar, _comFBBar, _comUDBar;
@@ -216,13 +211,6 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.InfoBox(pg6, "Shifts the bike's balance point. All axes start at 0. + moves right / forward / up. Press 0 to reset that axis.");
 
-                UIHelpers.Divider(pg6);
-                UIHelpers.SectionHeader("MISC", pg6);
-
-                var cbr = UIHelpers.StatRow("Cut Brakes", pg6);
-                cutBrakesVal = UIHelpers.Txt("CbV", cbr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                cutBrakesVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(cbr.transform, "CbT", () => { CutBrakes.Toggle(); RefreshAll(); }, out cutBrakesTrack, out cutBrakesKnob);
                 UIHelpers.AddScrollForwarders(pg6);
             }
             catch (System.Exception ex) { MelonLogger.Error("Page6UI.CreatePage: " + ex.Message); return null; }
@@ -274,10 +262,6 @@ namespace DescendersModMenu.UI
             // ── Pump Strength ─────────────────────────────────────────
             if (psVal) psVal.text = GameModifierMods.PumpStrengthLevel.ToString();
             UIHelpers.SetBar(psBar, (GameModifierMods.PumpStrengthLevel - 1) / 9f);
-
-            // ── Cut Brakes ────────────────────────────────────────────
-            if (cutBrakesVal) { cutBrakesVal.text = CutBrakes.Enabled ? "ON" : "OFF"; cutBrakesVal.color = CutBrakes.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(cutBrakesTrack, cutBrakesKnob, CutBrakes.Enabled);
 
             // ── Center of Mass ────────────────────────────────────────
             if (_comLRVal) _comLRVal.text = CenterOfMass.DisplayLR;

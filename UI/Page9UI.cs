@@ -13,18 +13,6 @@ namespace DescendersModMenu.UI
         private static Image _invisTrack; private static RectTransform _invisKnob;
         private static Text _invisVal;
 
-        // ── Turbo Wind ────────────────────────────────────────────────
-        private static bool _turboWind = false;
-        private static float _savedWindMain = -1f;
-        private static Image _windTrack; private static RectTransform _windKnob;
-        private static Text _windVal;
-
-        // ── Invisible Bike ────────────────────────────────────────────
-        private static bool _invisibleBike = false;
-        private static Renderer[] _hiddenBikeRenderers = null;
-        private static Image _invisBikeTrack; private static RectTransform _invisBikeKnob;
-        private static Text _invisBikeVal;
-
         // ── Moon Mode ─────────────────────────────────────────────────
         private static bool _moonModeActive = false;
         private static Image _moonBg, _moonBdr;
@@ -32,31 +20,6 @@ namespace DescendersModMenu.UI
         private static int _savedGravityLevel = -1;
         private static int _savedTravelLevel = -1;
         private static int _savedDampingLevel = -1;
-
-        // ── Wheel Size ────────────────────────────────────────────────
-        private static int _wheelSizeMode = 0;   // 0=Default, 1=Small, 2=Large
-        private static bool _wheelSizeEnabled = false;
-        private static Image _wheelSizeTrack;
-        private static RectTransform _wheelSizeKnob;
-        private static Text _wheelSizeTogVal;
-
-        // ── Exploding Props ───────────────────────────────────────────
-        private static bool _explodingProps = false;
-        private static Image _explodeTrack; private static RectTransform _explodeKnob;
-        private static Text _explodeVal;
-
-        // ── Reverse Steering ──────────────────────────────────────────
-        private static Image _revSteerTrack; private static RectTransform _revSteerKnob;
-        private static Text _revSteerVal;
-
-        // ── Wide Tyres ────────────────────────────────────────────────
-        private static Image _wideTyresTrack; private static RectTransform _wideTyresKnob;
-        private static Text _wideTyresVal, _wideTyresLvlVal; private static Image _wideTyresBar;
-        private static UnityEngine.UI.Button _wideTyresMinus, _wideTyresPlus;
-
-        // ── Sticky Tyres ──────────────────────────────────────────────
-        private static Image _stickyTrack; private static RectTransform _stickyKnob;
-        private static Text _stickyVal;
 
         // ── Set Player Name ───────────────────────────────────────
         private static string _nameBuffer = "";
@@ -66,10 +29,6 @@ namespace DescendersModMenu.UI
         private static string _activeName = "";
         private const int NameMaxLength = 20;
         private const int NameDisplayChars = 18;
-
-        // ── Ice Mode ──────────────────────────────────────────────────
-        private static Image _iceModeTrack; private static RectTransform _iceModeKnob;
-        private static Text _iceModeVal;
 
         // ── Camera Shake ─────────────────────────────────────────────
         private static Text _shakeVal, _shakeTogVal;
@@ -128,57 +87,6 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtn(psr.transform, "Tiny", () => SetPlayerScale(0.2f), 44);
                 UIHelpers.Divider(pg9);
 
-                // ── BIKE ──────────────────────────────────────────────
-                UIHelpers.SectionHeader("BIKE", pg9);
-
-                // Invisible Bike
-                var ibr = UIHelpers.StatRow("Invisible Bike", pg9);
-                _invisBikeVal = UIHelpers.Txt("IbV", ibr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _invisBikeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(ibr.transform, "IbT", () =>
-                {
-                    _invisibleBike = !_invisibleBike;
-                    ToggleInvisibleBike(_invisibleBike);
-                    RefreshAll();
-                }, out _invisBikeTrack, out _invisBikeKnob);
-
-                // Wheel Size — now has on/off toggle + preset buttons
-                var gwr = UIHelpers.StatRow("Wheel Size", pg9);
-                _wheelSizeTogVal = UIHelpers.Txt("WsTV", gwr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _wheelSizeTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(gwr.transform, "WsT", () =>
-                {
-                    _wheelSizeEnabled = !_wheelSizeEnabled;
-                    if (_wheelSizeEnabled) SetWheelSize(_wheelSizeMode == 0 ? 3 : _wheelSizeMode);
-                    else SetWheelSize(0);
-                    RefreshAll();
-                }, out _wheelSizeTrack, out _wheelSizeKnob);
-                UIHelpers.ActionBtn(gwr.transform, "Tiny", () => { _wheelSizeMode = 1; if (_wheelSizeEnabled) { SetWheelSize(1); RefreshAll(); } }, 44);
-                UIHelpers.ActionBtn(gwr.transform, "Small", () => { _wheelSizeMode = 2; if (_wheelSizeEnabled) { SetWheelSize(2); RefreshAll(); } }, 50);
-                UIHelpers.ActionBtn(gwr.transform, "Default", () => { _wheelSizeMode = 0; if (_wheelSizeEnabled) { SetWheelSize(0); RefreshAll(); } }, 58);
-                UIHelpers.ActionBtn(gwr.transform, "Large", () => { _wheelSizeMode = 3; if (_wheelSizeEnabled) { SetWheelSize(3); RefreshAll(); } }, 50);
-                UIHelpers.ActionBtn(gwr.transform, "Huge", () => { _wheelSizeMode = 4; if (_wheelSizeEnabled) { SetWheelSize(4); RefreshAll(); } }, 48);
-
-                // Wide Tyres
-                var wtr = UIHelpers.StatRow("Wide Tyres", pg9);
-                _wideTyresVal = UIHelpers.Txt("WtV", wtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _wideTyresVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(wtr.transform, "WtT", () => { WideTyres.Toggle(); RefreshAll(); }, out _wideTyresTrack, out _wideTyresKnob);
-                _wideTyresBar = UIHelpers.MakeBar("WtB", wtr.transform, (WideTyres.Level - 1) / 19f);
-                _wideTyresLvlVal = UIHelpers.Txt("WtL", wtr.transform, WideTyres.Level.ToString(), 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.TextMid);
-                _wideTyresLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 18;
-                _wideTyresMinus = UIHelpers.SmallBtn(wtr.transform, "-", () => { WideTyres.Decrease(); RefreshAll(); });
-                _wideTyresPlus = UIHelpers.SmallBtn(wtr.transform, "+", () => { WideTyres.Increase(); RefreshAll(); });
-
-                // Sticky Tyres
-                var str2 = UIHelpers.StatRow("Sticky Tyres", pg9);
-                _stickyVal = UIHelpers.Txt("StV", str2.transform, StickyTyres.Enabled ? "ON" : "OFF", 11,
-                    FontStyle.Bold, TextAnchor.MiddleCenter, StickyTyres.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor);
-                _stickyVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(str2.transform, "StT", () => { StickyTyres.Toggle(); RefreshAll(); }, out _stickyTrack, out _stickyKnob);
-
-                UIHelpers.Divider(pg9);
-
                 // ── PRESETS ───────────────────────────────────────────
                 UIHelpers.SectionHeader("PRESETS", pg9);
 
@@ -234,20 +142,8 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.Divider(pg9);
 
-                // ── CONTROLS ──────────────────────────────────────────
-                UIHelpers.SectionHeader("CONTROLS", pg9);
-
-                var rsr = UIHelpers.StatRow("Reverse Steering", pg9);
-                _revSteerVal = UIHelpers.Txt("RsV", rsr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _revSteerVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(rsr.transform, "RsT", () => { ReverseSteering.Toggle(); RefreshAll(); }, out _revSteerTrack, out _revSteerKnob);
-
-                // Ice Grip
-                var imr = UIHelpers.StatRow("Ice Grip", pg9);
-                _iceModeVal = UIHelpers.Txt("ImV", imr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _iceModeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(imr.transform, "ImT", () => { IceMode.Toggle(); RefreshAll(); }, out _iceModeTrack, out _iceModeKnob);
-                UIHelpers.InfoBox(pg9, "Removes tyre grip entirely. For an opposite experience to Sticky Tyres.");
+                // ── EFFECTS ───────────────────────────────────────────
+                UIHelpers.SectionHeader("EFFECTS", pg9);
 
                 var mmr = UIHelpers.StatRow("Mirror Mode", pg9);
                 _mirrorVal = UIHelpers.Txt("MmV", mmr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
@@ -284,8 +180,8 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.Divider(pg9);
 
-                // ── WORLD ─────────────────────────────────────────────
-                UIHelpers.SectionHeader("WORLD", pg9);
+                // ── PLAYER ────────────────────────────────────────────
+                UIHelpers.SectionHeader("PLAYER", pg9);
 
                 var ir = UIHelpers.StatRow("Invisible Player", pg9);
                 _invisVal = UIHelpers.Txt("InV", ir.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
@@ -296,28 +192,6 @@ namespace DescendersModMenu.UI
                     ToggleInvisible(_invisiblePlayer);
                     RefreshAll();
                 }, out _invisTrack, out _invisKnob);
-
-                var wr = UIHelpers.StatRow("Turbo Wind", pg9);
-                _windVal = UIHelpers.Txt("WnV", wr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _windVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                UIHelpers.Toggle(wr.transform, "WnT", () =>
-                {
-                    _turboWind = !_turboWind;
-                    ToggleTurboWind(_turboWind);
-                    RefreshAll();
-                }, out _windTrack, out _windKnob);
-
-                var er = UIHelpers.StatRow("No Mistakes", pg9);
-                _explodeVal = UIHelpers.Txt("ExV", er.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-                _explodeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-                var erHint = UIHelpers.Txt("ExH", er.transform, "launch on impact", 9, FontStyle.Italic, TextAnchor.MiddleRight, UIHelpers.TextDim);
-                erHint.gameObject.AddComponent<LayoutElement>().preferredWidth = 90;
-                UIHelpers.Toggle(er.transform, "ExT", () =>
-                {
-                    ExplodingProps.Toggle();
-                    _explodingProps = ExplodingProps.Enabled;
-                    RefreshAll();
-                }, out _explodeTrack, out _explodeKnob);
 
                 UIHelpers.Divider(pg9);
 
@@ -386,131 +260,6 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex) { MelonLogger.Error("Page9UI.CreatePage: " + ex.Message); return null; }
             return pg;
-        }
-
-        // ── Wheel Size toggle helper ──────────────────────────────────
-        // Called from WheelSizeTick — only applies when enabled
-        public static void WheelSizeTick()
-        {
-            if (_wheelSizeMode == 0) return;
-            try
-            {
-                float scale = WheelScales[_wheelSizeMode];
-                if ((object)_cachedFrontBone != null) _cachedFrontBone.localScale = new Vector3(scale, scale, scale);
-                if ((object)_cachedBackBone != null) _cachedBackBone.localScale = new Vector3(scale, scale, scale);
-            }
-            catch { }
-        }
-
-        public static void ResetWheelSize()
-        {
-            _wheelSizeMode = 0;
-            _wheelSizeEnabled = false;
-            _cachedFrontBone = null;
-            _cachedBackBone = null;
-            _backBoneField = null;
-            _frontBoneField = null;
-            _wheelRadiusField = null;
-            _defaultRadiusFront = -1f;
-            _defaultRadiusBack = -1f;
-        }
-
-        // ── Invisible Bike ────────────────────────────────────────────
-        private static void ToggleInvisibleBike(bool invisible)
-        {
-            try
-            {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-                Transform bikeModel = player.transform.Find("BikeModel");
-                if ((object)bikeModel == null) return;
-                if (invisible)
-                {
-                    Renderer[] all = bikeModel.GetComponentsInChildren<Renderer>(true);
-                    var toHide = new System.Collections.Generic.List<Renderer>();
-                    for (int i = 0; i < all.Length; i++) if (all[i].enabled) toHide.Add(all[i]);
-                    _hiddenBikeRenderers = toHide.ToArray();
-                    for (int i = 0; i < _hiddenBikeRenderers.Length; i++) _hiddenBikeRenderers[i].enabled = false;
-                }
-                else
-                {
-                    if ((object)_hiddenBikeRenderers != null)
-                    {
-                        for (int i = 0; i < _hiddenBikeRenderers.Length; i++)
-                            if ((object)_hiddenBikeRenderers[i] != null) _hiddenBikeRenderers[i].enabled = true;
-                        _hiddenBikeRenderers = null;
-                    }
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleInvisibleBike: " + ex.Message); }
-        }
-
-        // ── Wheel Size internals ──────────────────────────────────────
-        private static readonly float[] WheelScales = { 1.0f, 0.25f, 0.5f, 1.5f, 3.0f };
-        private static readonly string[] WheelLabels = { "Default", "Tiny", "Small", "Large", "Huge" };
-        private static System.Reflection.FieldInfo _wheelRadiusField = null;
-        private static float _defaultRadiusFront = -1f;
-        private static float _defaultRadiusBack = -1f;
-        private static System.Reflection.FieldInfo _backBoneField = null;
-        private static System.Reflection.FieldInfo _frontBoneField = null;
-        private static Transform _cachedFrontBone = null;
-        private static Transform _cachedBackBone = null;
-
-        private static void SetWheelSize(int mode)
-        {
-            try
-            {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-                float scale = WheelScales[mode];
-
-                Transform bikeModel = player.transform.Find("BikeModel");
-                if ((object)bikeModel != null)
-                {
-                    BikeAnimation bikeAnim = bikeModel.GetComponent<BikeAnimation>();
-                    if ((object)bikeAnim != null)
-                    {
-                        if ((object)_backBoneField == null)
-                            _backBoneField = typeof(BikeAnimation).GetField("YLzyVuM",
-                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                        if ((object)_frontBoneField == null)
-                            _frontBoneField = typeof(BikeAnimation).GetField("RCNLpue",
-                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                        if ((object)_backBoneField != null)
-                        {
-                            Transform bb = _backBoneField.GetValue(bikeAnim) as Transform;
-                            if ((object)bb != null) { bb.localScale = new Vector3(scale, scale, scale); _cachedBackBone = bb; }
-                        }
-                        if ((object)_frontBoneField != null)
-                        {
-                            Transform fb = _frontBoneField.GetValue(bikeAnim) as Transform;
-                            if ((object)fb != null) { fb.localScale = new Vector3(scale, scale, scale); _cachedFrontBone = fb; }
-                        }
-                    }
-                }
-
-                Wheel[] wheels = player.GetComponentsInChildren<Wheel>();
-                if (wheels != null)
-                {
-                    for (int i = 0; i < wheels.Length; i++)
-                    {
-                        if ((object)_wheelRadiusField == null)
-                            _wheelRadiusField = wheels[i].GetType().GetField("HqsqNkJ",
-                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                        if ((object)_wheelRadiusField == null) break;
-                        bool isFront = string.Equals(wheels[i].gameObject.name, "wheel_front", System.StringComparison.Ordinal);
-                        if (isFront && _defaultRadiusFront < 0f) _defaultRadiusFront = (float)_wheelRadiusField.GetValue(wheels[i]);
-                        else if (!isFront && _defaultRadiusBack < 0f) _defaultRadiusBack = (float)_wheelRadiusField.GetValue(wheels[i]);
-                        float def = isFront ? _defaultRadiusFront : _defaultRadiusBack;
-                        if (def > 0f) _wheelRadiusField.SetValue(wheels[i], def * scale);
-                    }
-                }
-
-                _wheelSizeMode = mode;
-                if (mode == 0) { _cachedFrontBone = null; _cachedBackBone = null; }
-                MelonLogger.Msg("[Silly] Wheel size -> " + WheelLabels[mode] + " (scale " + scale + ")");
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] SetWheelSize: " + ex.Message); }
         }
 
         // ── Moon Mode ─────────────────────────────────────────────────
@@ -600,47 +349,6 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleInvisible: " + ex.Message); }
         }
 
-        // ── Turbo Wind ────────────────────────────────────────────────
-        private static System.Type _windZoneType = null;
-        private static System.Reflection.PropertyInfo _windMainProp = null;
-        private static System.Reflection.PropertyInfo _windTurbProp = null;
-
-        private static void ToggleTurboWind(bool enabled)
-        {
-            try
-            {
-                if ((object)_windZoneType == null)
-                {
-                    System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-                    for (int a = 0; a < assemblies.Length; a++)
-                    {
-                        _windZoneType = assemblies[a].GetType("UnityEngine.WindZone");
-                        if ((object)_windZoneType != null) break;
-                    }
-                }
-                if ((object)_windZoneType == null) return;
-                UnityEngine.Object wz = GameObject.FindObjectOfType(_windZoneType);
-                if ((object)wz == null) return;
-                if ((object)_windMainProp == null)
-                    _windMainProp = _windZoneType.GetProperty("windMain", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if ((object)_windTurbProp == null)
-                    _windTurbProp = _windZoneType.GetProperty("windTurbulence", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if (enabled)
-                {
-                    if (_savedWindMain < 0f && (object)_windMainProp != null)
-                        _savedWindMain = (float)_windMainProp.GetValue(wz, null);
-                    if ((object)_windMainProp != null) _windMainProp.SetValue(wz, 50f, null);
-                    if ((object)_windTurbProp != null) _windTurbProp.SetValue(wz, 1f, null);
-                }
-                else
-                {
-                    if ((object)_windMainProp != null) _windMainProp.SetValue(wz, _savedWindMain >= 0f ? _savedWindMain : 1f, null);
-                    if ((object)_windTurbProp != null) _windTurbProp.SetValue(wz, 0.5f, null);
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleTurboWind: " + ex.Message); }
-        }
-
         // ── Identity keyboard tick ───────────────────────────────
         // Called from ModEntry.OnUpdate every frame while menu is open.
         public static void IdentityTick()
@@ -705,30 +413,11 @@ namespace DescendersModMenu.UI
         {
             if (_invisVal) { _invisVal.text = _invisiblePlayer ? "ON" : "OFF"; _invisVal.color = _invisiblePlayer ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_invisTrack, _invisKnob, _invisiblePlayer);
-            if (_windVal) { _windVal.text = _turboWind ? "ON" : "OFF"; _windVal.color = _turboWind ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_windTrack, _windKnob, _turboWind);
-            if (_invisBikeVal) { _invisBikeVal.text = _invisibleBike ? "ON" : "OFF"; _invisBikeVal.color = _invisibleBike ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_invisBikeTrack, _invisBikeKnob, _invisibleBike);
-
-            // Wheel Size toggle
-            if (_wheelSizeTogVal) { _wheelSizeTogVal.text = _wheelSizeEnabled ? "ON" : "OFF"; _wheelSizeTogVal.color = _wheelSizeEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_wheelSizeTrack, _wheelSizeKnob, _wheelSizeEnabled);
 
             // Moon Mode
             if (_moonTxt) { _moonTxt.text = _moonModeActive ? "MOON MODE ACTIVE" : "ACTIVATE MOON MODE"; _moonTxt.color = new Color(0, 0, 0, 1); }
             if (_moonBg) _moonBg.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
             if (_moonBdr) _moonBdr.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
-
-            if (_explodeVal) { _explodeVal.text = _explodingProps ? "ON" : "OFF"; _explodeVal.color = _explodingProps ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_explodeTrack, _explodeKnob, _explodingProps);
-
-            bool revOn = ReverseSteering.Enabled;
-            if (_revSteerVal) { _revSteerVal.text = revOn ? "ON" : "OFF"; _revSteerVal.color = revOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_revSteerTrack, _revSteerKnob, revOn);
-
-            bool imOn = IceMode.Enabled;
-            if (_iceModeVal) { _iceModeVal.text = imOn ? "ON" : "OFF"; _iceModeVal.color = imOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_iceModeTrack, _iceModeKnob, imOn);
 
             bool mmOn = MirrorMode.Enabled;
             if (_mirrorVal) { _mirrorVal.text = mmOn ? "ON" : "OFF"; _mirrorVal.color = mmOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
@@ -741,18 +430,6 @@ namespace DescendersModMenu.UI
             bool drunkOn = DrunkMode.Enabled;
             if (_drunkVal) { _drunkVal.text = drunkOn ? "ON" : "OFF"; _drunkVal.color = drunkOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_drunkTrack, _drunkKnob, drunkOn);
-
-            bool wtOn = WideTyres.Enabled;
-            if (_wideTyresVal) { _wideTyresVal.text = wtOn ? "ON" : "OFF"; _wideTyresVal.color = wtOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_wideTyresTrack, _wideTyresKnob, wtOn);
-            if (_wideTyresLvlVal) _wideTyresLvlVal.text = WideTyres.Level.ToString();
-            UIHelpers.SetBar(_wideTyresBar, (WideTyres.Level - 1) / 19f);
-            if ((object)_wideTyresMinus != null) _wideTyresMinus.interactable = wtOn;
-            if ((object)_wideTyresPlus != null) _wideTyresPlus.interactable = wtOn;
-
-            bool stOn = StickyTyres.Enabled;
-            if (_stickyVal) { _stickyVal.text = stOn ? "ON" : "OFF"; _stickyVal.color = stOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_stickyTrack, _stickyKnob, stOn);
 
             // Camera Shake
             bool shOn = CameraShake.Enabled;
