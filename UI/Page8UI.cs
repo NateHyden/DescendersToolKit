@@ -50,6 +50,10 @@ namespace DescendersModMenu.UI
         private static Image _torchTrack;
         private static RectTransform _torchKnob;
 
+        // ── Row GO refs for highlight ─────────────────────────────────
+        private static GameObject _invisBikeRow, _wheelSizeRow, _wideTyresRow, _stickyRow;
+        private static GameObject _revSteerRow, _iceModeRow, _cutBrakesRow, _torchRow;
+
         // ── Wheel Size internals ──────────────────────────────────────
         private static readonly float[] WheelScales = { 1.0f, 0.25f, 0.5f, 1.5f, 3.0f };
         private static readonly string[] WheelLabels = { "Default", "Tiny", "Small", "Large", "Huge" };
@@ -60,6 +64,37 @@ namespace DescendersModMenu.UI
         private static System.Reflection.FieldInfo _frontBoneField = null;
         private static Transform _cachedFrontBone = null;
         private static Transform _cachedBackBone = null;
+
+        // ── Default scale capture ─────────────────────────────────────
+        private static Vector3 _defaultBikeScale = Vector3.one;
+        private static bool _bikeScaleCaptured = false;
+
+        public static void CaptureSceneDefaults()
+        {
+            _bikeScaleCaptured = false;
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) return;
+                Transform bm = player.transform.Find("BikeModel");
+                if ((object)bm != null) { _defaultBikeScale = bm.localScale; _bikeScaleCaptured = true; }
+            }
+            catch { }
+        }
+
+        public static bool IsAnyActive =>
+            Suspension.TravelLevel != 5 || Suspension.StiffnessLevel != 5 || Suspension.DampingLevel != 5 ||
+            _wheelSizeEnabled || _invisibleBike ||
+            WideTyres.Enabled || StickyTyres.Enabled ||
+            ReverseSteering.Enabled || IceMode.Enabled || CutBrakes.Enabled ||
+            BikeTorch.Enabled;
+
+        public static void GlobalReset()
+        {
+            if (_invisibleBike) { ToggleInvisibleBike(false); _invisibleBike = false; }
+            ResetWheelSize();
+            ResetBikeScaleToDefault();
+        }
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -101,7 +136,9 @@ namespace DescendersModMenu.UI
 
                 var pg8 = content.transform;
 
-                // ── SUSPENSION ────────────────────────────────────────
+                // ── RESET TAB ─────────────────────────────────────────
+                var rstRow = UIHelpers.StatRow("", pg8);
+                UIHelpers.ActionBtnOrange(rstRow.transform, "↺  Reset Tab to Defaults", () => { ResetBikeTab(); RefreshAll(); }, 186);
                 UIHelpers.SectionHeader("SUSPENSION", pg8);
 
                 var tr = UIHelpers.StatRow("Travel", pg8);
@@ -143,7 +180,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtn(szr.transform, "Large", () => SetBikeScale(1.25f), 50);
 
                 var szr2 = UIHelpers.StatRow("", pg8);
-                UIHelpers.ActionBtn(szr2.transform, "Default", () => SetBikeScale(1.0f), 58);
+                UIHelpers.ActionBtn(szr2.transform, "Default", () => ResetBikeScaleToDefault(), 58);
                 UIHelpers.ActionBtn(szr2.transform, "Medium", () => SetBikeScale(0.75f), 56);
                 UIHelpers.ActionBtn(szr2.transform, "Small", () => SetBikeScale(0.5f), 48);
                 UIHelpers.ActionBtn(szr2.transform, "Tiny", () => SetBikeScale(0.25f), 44);
@@ -155,7 +192,8 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("BIKE PARTS", pg8);
 
                 // Invisible Bike
-                var ibr = UIHelpers.StatRow("Invisible Bike", pg8);
+                _invisBikeRow = UIHelpers.StatRow("Invisible Bike", pg8);
+                var ibr = _invisBikeRow;
                 _invisBikeVal = UIHelpers.Txt("IbV", ibr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _invisBikeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(ibr.transform, "IbT", () =>
@@ -166,7 +204,8 @@ namespace DescendersModMenu.UI
                 }, out _invisBikeTrack, out _invisBikeKnob);
 
                 // Wheel Size
-                var gwr = UIHelpers.StatRow("Wheel Size", pg8);
+                _wheelSizeRow = UIHelpers.StatRow("Wheel Size", pg8);
+                var gwr = _wheelSizeRow;
                 _wheelSizeTogVal = UIHelpers.Txt("WsTV", gwr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _wheelSizeTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(gwr.transform, "WsT", () =>
@@ -183,7 +222,8 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtn(gwr.transform, "Huge", () => { _wheelSizeMode = 4; if (_wheelSizeEnabled) { SetWheelSize(4); RefreshAll(); } }, 48);
 
                 // Wide Tyres
-                var wtr = UIHelpers.StatRow("Wide Tyres", pg8);
+                _wideTyresRow = UIHelpers.StatRow("Wide Tyres", pg8);
+                var wtr = _wideTyresRow;
                 _wideTyresVal = UIHelpers.Txt("WtV", wtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _wideTyresVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(wtr.transform, "WtT", () => { WideTyres.Toggle(); RefreshAll(); }, out _wideTyresTrack, out _wideTyresKnob);
@@ -194,7 +234,8 @@ namespace DescendersModMenu.UI
                 _wideTyresPlus = UIHelpers.SmallBtn(wtr.transform, "+", () => { WideTyres.Increase(); RefreshAll(); });
 
                 // Sticky Tyres
-                var str2 = UIHelpers.StatRow("Sticky Tyres", pg8);
+                _stickyRow = UIHelpers.StatRow("Sticky Tyres", pg8);
+                var str2 = _stickyRow;
                 _stickyVal = UIHelpers.Txt("StV", str2.transform, StickyTyres.Enabled ? "ON" : "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, StickyTyres.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor);
                 _stickyVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -205,18 +246,21 @@ namespace DescendersModMenu.UI
                 // ── CONTROLS ──────────────────────────────────────────
                 UIHelpers.SectionHeader("CONTROLS", pg8);
 
-                var rsr = UIHelpers.StatRow("Reverse Steering", pg8);
+                _revSteerRow = UIHelpers.StatRow("Reverse Steering", pg8);
+                var rsr = _revSteerRow;
                 _revSteerVal = UIHelpers.Txt("RsV", rsr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _revSteerVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(rsr.transform, "RsT", () => { ReverseSteering.Toggle(); RefreshAll(); }, out _revSteerTrack, out _revSteerKnob);
 
-                var imr = UIHelpers.StatRow("Ice Grip", pg8);
+                _iceModeRow = UIHelpers.StatRow("Ice Grip", pg8);
+                var imr = _iceModeRow;
                 _iceModeVal = UIHelpers.Txt("ImV", imr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _iceModeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(imr.transform, "ImT", () => { IceMode.Toggle(); RefreshAll(); }, out _iceModeTrack, out _iceModeKnob);
                 UIHelpers.InfoBox(pg8, "Removes tyre grip entirely. For an opposite experience to Sticky Tyres.");
 
-                var cbr = UIHelpers.StatRow("Cut Brakes", pg8);
+                _cutBrakesRow = UIHelpers.StatRow("Cut Brakes", pg8);
+                var cbr = _cutBrakesRow;
                 _cutBrakesVal = UIHelpers.Txt("CbV", cbr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _cutBrakesVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(cbr.transform, "CbT", () => { CutBrakes.Toggle(); RefreshAll(); }, out _cutBrakesTrack, out _cutBrakesKnob);
@@ -226,7 +270,8 @@ namespace DescendersModMenu.UI
                 // ── TORCH ─────────────────────────────────────────────
                 UIHelpers.SectionHeader("TORCH", pg8);
 
-                var tchr = UIHelpers.StatRow("Headlight", pg8);
+                _torchRow = UIHelpers.StatRow("Headlight", pg8);
+                var tchr = _torchRow;
                 _torchVal = UIHelpers.Txt("TchV", tchr.transform, "OFF", 11,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _torchVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -264,10 +309,23 @@ namespace DescendersModMenu.UI
                 if ((object)player == null) { MelonLogger.Warning("[BikeSize] Player_Human not found."); return; }
                 Transform bikeModel = player.transform.Find("BikeModel");
                 if ((object)bikeModel == null) { MelonLogger.Warning("[BikeSize] BikeModel not found."); return; }
+                if (!_bikeScaleCaptured) { _defaultBikeScale = bikeModel.localScale; _bikeScaleCaptured = true; }
                 bikeModel.localScale = new Vector3(scale, scale, scale);
                 MelonLogger.Msg("[BikeSize] Scale -> " + scale);
             }
             catch (System.Exception ex) { MelonLogger.Error("[BikeSize] " + ex.Message); }
+        }
+
+        private static void ResetBikeScaleToDefault()
+        {
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) return;
+                Transform bikeModel = player.transform.Find("BikeModel");
+                if ((object)bikeModel != null) bikeModel.localScale = _defaultBikeScale;
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[BikeSize] ResetDefault: " + ex.Message); }
         }
 
         // ── Invisible Bike ────────────────────────────────────────────
@@ -383,6 +441,33 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Bike] SetWheelSize: " + ex.Message); }
         }
 
+        // ── Reset Tab ─────────────────────────────────────────────────
+        private static void ResetBikeTab()
+        {
+            Suspension.SetTravelLevel(5);
+            Suspension.SetStiffnessLevel(5);
+            Suspension.SetDampingLevel(5);
+            if (_invisibleBike) { ToggleInvisibleBike(false); _invisibleBike = false; }
+            ResetWheelSize();
+            if (WideTyres.Enabled) WideTyres.Toggle();
+            WideTyres.SetLevel(5);
+            if (StickyTyres.Enabled) StickyTyres.Toggle();
+            if (ReverseSteering.Enabled) ReverseSteering.Toggle();
+            if (IceMode.Enabled) IceMode.Toggle();
+            if (CutBrakes.Enabled) CutBrakes.Toggle();
+            if (BikeTorch.Enabled) BikeTorch.Toggle();
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player != null)
+                {
+                    Transform bikeModel = player.transform.Find("BikeModel");
+                    if ((object)bikeModel != null) bikeModel.localScale = Vector3.one;
+                }
+            }
+            catch { }
+        }
+
         // ── RefreshAll ────────────────────────────────────────────────
         public static void RefreshAll()
         {
@@ -397,10 +482,12 @@ namespace DescendersModMenu.UI
             // Invisible Bike
             if (_invisBikeVal) { _invisBikeVal.text = _invisibleBike ? "ON" : "OFF"; _invisBikeVal.color = _invisibleBike ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_invisBikeTrack, _invisBikeKnob, _invisibleBike);
+            UIHelpers.SetRowActive(_invisBikeRow, _invisibleBike);
 
             // Wheel Size
             if (_wheelSizeTogVal) { _wheelSizeTogVal.text = _wheelSizeEnabled ? "ON" : "OFF"; _wheelSizeTogVal.color = _wheelSizeEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_wheelSizeTrack, _wheelSizeKnob, _wheelSizeEnabled);
+            UIHelpers.SetRowActive(_wheelSizeRow, _wheelSizeEnabled);
 
             // Wide Tyres
             bool wtOn = WideTyres.Enabled;
@@ -410,31 +497,37 @@ namespace DescendersModMenu.UI
             UIHelpers.SetBar(_wideTyresBar, (WideTyres.Level - 1) / 19f);
             if ((object)_wideTyresMinus != null) _wideTyresMinus.interactable = wtOn;
             if ((object)_wideTyresPlus != null) _wideTyresPlus.interactable = wtOn;
+            UIHelpers.SetRowActive(_wideTyresRow, wtOn);
 
             // Sticky Tyres
             bool stOn = StickyTyres.Enabled;
             if (_stickyVal) { _stickyVal.text = stOn ? "ON" : "OFF"; _stickyVal.color = stOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_stickyTrack, _stickyKnob, stOn);
+            UIHelpers.SetRowActive(_stickyRow, stOn);
 
             // Reverse Steering
             bool revOn = ReverseSteering.Enabled;
             if (_revSteerVal) { _revSteerVal.text = revOn ? "ON" : "OFF"; _revSteerVal.color = revOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_revSteerTrack, _revSteerKnob, revOn);
+            UIHelpers.SetRowActive(_revSteerRow, revOn);
 
             // Ice Grip
             bool imOn = IceMode.Enabled;
             if (_iceModeVal) { _iceModeVal.text = imOn ? "ON" : "OFF"; _iceModeVal.color = imOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_iceModeTrack, _iceModeKnob, imOn);
+            UIHelpers.SetRowActive(_iceModeRow, imOn);
 
             // Cut Brakes
             bool cbOn = CutBrakes.Enabled;
             if (_cutBrakesVal) { _cutBrakesVal.text = cbOn ? "ON" : "OFF"; _cutBrakesVal.color = cbOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_cutBrakesTrack, _cutBrakesKnob, cbOn);
+            UIHelpers.SetRowActive(_cutBrakesRow, cbOn);
 
             // Torch
             bool torch = BikeTorch.Enabled;
             if (_torchVal) { _torchVal.text = torch ? "ON" : "OFF"; _torchVal.color = torch ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_torchTrack, _torchKnob, torch);
+            UIHelpers.SetRowActive(_torchRow, torch);
             if (_torchIntLbl) _torchIntLbl.text = BikeTorch.IntensityDisplay;
         }
     }

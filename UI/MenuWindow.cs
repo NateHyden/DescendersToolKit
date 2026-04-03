@@ -63,6 +63,7 @@ namespace DescendersModMenu.UI
         private static Image[] _navBars = new Image[16];
         private static Text[] _navTxts = new Text[16];
         private static Image[] _navBgs = new Image[16];
+        private static Image[] _activeDots = new Image[16];
         private static UnityEngine.UI.Image _infoTabDot;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
@@ -174,7 +175,28 @@ namespace DescendersModMenu.UI
                 var sibRT = UIHelpers.RT(sidebar);
                 sibRT.anchorMin = Vector2.zero; sibRT.anchorMax = new Vector2(0, 1);
                 sibRT.offsetMin = Vector2.zero; sibRT.offsetMax = new Vector2(UIHelpers.SidebarW, 0);
-                var sVlg = sidebar.AddComponent<VerticalLayoutGroup>();
+
+                // ScrollRect wrapper inside sidebar so tabs never clip at small heights
+                var sibScroll = UIHelpers.Obj("SibScroll", sidebar.transform);
+                UIHelpers.Fill(UIHelpers.RT(sibScroll));
+                var sibSR = sibScroll.AddComponent<ScrollRect>();
+                sibSR.horizontal = false; sibSR.vertical = true;
+                sibSR.movementType = ScrollRect.MovementType.Clamped;
+                sibSR.scrollSensitivity = 20f; sibSR.inertia = false;
+
+                var sibVP = UIHelpers.Obj("SibVP", sibScroll.transform);
+                UIHelpers.Fill(UIHelpers.RT(sibVP));
+                sibVP.AddComponent<Image>().color = new Color(0, 0, 0, 0.01f);
+                sibVP.AddComponent<Mask>().showMaskGraphic = true;
+                sibSR.viewport = UIHelpers.RT(sibVP);
+
+                var sibContent = UIHelpers.Obj("SibContent", sibVP.transform);
+                var sibCRT = UIHelpers.RT(sibContent);
+                sibCRT.anchorMin = new Vector2(0, 1); sibCRT.anchorMax = new Vector2(1, 1);
+                sibCRT.pivot = new Vector2(0.5f, 1); sibCRT.sizeDelta = new Vector2(0, 0);
+                sibSR.content = sibCRT;
+                sibContent.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                var sVlg = sibContent.AddComponent<VerticalLayoutGroup>();
                 sVlg.spacing = 1; sVlg.padding = new RectOffset(0, 0, 0, 6);
                 sVlg.childAlignment = TextAnchor.UpperCenter;
                 sVlg.childForceExpandWidth = true; sVlg.childForceExpandHeight = false;
@@ -183,7 +205,7 @@ namespace DescendersModMenu.UI
                 {
                     int navIdx = i;
                     int pageNum = PageOrder[i];
-                    var item = UIHelpers.Obj("Nav" + i, sidebar.transform);
+                    var item = UIHelpers.Obj("Nav" + i, sibContent.transform);
                     var ile = item.AddComponent<LayoutElement>();
                     ile.preferredHeight = 28; ile.minHeight = 28; ile.flexibleHeight = 0;
                     var bg = UIHelpers.Panel("Bg", item.transform, new Color(0, 0, 0, 0));
@@ -203,16 +225,32 @@ namespace DescendersModMenu.UI
                     lblRT.anchorMin = Vector2.zero; lblRT.anchorMax = Vector2.one;
                     lblRT.offsetMin = new Vector2(18, 0); lblRT.offsetMax = Vector2.zero;
                     _navTxts[i] = lbl;
+
+                    // ── Active mod dot (top-right of nav item) ────────
+                    var dotObj = UIHelpers.Obj("ActiveDot", item.transform);
+                    var dotImg = dotObj.AddComponent<Image>();
+                    dotImg.sprite = UIHelpers.DotSp;
+                    dotImg.type = Image.Type.Simple;
+                    dotImg.color = UIHelpers.OnColor;
+                    dotImg.enabled = false;
+                    _activeDots[i] = dotImg;
+                    var drt = UIHelpers.RT(dotObj);
+                    drt.anchorMin = new Vector2(1f, 0.5f); drt.anchorMax = new Vector2(1f, 0.5f);
+                    drt.pivot = new Vector2(1f, 0.5f);
+                    drt.sizeDelta = new Vector2(6, 6);
+                    drt.anchoredPosition = new Vector2(-8, 0);
+                    dotObj.AddComponent<LayoutElement>().ignoreLayout = true;
+
                     if (pageNum == 3)
                     {
-                        var dotObj = UIHelpers.Obj("InfoDot", item.transform);
-                        var dotImg = dotObj.AddComponent<UnityEngine.UI.Image>();
-                        dotImg.sprite = UIHelpers.DotSp; dotImg.type = UnityEngine.UI.Image.Type.Simple; dotImg.color = UIHelpers.OnColor;
-                        _infoTabDot = dotImg;
-                        var drt = UIHelpers.RT(dotObj);
-                        drt.anchorMin = new Vector2(1f, 0.5f); drt.anchorMax = new Vector2(1f, 0.5f);
-                        drt.pivot = new Vector2(1f, 0.5f); drt.sizeDelta = new Vector2(7, 7); drt.anchoredPosition = new Vector2(-10, 0);
-                        dotObj.AddComponent<LayoutElement>().ignoreLayout = true;
+                        var infoDotObj = UIHelpers.Obj("InfoDot", item.transform);
+                        var infoDotImg = infoDotObj.AddComponent<UnityEngine.UI.Image>();
+                        infoDotImg.sprite = UIHelpers.DotSp; infoDotImg.type = UnityEngine.UI.Image.Type.Simple; infoDotImg.color = UIHelpers.OnColor;
+                        _infoTabDot = infoDotImg;
+                        var idrt = UIHelpers.RT(infoDotObj);
+                        idrt.anchorMin = new Vector2(1f, 0.5f); idrt.anchorMax = new Vector2(1f, 0.5f);
+                        idrt.pivot = new Vector2(1f, 0.5f); idrt.sizeDelta = new Vector2(7, 7); idrt.anchoredPosition = new Vector2(-10, 0);
+                        infoDotObj.AddComponent<LayoutElement>().ignoreLayout = true;
                     }
                     var btn = item.AddComponent<Button>();
                     btn.onClick.AddListener(() => Switch(PageOrder[navIdx]));
@@ -496,6 +534,32 @@ namespace DescendersModMenu.UI
         }
 
         // ── Navigation ────────────────────────────────────────────────
+        private static bool IsPageActive(int pageNum)
+        {
+            try
+            {
+                switch (pageNum)
+                {
+                    case 1:  return Mods.Acceleration.Enabled || Mods.MaxSpeedMultiplier.Enabled ||
+                                    Mods.NoSpeedCap.Enabled || Mods.LandingImpact.Enabled ||
+                                    Mods.QuickBrake.Enabled || Mods.NoBail.Enabled ||
+                                    Mods.AutoBalance.Enabled || Mods.FOV.Enabled ||
+                                    Mods.SlowMotion.Enabled || Mods.SlowMoOnBail.Enabled ||
+                                    Mods.GameModifierMods.NoSpeedWobblesEnabled;
+                    case 6:  return Page6UI.IsAnyActive;
+                    case 7:  return Page7UI.IsAnyActive;
+                    case 8:  return Page8UI.IsAnyActive;
+                    case 9:  return Page9UI.IsAnyActive;
+                    case 10: return Page10UI.IsAnyActive;
+                    case 13: return PageModesUI.IsAnyActive;
+                    case 14: return Mods.GhostReplay.Enabled;
+                    case 16: return PageSessionUI.IsAnyActive;
+                    default: return false;
+                }
+            }
+            catch { return false; }
+        }
+
         private static void Switch(int pg) { cur = pg; RefreshTabs(); }
 
         private static void RefreshTabs()
@@ -515,9 +579,12 @@ namespace DescendersModMenu.UI
             for (int i = 0; i < 16; i++)
             {
                 bool on = PageOrder[i] == cur;
+                bool active = IsPageActive(PageOrder[i]);
                 if (_navBars[i]) _navBars[i].color = on ? UIHelpers.Accent : new Color(0, 0, 0, 0);
                 if (_navTxts[i]) _navTxts[i].color = on ? UIHelpers.Accent : UIHelpers.TextDim;
                 if (_navBgs[i]) _navBgs[i].color = on ? UIHelpers.NavActive : new Color(0, 0, 0, 0);
+                // Show active dot only when tab is not currently selected
+                if (_activeDots[i]) _activeDots[i].enabled = active && !on;
                 var navItem = _navBgs[i] != null ? _navBgs[i].transform.parent : null;
                 if ((object)navItem != null)
                 {

@@ -50,6 +50,12 @@ namespace DescendersModMenu.UI
         private static Image _explodeTrack; private static RectTransform _explodeKnob;
         private static Text _explodeVal;
 
+        public static bool IsAnyActive =>
+            SkyColours.CurrentPreset != 0 || SkyColours.StormEnabled ||
+            Gravity.Level != 5 ||
+            !TreesEnabled || !MusicEnabled || !FogEnabled ||
+            _turboWind || _explodingProps;
+
         public static GameObject CreatePage(Transform parent)
         {
             GameObject pg = null;
@@ -93,8 +99,9 @@ namespace DescendersModMenu.UI
                 // All rows go into scrollable content
                 var pg7 = content.transform;
 
-                // ── Physics ───────────────────────────────────────────────
-                // ── Sky ─────────────────────────────────────────────────────
+                // ── RESET TAB ─────────────────────────────────────────
+                var rstRow = UIHelpers.StatRow("", pg7);
+                UIHelpers.ActionBtnOrange(rstRow.transform, "↺  Reset Tab to Defaults", () => { ResetWorldTab(); RefreshAll(); }, 186);
                 UIHelpers.SectionHeader("SKY", pg7);
 
                 var skpr = UIHelpers.StatRow("Colour", pg7);
@@ -357,6 +364,24 @@ namespace DescendersModMenu.UI
             catch (System.Exception ex) { MelonLogger.Error("[Fog] ToggleFog: " + ex.Message); }
         }
 
+        private static void ResetWorldTab()
+        {
+            SkyColours.RestoreDefault();
+            if (SkyColours.StormEnabled) SkyColours.ToggleStorm();
+            SkyColours.SetRainIntensityLevel(5);
+            Gravity.SetLevel(5);
+            TimeOfDay.ResetToSceneDefault();
+            GlobalReset();
+        }
+
+        public static void GlobalReset()
+        {
+            if (_turboWind) { ToggleTurboWind(false); _turboWind = false; }
+            if (!TreesEnabled) { TreesEnabled = true; ToggleTrees(true); }
+            if (!MusicEnabled) { MusicEnabled = true; ToggleMusic(true); }
+            if (!FogEnabled) { FogEnabled = true; ToggleFog(true); }
+        }
+
         public static void RefreshAll()
         {
             if (_gravityVal) _gravityVal.text = Gravity.DisplayValue;
@@ -376,6 +401,7 @@ namespace DescendersModMenu.UI
             if (_windVal) { _windVal.text = _turboWind ? "ON" : "OFF"; _windVal.color = _turboWind ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_windTrack, _windKnob, _turboWind);
 
+            _explodingProps = ExplodingProps.Enabled;
             if (_explodeVal) { _explodeVal.text = _explodingProps ? "ON" : "OFF"; _explodeVal.color = _explodingProps ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_explodeTrack, _explodeKnob, _explodingProps);
 

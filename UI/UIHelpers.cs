@@ -264,6 +264,15 @@ namespace DescendersModMenu.UI
             return row;
         }
 
+        // ── Active row highlight ──────────────────────────────────────
+        // Call from RefreshAll to tint the row bg when a mod is ON.
+        public static void SetRowActive(GameObject row, bool active)
+        {
+            if ((object)row == null) return;
+            var img = row.GetComponent<Image>();
+            if (img) img.color = active ? NavActive : RowBg;
+        }
+
         public static void Toggle(Transform p, string n, UnityEngine.Events.UnityAction clk,
             out Image track, out RectTransform knob)
         {

@@ -14,6 +14,11 @@ namespace DescendersModMenu.UI
         private static Image _cabTrack; private static RectTransform _cabKnob; private static Text _cabVal;
         private static Text _qualityVal;
 
+        public static bool IsAnyActive =>
+            !GraphicsSettings.BloomEnabled || !GraphicsSettings.AmbientOccEnabled ||
+            !GraphicsSettings.VignetteEnabled || GraphicsSettings.DepthOfFieldEnabled ||
+            !GraphicsSettings.ChromaticAbEnabled;
+
         public static GameObject CreatePage(Transform parent)
         {
             GameObject pg = null;

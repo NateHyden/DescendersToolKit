@@ -28,6 +28,11 @@ namespace DescendersModMenu.UI
         private static Image _pcTrack;
         private static RectTransform _pcKnob;
 
+        public static bool IsAnyActive =>
+            AvalancheMode.Enabled || EarthquakeMode.Enabled ||
+            PoliceChaseMode.Enabled || TrickAttackMode.CurrentState != TrickAttackMode.State.Off ||
+            BoulderDodgeMode.Enabled || SurvivalMode.Enabled;
+
         public static void CreatePage(Transform parent)
         {
             try

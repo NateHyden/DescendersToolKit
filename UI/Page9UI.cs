@@ -40,6 +40,38 @@ namespace DescendersModMenu.UI
         private static Image _flyTrack; private static RectTransform _flyKnob; private static Text _flyVal;
         private static Image _mirrorTrack; private static RectTransform _mirrorKnob; private static Text _mirrorVal;
 
+        // ── Row GO refs for highlight ─────────────────────────────────
+        private static GameObject _invisPlayerRow, _mirrorRow, _flyRow, _drunkRow;
+
+        // ── Default scale capture ─────────────────────────────────────
+        private static Vector3 _defaultPlayerScale = Vector3.one;
+        private static bool _playerScaleCaptured = false;
+
+        public static void CaptureSceneDefaults()
+        {
+            _playerScaleCaptured = false;
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) return;
+                Transform cy = player.transform.Find("Cyclist");
+                if ((object)cy != null) { _defaultPlayerScale = cy.localScale; _playerScaleCaptured = true; }
+            }
+            catch { }
+        }
+
+        public static bool IsAnyActive =>
+            _invisiblePlayer || _moonModeActive ||
+            MirrorMode.Enabled || FlyMode.Enabled || DrunkMode.Enabled ||
+            CameraShake.Enabled;
+
+        public static void GlobalReset()
+        {
+            if (_invisiblePlayer) { ToggleInvisible(false); _invisiblePlayer = false; }
+            if (_moonModeActive) ToggleMoonMode();
+            ResetPlayerScaleToDefault();
+        }
+
         // ─────────────────────────────────────────────────────────────
         public static GameObject CreatePage(Transform parent)
         {
@@ -77,12 +109,14 @@ namespace DescendersModMenu.UI
 
                 var pg9 = content.transform;
 
-                // ── PLAYER SIZE ───────────────────────────────────────
+                // ── RESET TAB ─────────────────────────────────────────
+                var rstRow = UIHelpers.StatRow("", pg9);
+                UIHelpers.ActionBtnOrange(rstRow.transform, "↺  Reset Tab to Defaults", () => { GlobalReset(); RefreshAll(); }, 186);
                 UIHelpers.SectionHeader("PLAYER SIZE", pg9);
                 var psr = UIHelpers.StatRow("Size", pg9);
                 UIHelpers.ActionBtn(psr.transform, "Giant", () => SetPlayerScale(3.5f), 52);
                 UIHelpers.ActionBtn(psr.transform, "Big", () => SetPlayerScale(1.5f), 44);
-                UIHelpers.ActionBtn(psr.transform, "Default", () => SetPlayerScale(1.0f), 58);
+                UIHelpers.ActionBtn(psr.transform, "Default", () => ResetPlayerScaleToDefault(), 58);
                 UIHelpers.ActionBtn(psr.transform, "Small", () => SetPlayerScale(0.6f), 52);
                 UIHelpers.ActionBtn(psr.transform, "Tiny", () => SetPlayerScale(0.2f), 44);
                 UIHelpers.Divider(pg9);
@@ -145,17 +179,20 @@ namespace DescendersModMenu.UI
                 // ── EFFECTS ───────────────────────────────────────────
                 UIHelpers.SectionHeader("EFFECTS", pg9);
 
-                var mmr = UIHelpers.StatRow("Mirror Mode", pg9);
+                _mirrorRow = UIHelpers.StatRow("Mirror Mode", pg9);
+                var mmr = _mirrorRow;
                 _mirrorVal = UIHelpers.Txt("MmV", mmr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _mirrorVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(mmr.transform, "MmT", () => { MirrorMode.Toggle(); RefreshAll(); }, out _mirrorTrack, out _mirrorKnob);
 
-                var flyr = UIHelpers.StatRow("Fly Mode", pg9);
+                _flyRow = UIHelpers.StatRow("Fly Mode", pg9);
+                var flyr = _flyRow;
                 _flyVal = UIHelpers.Txt("FlV", flyr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _flyVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(flyr.transform, "FlT", () => { FlyMode.Toggle(); RefreshAll(); }, out _flyTrack, out _flyKnob);
 
-                var drnkr = UIHelpers.StatRow("Drunk Mode", pg9);
+                _drunkRow = UIHelpers.StatRow("Drunk Mode", pg9);
+                var drnkr = _drunkRow;
                 _drunkVal = UIHelpers.Txt("DrV", drnkr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _drunkVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(drnkr.transform, "DrT", () => { DrunkMode.Toggle(); RefreshAll(); }, out _drunkTrack, out _drunkKnob);
@@ -183,7 +220,8 @@ namespace DescendersModMenu.UI
                 // ── PLAYER ────────────────────────────────────────────
                 UIHelpers.SectionHeader("PLAYER", pg9);
 
-                var ir = UIHelpers.StatRow("Invisible Player", pg9);
+                _invisPlayerRow = UIHelpers.StatRow("Invisible Player", pg9);
+                var ir = _invisPlayerRow;
                 _invisVal = UIHelpers.Txt("InV", ir.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _invisVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(ir.transform, "InT", () =>
@@ -297,9 +335,22 @@ namespace DescendersModMenu.UI
                 if ((object)player == null) return;
                 Transform cyclist = player.transform.Find("Cyclist");
                 if ((object)cyclist == null) return;
+                if (!_playerScaleCaptured) { _defaultPlayerScale = cyclist.localScale; _playerScaleCaptured = true; }
                 cyclist.localScale = new Vector3(scale, scale, scale);
             }
             catch (System.Exception ex) { MelonLogger.Error("[Silly] SetPlayerScale: " + ex.Message); }
+        }
+
+        private static void ResetPlayerScaleToDefault()
+        {
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) return;
+                Transform cyclist = player.transform.Find("Cyclist");
+                if ((object)cyclist != null) cyclist.localScale = _defaultPlayerScale;
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[Silly] ResetPlayerScale: " + ex.Message); }
         }
 
         private static void SetAllPlayersScale(float scale)
@@ -413,6 +464,7 @@ namespace DescendersModMenu.UI
         {
             if (_invisVal) { _invisVal.text = _invisiblePlayer ? "ON" : "OFF"; _invisVal.color = _invisiblePlayer ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_invisTrack, _invisKnob, _invisiblePlayer);
+            UIHelpers.SetRowActive(_invisPlayerRow, _invisiblePlayer);
 
             // Moon Mode
             if (_moonTxt) { _moonTxt.text = _moonModeActive ? "MOON MODE ACTIVE" : "ACTIVATE MOON MODE"; _moonTxt.color = new Color(0, 0, 0, 1); }
@@ -422,14 +474,17 @@ namespace DescendersModMenu.UI
             bool mmOn = MirrorMode.Enabled;
             if (_mirrorVal) { _mirrorVal.text = mmOn ? "ON" : "OFF"; _mirrorVal.color = mmOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_mirrorTrack, _mirrorKnob, mmOn);
+            UIHelpers.SetRowActive(_mirrorRow, mmOn);
 
             bool flyOn = FlyMode.Enabled;
             if (_flyVal) { _flyVal.text = flyOn ? "ON" : "OFF"; _flyVal.color = flyOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_flyTrack, _flyKnob, flyOn);
+            UIHelpers.SetRowActive(_flyRow, flyOn);
 
             bool drunkOn = DrunkMode.Enabled;
             if (_drunkVal) { _drunkVal.text = drunkOn ? "ON" : "OFF"; _drunkVal.color = drunkOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_drunkTrack, _drunkKnob, drunkOn);
+            UIHelpers.SetRowActive(_drunkRow, drunkOn);
 
             // Camera Shake
             bool shOn = CameraShake.Enabled;

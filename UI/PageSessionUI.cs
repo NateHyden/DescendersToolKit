@@ -17,6 +17,12 @@ namespace DescendersModMenu.UI
         private static Text _srtVal;
         private static Image _srtTrack;
         private static RectTransform _srtKnob;
+        private static Text _hudTogVal;
+        private static Image _hudTrack;
+        private static RectTransform _hudKnob;
+
+        public static bool IsAnyActive =>
+            SpeedrunTimer.Enabled || SessionHUD.Enabled;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -52,6 +58,20 @@ namespace DescendersModMenu.UI
                 vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
 
                 var c = content.transform;
+
+                // ── HUD TOGGLE ────────────────────────────────────────
+                UIHelpers.SectionHeader("ON-SCREEN HUD", c);
+                var hudr = UIHelpers.StatRow("Show HUD", c);
+                _hudTogVal = UIHelpers.Txt("HdV", hudr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _hudTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(hudr.transform, "HdT", () =>
+                {
+                    SessionHUD.Enabled = !SessionHUD.Enabled;
+                    RefreshAll();
+                }, out _hudTrack, out _hudKnob);
+                UIHelpers.InfoBox(c, "Displays session stats in the top-right corner while riding.");
+
+                UIHelpers.Divider(c);
 
                 // ── SESSION header with Reset All ─────────────────────
                 var sessionHdr = UIHelpers.Obj("SessionHdr", c);
@@ -137,6 +157,9 @@ namespace DescendersModMenu.UI
 
         public static void RefreshAll()
         {
+            if (_hudTogVal) { _hudTogVal.text = SessionHUD.Enabled ? "ON" : "OFF"; _hudTogVal.color = SessionHUD.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_hudTrack, _hudKnob, SessionHUD.Enabled);
+
             if (_topSpeedVal) _topSpeedVal.text = TopSpeed.DisplayValue;
             if (_sessionTimeVal) _sessionTimeVal.text = SessionTrackers.SessionTimeDisplay;
             if (_bailCountVal) _bailCountVal.text = SessionTrackers.BailCountDisplay;

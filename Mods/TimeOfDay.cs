@@ -15,6 +15,8 @@ namespace DescendersModMenu.Mods
         };
 
         public static int Level { get; private set; } = 4;
+        private static int _sceneDefaultLevel = 4;
+
         public static string DisplayValue { get { return Labels[Level - 1]; } }
 
         public static void Increase() { if (Level < 10) { Level++; Apply(); } }
@@ -27,7 +29,42 @@ namespace DescendersModMenu.Mods
             Apply();
         }
 
-        // Used by Save/Load — stores the level without touching the game world
+        public static void ResetToSceneDefault() { SetLevel(_sceneDefaultLevel); }
+
+        public static void CaptureSceneDefault()
+        {
+            try
+            {
+                MonoBehaviour[] all = UnityEngine.Object.FindObjectsOfType<MonoBehaviour>();
+                for (int i = 0; i < all.Length; i++)
+                {
+                    if (all[i].GetType().Name != "TOD_Sky") continue;
+                    System.Reflection.FieldInfo cycleField = all[i].GetType().GetField("Cycle",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if ((object)cycleField == null) break;
+                    object cycle = cycleField.GetValue(all[i]);
+                    if ((object)cycle == null) break;
+                    System.Reflection.FieldInfo hourField = cycle.GetType().GetField("Hour",
+                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                    if ((object)hourField == null) break;
+                    float hour = (float)hourField.GetValue(cycle);
+                    int best = 4;
+                    float bestDiff = float.MaxValue;
+                    for (int j = 0; j < Hours.Length; j++)
+                    {
+                        float diff = Mathf.Abs(Hours[j] - hour);
+                        if (diff < bestDiff) { bestDiff = diff; best = j + 1; }
+                    }
+                    _sceneDefaultLevel = best;
+                    Level = best;
+                    MelonLogger.Msg("[TimeOfDay] Scene default: " + hour + "h â†’ Level " + best + " (" + Labels[best - 1] + ")");
+                    return;
+                }
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[TimeOfDay] CaptureSceneDefault: " + ex.Message); }
+        }
+
+        // Used by Save/Load ï¿½ stores the level without touching the game world
         public static void SetLevelSilent(int level)
         {
             if (level < 1) level = 1;

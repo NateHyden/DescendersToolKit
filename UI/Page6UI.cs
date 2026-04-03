@@ -30,6 +30,11 @@ namespace DescendersModMenu.UI
         private static Text _comLRVal, _comFBVal, _comUDVal;
         private static Image _comLRBar, _comFBBar, _comUDBar;
 
+        public static bool IsAnyActive =>
+            Movement.SpinEnabled || Movement.HopEnabled ||
+            Movement.WheelieEnabled || Movement.LeanEnabled ||
+            WheelieAngleLimit.Enabled || AirControl.Enabled;
+
         public static GameObject CreatePage(Transform parent)
         {
             GameObject pg = null;
@@ -72,7 +77,9 @@ namespace DescendersModMenu.UI
                 // All rows go into scrollable content
                 var pg6 = content.transform;
 
-                // ── MOVEMENT ─────────────────────────────────────────
+                // ── RESET TAB ─────────────────────────────────────────
+                var rstRow = UIHelpers.StatRow("", pg6);
+                UIHelpers.ActionBtnOrange(rstRow.transform, "↺  Reset Tab to Defaults", () => { ResetMoveTab(); RefreshAll(); }, 186);
                 UIHelpers.SectionHeader("MOVEMENT", pg6);
 
                 // Rotation Speed
@@ -215,6 +222,24 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex) { MelonLogger.Error("Page6UI.CreatePage: " + ex.Message); return null; }
             return pg;
+        }
+
+        private static void ResetMoveTab()
+        {
+            if (Movement.SpinEnabled) Movement.ToggleSpin();
+            if (Movement.HopEnabled) Movement.ToggleHop();
+            if (Movement.WheelieEnabled) Movement.ToggleWheelie();
+            if (Movement.LeanEnabled) Movement.ToggleLean();
+            Movement.SetSpinLevel(1); Movement.SetHopLevel(1);
+            Movement.SetWheelieLevel(1); Movement.SetLeanLevel(1);
+            if (WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
+            WheelieAngleLimit.SetLevel(5);
+            if (AirControl.Enabled) AirControl.Toggle();
+            AirControl.SetLevel(5);
+            GameModifierMods.SetPumpStrengthLevel(5);
+            if (NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
+            NearMissSensitivity.SetLevel(5);
+            CenterOfMass.SetLR(0f); CenterOfMass.SetFB(0f); CenterOfMass.SetUD(0f);
         }
 
         public static void RefreshAll()

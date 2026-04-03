@@ -166,11 +166,15 @@ namespace DescendersModMenu
             MelonLogger.Msg("OnSceneWasInitialized: " + buildindex + " | " + sceneName);
             SkyColours.CaptureSceneDefaults();    // must be before any mod changes sky
             GraphicsSettings.CaptureDefaultQuality(); // only records once (first launch)
+            TimeOfDay.CaptureSceneDefault();      // capture map's native time of day
+            try { UI.Page8UI.CaptureSceneDefaults(); } catch { }  // capture bike scale
+            try { UI.Page9UI.CaptureSceneDefaults(); } catch { }  // capture player scale
             GhostReplay.OnSceneInitialized();
             MapChanger.OnSceneInitialized();
             ExplodingProps.OnSceneInitialized(sceneName);
             if (buildindex == 1)
                 MapChanger.BuildMapList();
+            try { UI.PageSessionUI.RefreshAll(); } catch { }
         }
 
         public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
@@ -234,7 +238,7 @@ namespace DescendersModMenu
             TrickAttackMode.Reset();
             BoulderDodgeMode.Reset();
             SurvivalMode.Reset();
-            TopSpeed.ClearCache();
+            TopSpeed.Reset();
             SessionTrackers.Reset();
             ExplodingProps.Reset();
             StickyTyres.Reset();
@@ -421,6 +425,7 @@ namespace DescendersModMenu
             try { PoliceHUD.Draw(); } catch { }
             try { TrickAttackHUD.Draw(); } catch { }
             try { SurvivalHUD.Draw(); } catch { }
+            try { SessionHUD.Draw(); } catch { }
         }
 
         public override void OnApplicationQuit()

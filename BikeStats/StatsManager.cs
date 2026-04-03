@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using System.IO;
 using MelonLoader;
 using UnityEngine;
 using DescendersModMenu.Mods;
+using DescendersModMenu.UI;
 
 namespace DescendersModMenu.BikeStats
 {
@@ -298,6 +299,12 @@ namespace DescendersModMenu.BikeStats
         {
             try
             {
+                // Run page GlobalResets FIRST so Moon Mode deactivation restores
+                // suspension/gravity before we override them with defaults below
+                Page7UI.GlobalReset();
+                Page8UI.GlobalReset();
+                Page9UI.GlobalReset();
+
                 // Bike / Stats
                 Acceleration.SetLevel(1);
                 MaxSpeedMultiplier.SetLevel(1);
@@ -317,17 +324,17 @@ namespace DescendersModMenu.BikeStats
                 Suspension.SetDampingLevel(5);
 
                 // Game Modifiers
-                GameModifierMods.SetWheelieBalanceLevel(1);
-                GameModifierMods.SetInAirCorrLevel(1);
-                GameModifierMods.SetFakieBalanceLevel(1);
-                GameModifierMods.SetPumpStrengthLevel(1);
-                GameModifierMods.SetIcePhysicsLevel(1);
+                GameModifierMods.SetWheelieBalanceLevel(5);
+                GameModifierMods.SetInAirCorrLevel(5);
+                GameModifierMods.SetFakieBalanceLevel(5);
+                GameModifierMods.SetPumpStrengthLevel(5);
+                GameModifierMods.SetIcePhysicsLevel(5);
 
                 // World / Graphics
                 FOV.SetLevel(5);
                 Gravity.SetLevel(5);
-                TimeOfDay.SetLevelSilent(4);
-                SkyColours.SetPresetSilent(0);
+                TimeOfDay.ResetToSceneDefault();
+                SkyColours.RestoreDefault();
                 WideTyres.SetLevel(5);
 
                 // Floats
@@ -392,16 +399,35 @@ namespace DescendersModMenu.BikeStats
                 if (NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
                 NearMissSensitivity.SetLevel(5);
 
-                // Graphics (reset to all enabled)
+                // Graphics (reset to all enabled except Depth of Field which defaults OFF)
                 if (!GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
                 if (!GraphicsSettings.AmbientOccEnabled) GraphicsSettings.ToggleAO();
                 if (!GraphicsSettings.VignetteEnabled) GraphicsSettings.ToggleVignette();
-                if (!GraphicsSettings.DepthOfFieldEnabled) GraphicsSettings.ToggleDOF();
+                if (GraphicsSettings.DepthOfFieldEnabled) GraphicsSettings.ToggleDOF();
                 if (!GraphicsSettings.ChromaticAbEnabled) GraphicsSettings.ToggleChromatic();
+
+                // Wheelie Angle Limit
+                if (WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
+                WheelieAngleLimit.SetLevel(5);
+
+                // Air Control
+                if (AirControl.Enabled) AirControl.Toggle();
+                AirControl.SetLevel(5);
 
                 // Sky Storm / Rain
                 if (SkyColours.StormEnabled) SkyColours.ToggleStorm();
                 SkyColours.SetRainIntensityLevel(5);
+
+                // Session HUD
+                SessionHUD.Enabled = false;
+
+                // Modes — stop any active mode
+                if (AvalancheMode.Enabled) AvalancheMode.Reset();
+                if (EarthquakeMode.Enabled) EarthquakeMode.Reset();
+                if (PoliceChaseMode.Enabled) PoliceChaseMode.Reset();
+                if (TrickAttackMode.CurrentState != TrickAttackMode.State.Off) TrickAttackMode.Reset();
+                if (BoulderDodgeMode.Enabled) BoulderDodgeMode.Reset();
+                if (SurvivalMode.Enabled) SurvivalMode.Reset();
 
                 MelonLogger.Msg("[StatsManager] Reset to defaults.");
             }
@@ -409,6 +435,15 @@ namespace DescendersModMenu.BikeStats
             {
                 MelonLogger.Error("[StatsManager] ResetStats: " + ex.Message);
             }
+
+            // Refresh all page UIs outside the main try/catch so they always
+            // run even if a mid-reset exception was caught above.
+            try { Page6UI.RefreshAll(); } catch { }
+            try { Page7UI.RefreshAll(); } catch { }
+            try { Page8UI.RefreshAll(); } catch { }
+            try { Page9UI.RefreshAll(); } catch { }
+            try { Page10UI.RefreshAll(); } catch { }
+            try { PageModesUI.RefreshAll(); } catch { }
         }
 
         private static void EnsureSaveFolder()

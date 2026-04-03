@@ -184,6 +184,7 @@
     <Compile Include="UI\PageModesUI.cs" />
     <Compile Include="UI\PageSessionUI.cs" />
     <Compile Include="UI\PoliceHUD.cs" />
+    <Compile Include="UI\SessionHUD.cs" />
     <Compile Include="UI\SurvivalHUD.cs" />
     <Compile Include="UI\TrickAttackHUD.cs" />
     <Compile Include="UI\UIHelpers.cs" />
