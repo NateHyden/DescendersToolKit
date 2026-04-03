@@ -71,7 +71,6 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.Divider(pg.transform);
                 UIHelpers.SectionHeader("CHECKPOINT", pg.transform);
-                UIHelpers.InfoBox(pg.transform, "Ride through at least one checkpoint to activate teleport.");
 
                 var cpr = UIHelpers.StatRow("Last Checkpoint", pg.transform);
                 UIHelpers.ActionBtnOrange(cpr.transform, "Teleport", () =>

@@ -12,7 +12,7 @@ namespace DescendersModMenu
         public const string Description = "A modding toolkit for Descenders";
         public const string Author = "NateHyden";
         public const string Company = null;
-        public const string Version = "3.6.0";
+        public const string Version = "3.6.1";
         public const string DownloadLink = null;
     }
 

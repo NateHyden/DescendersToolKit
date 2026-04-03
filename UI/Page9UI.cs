@@ -149,13 +149,15 @@ namespace DescendersModMenu.UI
                 UIHelpers.Toggle(gwr.transform, "WsT", () =>
                 {
                     _wheelSizeEnabled = !_wheelSizeEnabled;
-                    if (_wheelSizeEnabled) SetWheelSize(_wheelSizeMode == 0 ? 2 : _wheelSizeMode);
+                    if (_wheelSizeEnabled) SetWheelSize(_wheelSizeMode == 0 ? 3 : _wheelSizeMode);
                     else SetWheelSize(0);
                     RefreshAll();
                 }, out _wheelSizeTrack, out _wheelSizeKnob);
-                UIHelpers.ActionBtn(gwr.transform, "Small", () => { _wheelSizeMode = 1; if (_wheelSizeEnabled) { SetWheelSize(1); RefreshAll(); } }, 52);
+                UIHelpers.ActionBtn(gwr.transform, "Tiny", () => { _wheelSizeMode = 1; if (_wheelSizeEnabled) { SetWheelSize(1); RefreshAll(); } }, 44);
+                UIHelpers.ActionBtn(gwr.transform, "Small", () => { _wheelSizeMode = 2; if (_wheelSizeEnabled) { SetWheelSize(2); RefreshAll(); } }, 50);
                 UIHelpers.ActionBtn(gwr.transform, "Default", () => { _wheelSizeMode = 0; if (_wheelSizeEnabled) { SetWheelSize(0); RefreshAll(); } }, 58);
-                UIHelpers.ActionBtn(gwr.transform, "Large", () => { _wheelSizeMode = 2; if (_wheelSizeEnabled) { SetWheelSize(2); RefreshAll(); } }, 52);
+                UIHelpers.ActionBtn(gwr.transform, "Large", () => { _wheelSizeMode = 3; if (_wheelSizeEnabled) { SetWheelSize(3); RefreshAll(); } }, 50);
+                UIHelpers.ActionBtn(gwr.transform, "Huge", () => { _wheelSizeMode = 4; if (_wheelSizeEnabled) { SetWheelSize(4); RefreshAll(); } }, 48);
 
                 // Wide Tyres
                 var wtr = UIHelpers.StatRow("Wide Tyres", pg9);
@@ -222,9 +224,13 @@ namespace DescendersModMenu.UI
                 // ── MULTIPLAYER ───────────────────────────────────────
                 UIHelpers.SectionHeader("MULTIPLAYER", pg9);
                 var gsr = UIHelpers.StatRow("Giant Everyone", pg9);
+                UIHelpers.ActionBtnOrange(gsr.transform, "Colossal", () => SetAllPlayersScale(6.0f), 62);
                 UIHelpers.ActionBtnOrange(gsr.transform, "Giant", () => SetAllPlayersScale(3.5f), 52);
+                UIHelpers.ActionBtn(gsr.transform, "Big", () => SetAllPlayersScale(1.5f), 42);
                 UIHelpers.ActionBtn(gsr.transform, "Default", () => SetAllPlayersScale(1.0f), 58);
+                UIHelpers.ActionBtn(gsr.transform, "Small", () => SetAllPlayersScale(0.6f), 48);
                 UIHelpers.ActionBtn(gsr.transform, "Tiny", () => SetAllPlayersScale(0.2f), 44);
+                UIHelpers.ActionBtn(gsr.transform, "Micro", () => SetAllPlayersScale(0.05f), 48);
 
                 UIHelpers.Divider(pg9);
 
@@ -440,8 +446,8 @@ namespace DescendersModMenu.UI
         }
 
         // ── Wheel Size internals ──────────────────────────────────────
-        private static readonly float[] WheelScales = { 1.0f, 0.4f, 2.5f };
-        private static readonly string[] WheelLabels = { "Default", "Small", "Large" };
+        private static readonly float[] WheelScales = { 1.0f, 0.25f, 0.5f, 1.5f, 3.0f };
+        private static readonly string[] WheelLabels = { "Default", "Tiny", "Small", "Large", "Huge" };
         private static System.Reflection.FieldInfo _wheelRadiusField = null;
         private static float _defaultRadiusFront = -1f;
         private static float _defaultRadiusBack = -1f;

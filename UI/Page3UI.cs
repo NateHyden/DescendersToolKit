@@ -197,7 +197,7 @@ namespace DescendersModMenu.UI
 
             UIHelpers.Divider(vlg.transform);
             UIHelpers.SectionHeader("TOOLKIT", vlg.transform);
-            MakeInfoRow2("Version", "3.6.0", vlg.transform, UIHelpers.Accent);
+            MakeInfoRow2("Version", "3.6.1", vlg.transform, UIHelpers.Accent);
             MakeInfoRow2("Output DLL", "DescendersToolKit.dll", vlg.transform);
             MakeInfoRow2("Author", "NateHyden", vlg.transform);
         }

@@ -59,11 +59,18 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("BIKE SIZE", pg.transform);
 
                 var szr = UIHelpers.StatRow("Size", pg.transform);
-                UIHelpers.ActionBtn(szr.transform, "Giant", () => SetBikeScale(3.5f), 52);
-                UIHelpers.ActionBtn(szr.transform, "Big", () => SetBikeScale(1.5f), 44);
-                UIHelpers.ActionBtn(szr.transform, "Default", () => SetBikeScale(1.0f), 58);
-                UIHelpers.ActionBtn(szr.transform, "Small", () => SetBikeScale(0.6f), 52);
-                UIHelpers.ActionBtn(szr.transform, "Tiny", () => SetBikeScale(0.25f), 44);
+                UIHelpers.ActionBtn(szr.transform, "Colossal", () => SetBikeScale(6.0f), 62);
+                UIHelpers.ActionBtn(szr.transform, "Giant", () => SetBikeScale(3.5f), 50);
+                UIHelpers.ActionBtn(szr.transform, "Huge", () => SetBikeScale(2.5f), 48);
+                UIHelpers.ActionBtn(szr.transform, "Big", () => SetBikeScale(1.5f), 42);
+                UIHelpers.ActionBtn(szr.transform, "Large", () => SetBikeScale(1.25f), 50);
+
+                var szr2 = UIHelpers.StatRow("", pg.transform);
+                UIHelpers.ActionBtn(szr2.transform, "Default", () => SetBikeScale(1.0f), 58);
+                UIHelpers.ActionBtn(szr2.transform, "Medium", () => SetBikeScale(0.75f), 56);
+                UIHelpers.ActionBtn(szr2.transform, "Small", () => SetBikeScale(0.5f), 48);
+                UIHelpers.ActionBtn(szr2.transform, "Tiny", () => SetBikeScale(0.25f), 44);
+                UIHelpers.ActionBtn(szr2.transform, "Micro", () => SetBikeScale(0.1f), 48);
 
                 RefreshAll();
             }
