@@ -1,6 +1,6 @@
 # Descenders Toolkit
 
-**v3.6.0** — A modding toolkit for Descenders built from the ground up with a clean 15-tab sidebar overlay.
+**v3.6.1** — A modding toolkit for Descenders built from the ground up with a clean sidebar overlay.
 
 > Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded.
 
@@ -19,7 +19,7 @@ Physics tweaks, world controls, score tools, session trackers, ghost replay, gam
 
 1. Run the MelonLoader installer, select your Descenders executable and choose version **0.5.7** — it will not work on other versions
 2. Launch the game once to let MelonLoader populate, then close it
-3. Download `DescendersToolKit.dll` from the [Releases page](https://github.com/NateHyden/DescendersToolKit/releases)
+3. Download `DescendersToolKit.dll` from the [Releases page](https://github.com/NateHyden/DescendersModMenu/releases)
 4. Drop it into `Descenders/Mods/`
 5. Launch the game and press **F6** to open the menu
 
@@ -43,9 +43,9 @@ Physics tweaks, world controls, score tools, session trackers, ghost replay, gam
 
 ## Tabs & Features
 
-### General — Bike Physics & Session
+### General — Bike Physics
 
-The main hub. All settings persist to file via Save / Load / Reset buttons always visible in the header bar regardless of which tab you are on.
+The main hub. Save / Load / Reset buttons are always visible in the header bar regardless of which tab you are on.
 
 **Bike Physics**
 - **Acceleration** — on/off toggle with 10-level slider
@@ -62,52 +62,19 @@ The main hub. All settings persist to file via Save / Load / Reset buttons alway
 **Quick Actions**
 - **Quick Brake** — amplifies the game's own braking system while you hold brake. Works on all surfaces including loose terrain. Level 1 is a subtle boost, level 10 is near-instant
 
-**Session Trackers**
+---
+
+### Session — Stats & HUD
+
 - **Session Timer** — live MM:SS counter from when you load in
 - **Top Speed** — records your highest speed this session; saves to `UserData/DescendersModMenu/TopSpeed.txt`
 - **Speedrun Timer** — integrates with the in-game timer
 - **Bail Counter** — tracks actual crashes, not resets
+- **Checkpoint Counter** — counts triggered checkpoints this session
 - **Longest Airtime** — tracks your longest single airtime
-- **G-Force** — live G-Force readout updated in real time
-- **Peak G-Force** — records the highest G-Force hit this session
-
----
-
-### ESP — Players & Teleport
-
-- Player name labels with distance readout
-- ESP Tracers — draws lines to all nearby players
-- **Teleport to Last Checkpoint** — snaps back to your last triggered checkpoint
-- **Mod Users** — scans for and highlights other Descenders Toolkit users in your session
-
----
-
-### Info/Customise — Diagnostics, Reference & Settings
-
-Six sub-tabs:
-- **System** — Unity version, MelonLoader version, scripting backend, toolkit version and live Steam player count
-- **Mod Status** — every mod listed with OK / FAILED status and error details
-- **Hotkeys** — full key binding reference
-- **Credits** — GitHub, Nexus links, build info and game credits
-- **Customise** — move, resize and adjust the opacity of the mod menu. Settings save automatically
-- **Dev Tools** — Assembly Scanner: checks every reflected field and method the mod uses against the live game assembly. Saves a full report to `UserData/DescendersModMenu/AssemblyReport.txt`
-
----
-
-### Unlock
-
-- Unlock all cosmetics — bikes, helmets, jerseys and more
-- Unlock all world shortcuts
-- Unlock all Steam achievements
-- Mark all missions as complete
-
----
-
-### Score
-
-- Add REP — +100, +500, +1K, +5K, +10K, +50K, +100K
-- Remove REP — -100, -500, -1K, -5K, -10K
-- **Trick Multiplier** — x1, x2, x5, x10 or x20; locked in until you manually reset to x1
+- **G-Force / Peak G-Force** — live readout and highest value this session
+- **On-Screen HUD** — toggle a top-right overlay showing all live stats while riding (resolution-scaled)
+- All session stats and Top Speed reset automatically when a new map loads
 
 ---
 
@@ -130,21 +97,52 @@ Every mod has its own independent on/off toggle and level slider.
 
 ---
 
+### Bike — Tuning & Parts
+
+Scrollable tab. All mods have active row highlighting when enabled.
+
+**Suspension** — Travel, Stiffness, Damping (all 10-level sliders; level 5 = stock)
+
+**Bike Size** — 10 presets across two rows: Colossal, Giant, Big, Default, Small, Tiny, Extra Tiny and more. Default restores the scale captured at map load
+
+**Bike Parts**
+- **Invisible Bike** — hides the entire bike model
+- **Wheel Size** — toggle + 5 presets (Tiny / Small / Default / Large / Huge)
+- **Wide Tyres** — 20-level slider
+- **Sticky Tyres** — grip any surface including slopes, walls and ceilings
+
+**Controls**
+- **Reverse Steering** — flips left/right steering input
+- **Ice Grip** — removes all tyre grip
+- **Cut Brakes** — disables braking entirely
+
+**Torch**
+- **Bike Headlight** — toggle with five brightness levels (Dim to Max)
+
+---
+
+### Graphics — Post Processing & Quality
+
+- Toggle **Bloom**, **Ambient Occlusion**, **Vignette**, **Chromatic Aberration** individually (all default ON)
+- Toggle **Depth of Field** (defaults OFF)
+- Quality presets — Low, Medium, High, Ultra, Default
+
+---
+
 ### World — Environment
 
 **Sky**
 - Sky Colour presets — Normal, Blood Red, Alien Green, Synthwave, Midnight, Toxic
-- Storm — dark sky with wind and rain. Rain intensity adjustable
+- **Storm** — dark sky with heavy rain. Built on a custom particle system (up to 20,000 particles) attached to the camera, intensity-adjustable via slider. Persists correctly across the entire session
 - Gravity — level 1 is floaty, level 5 is default (-17.5 m/s²), level 10 is heavy
 
-**Torch**
-- **Bike Torch** — toggle the bike headlight on/off with five brightness levels (Dim to Max)
-
 **Environment**
-- Time of Day — Dawn to Night
-- Trees & Foliage — toggle
-- Music — toggle; restores exact volume on unmute
-- Fog — toggle; saves and restores original density
+- **Time of Day** — Dawn to Night. Resets to the loaded map's native time when reset is pressed
+- **Trees & Foliage** — toggle
+- **Music** — toggle; restores exact volume on unmute
+- **Fog** — toggle; saves and restores original density
+- **Turbo Wind** — cranks wind zones to maximum
+- **No Mistakes / Exploding Props** — props launch into the air on impact
 
 **Level**
 - Jump to Finish — instantly triggers the finish line
@@ -152,38 +150,19 @@ Every mod has its own independent on/off toggle and level slider.
 
 ---
 
-### Bike — Tuning
-
-**Suspension** — Travel, Stiffness, Damping (all 10-level sliders; level 5 = stock)
-
-**Bike Size** — Giant, Big, Default, Small, Tiny
-
-**Tyres**
-- Wide Tyres (20-level slider)
-- Sticky Tyres — grip any surface including slopes, walls and ceilings
-
-**Graphics**
-- Toggle Bloom, Ambient Occlusion, Vignette, Depth of Field, Chromatic Aberration individually
-- Quality presets — Low, Medium, High, Ultra
-
-**Camera**
-- Camera Shake — adjustable intensity
-
----
-
 ### Fun — Chaos & Player
 
-**Player** — Size presets (Giant / Big / Default / Small / Tiny), Invisible Player
-
-**Bike** — Invisible Bike, Wheel Size (toggle + Small/Default/Large)
+**Player Size** — Giant, Big, Default, Small, Tiny. Default restores the scale captured at map load
 
 **Presets** — Moon Mode (low gravity + max suspension; saves and restores your settings on deactivate)
 
-**Multiplayer** — Giant Everyone (scales all other players to Giant / Default / Tiny)
+**Multiplayer** — Giant Everyone — 7 size presets scaling all other players simultaneously
 
-**Controls** — Reverse Steering, Ice Grip (removes all tyre grip), Mirror Mode (flips the world left/right), Fly Mode (detach and fly freely), Drunk Mode (FOV wobble)
+**Effects** — Mirror Mode (flips the world left/right), Fly Mode (detach and fly freely), Drunk Mode (FOV wobble)
 
-**World** — Turbo Wind, Exploding Props
+**Player** — Invisible Player
+
+**Camera** — Camera Shake — adjustable intensity
 
 ---
 
@@ -206,7 +185,7 @@ Every mod has its own independent on/off toggle and level slider.
 
 ### Modes *(Experimental)*
 
-All modes are designed for single-player freeride sessions.
+All modes are designed for single-player freeride sessions. Global Reset turns off any active mode.
 
 - **Avalanche** — Boulders spawn above you and roll downhill. Configurable spawn rate, size, gravity and difficulty scaling
 - **Earthquake** — The ground shakes beneath you
@@ -228,12 +207,41 @@ All modes are designed for single-player freeride sessions.
 
 ---
 
+### ESP — Players & Teleport
+
+- Player name labels with distance readout
+- ESP Tracers — draws lines to all nearby players
+- **Teleport to Last Checkpoint** — snaps back to your last triggered checkpoint
+- **Mod Users** — scans for and highlights other Descenders Toolkit users in your session
+
+---
+
+### Score
+
+- Add REP — +100, +500, +1K, +5K, +10K, +50K, +100K
+- Remove REP — -100, -500, -1K, -5K, -10K
+- **Trick Multiplier** — x1, x2, x5, x10 or x20; locked in until you manually reset to x1
+
+---
+
 ### Map Changer
 
 - Load any base game world directly — Highlands, Forest, Canyon, Desert, Peaks, Jungle, Ridges, Hell and more
 - Browse and load Bike Park and Freeride Workshop maps
 - Load any level by seed number — share seeds with friends to ride the same world
 - No main menu required
+
+---
+
+### Info/Customise — Diagnostics, Reference & Settings
+
+Six sub-tabs:
+- **System** — Unity version, MelonLoader version, scripting backend, toolkit version and live Steam player count
+- **Mod Status** — every mod listed with OK / FAILED status and error details
+- **Hotkeys** — full key binding reference
+- **Credits** — GitHub, Nexus links, build info and game credits
+- **Customise** — move, resize and adjust the opacity of the mod menu. Settings save automatically
+- **Dev Tools** — Assembly Scanner: checks every reflected field and method the mod uses against the live game assembly. Saves a full report to `UserData/DescendersModMenu/AssemblyReport.txt`
 
 ---
 
@@ -264,6 +272,17 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Saved: all 
 
 ## Changelog
 
+### v3.6.1
+- **Storm fully rebuilt** — heavy rain now renders via a custom particle system attached to the camera (up to 20,000 particles, intensity-scaled). Storm persists correctly throughout the session. Old TickStorm moved from destroyed TOD_Sky to OnUpdate. Environment flags enforced every frame via new Harmony patches
+- **Session tab** — session stats and HUD moved out of General into their own dedicated tab. On-screen HUD toggle added. All session data and Top Speed reset on map load
+- **Sidebar scroll and active mod dots** — sidebar scrolls when tabs overflow; a neon dot appears next to any tab with active mods
+- **Reset Tab buttons** — added to Bike, Move and World tabs
+- **Active row highlighting** — toggle rows tint green when the mod is on
+- **Tab reorganisation** — Bike tab gained Invisible Bike, Wheel Size, Wide Tyres, Sticky Tyres, Reverse Steering, Ice Grip, Cut Brakes and Torch. Fun trimmed to effects only. World gained Turbo Wind and No Mistakes. Move lost Cut Brakes
+- **Size presets expanded** — Bike Size 10 presets, Wheel Size 5 presets, Giant Everyone 7 presets
+- **Default scale capture** — Player and Bike Default buttons restore the actual scale from map load, not a hardcoded value
+- **Global Reset overhauled** — now covers all 6 modes, Wheelie Angle Limit, Air Control, Session HUD, player/bike scale, moon mode, invisible states, turbo wind, trees, music, fog, wheel size. Fixed Moon Mode deactivation ordering. Depth of Field defaults OFF. GameModifiers reset to 5. Time of Day resets to map's native time
+
 ### v3.6.0
 - Added Bike Torch, Boulder Dodge Mode, Survival Mode, Trick Attack Mode, Police Chase Mode, Earthquake Mode
 - Added Camera Shake, Center of Mass, Near Miss Sensitivity, Graphics toggles per-effect, Assembly Scanner
@@ -272,13 +291,10 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Saved: all 
 - Sticky Tyres completely rewritten — now uses raycast-based surface detection, works reliably on all surfaces
 - Fly Mode fixed — no longer throws rider off the bike on activation
 - Input crossbleed fixed — typing in one box no longer types into another simultaneously
-- Outfit rename colour fixed — previous slot no longer stays green after clicking away
-- Cursor dots in all text boxes now stay pinned to the right edge
 - QuickBrake NullReferenceException on scene unload fixed
 - "Silly" tab renamed to "Fun", "Info" renamed to "Info/Customise"
 - SESSION header now has a Reset All button for session stats
 - Save/Load/Reset header buttons flash green on click
-- World tab reorganised — Torch now sits between Sky and Physics
 - Save system expanded — torch, camera shake, center of mass, graphics, sky storm and more now persist
 
 ### v3.5.0
