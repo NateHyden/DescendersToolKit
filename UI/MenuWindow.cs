@@ -47,27 +47,22 @@ namespace DescendersModMenu.UI
         private static RectTransform _brakeKnob = null;
         private static Image _brakeLevelBar = null;
         private static Text _brakeLevelVal = null;
-        private static Text smobVal, nswVal, srtVal;
-        private static Image smobTrack, nswTrack, srtTrack;
-        private static RectTransform smobKnob, nswKnob, srtKnob;
+        private static Text smobVal, nswVal;
+        private static Image smobTrack, nswTrack;
+        private static RectTransform smobKnob, nswKnob;
         // No Speed Cap
         private static Image capBg, capBdr; private static Text capTxt;
-        // Session
-        private static Text topSpeedVal;
-        private static Text sessionTimeVal, bailCountVal, airtimeVal, gforceVal, peakGforceVal;
-        private static Text checkpointCountVal;
-
         // ── Pages ─────────────────────────────────────────────────────
-        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15;
+        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15, pg16;
         private static int cur = 1;
 
-        private static readonly int[] PageOrder = { 1, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
-        private static readonly string[] NavLabels = { "General", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info/Customise" };
-        private static readonly string[] GroupLabels = { "BIKE", null, null, "WORLD", null, "TOOLS", null, null, null, null, null, "SYSTEM" };
+        private static readonly int[] PageOrder = { 1, 16, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
+        private static readonly string[] NavLabels = { "General", "Session", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info/Customise" };
+        private static readonly string[] GroupLabels = { "BIKE", null, null, null, "WORLD", null, "TOOLS", null, null, null, null, null, "SYSTEM", null, null, null };
 
-        private static Image[] _navBars = new Image[15];
-        private static Text[] _navTxts = new Text[15];
-        private static Image[] _navBgs = new Image[15];
+        private static Image[] _navBars = new Image[16];
+        private static Text[] _navTxts = new Text[16];
+        private static Image[] _navBgs = new Image[16];
         private static UnityEngine.UI.Image _infoTabDot;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
@@ -184,7 +179,7 @@ namespace DescendersModMenu.UI
                 sVlg.childAlignment = TextAnchor.UpperCenter;
                 sVlg.childForceExpandWidth = true; sVlg.childForceExpandHeight = false;
 
-                for (int i = 0; i < 15; i++)
+                for (int i = 0; i < 16; i++)
                 {
                     int navIdx = i;
                     int pageNum = PageOrder[i];
@@ -248,6 +243,8 @@ namespace DescendersModMenu.UI
                 pg13 = UIHelpers.Obj("P13", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg13)); PageModesUI.CreatePage(pg13.transform);
                 pg14 = UIHelpers.Obj("P14", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg14)); Page14UI.CreatePage(pg14.transform);
                 pg15 = UIHelpers.Obj("P15", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg15)); Page15UI.CreatePage(pg15.transform);
+
+                pg16 = UIHelpers.Obj("P16", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg16)); PageSessionUI.CreatePage(pg16.transform);
 
                 RefreshAll(); RefreshTabs();
                 Mods.MenuCustomiser.LoadFromFile();
@@ -463,83 +460,6 @@ namespace DescendersModMenu.UI
             }, 60);
             UIHelpers.InfoBox(pg, "Launch: fires you forward at high speed.");
 
-            UIHelpers.Divider(pg);
-
-            // ── SESSION header with Reset All button ──────────────────
-            var sessionHdr = UIHelpers.Obj("SessionHdr", pg);
-            var shLE = sessionHdr.AddComponent<LayoutElement>();
-            shLE.preferredHeight = 28; shLE.minHeight = 28; shLE.flexibleHeight = 0;
-            var shHlg = sessionHdr.AddComponent<HorizontalLayoutGroup>();
-            shHlg.spacing = 8;
-            shHlg.padding = new RectOffset(0, 8, 0, 0);
-            shHlg.childAlignment = TextAnchor.MiddleLeft;
-            shHlg.childForceExpandWidth = false;
-            shHlg.childForceExpandHeight = true;
-            var shBar = UIHelpers.Panel("SHBar", sessionHdr.transform, UIHelpers.Accent);
-            shBar.AddComponent<LayoutElement>().preferredWidth = 3;
-            var shTxt = UIHelpers.Txt("SHT", sessionHdr.transform, "SESSION", 11,
-                FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.Accent);
-            shTxt.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-            UIHelpers.ActionBtn(sessionHdr.transform, "Reset All", () =>
-            {
-                TopSpeed.Reset();
-                SessionTrackers.ResetBails();
-                SessionTrackers.ResetCheckpoints();
-                SessionTrackers.ResetAirtime();
-                SessionTrackers.ResetGForce();
-                RefreshAll();
-            }, 68);
-
-            var str = UIHelpers.StatRow("Session Timer", pg);
-            sessionTimeVal = UIHelpers.Txt("StV", str.transform, SessionTrackers.SessionTimeDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var stle = sessionTimeVal.gameObject.AddComponent<LayoutElement>();
-            stle.flexibleWidth = 1; stle.preferredHeight = 20; stle.flexibleHeight = 0;
-
-            var tsr = UIHelpers.StatRow("Top Speed", pg);
-            topSpeedVal = UIHelpers.Txt("TSV", tsr.transform, TopSpeed.DisplayValue, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var tsle = topSpeedVal.gameObject.AddComponent<LayoutElement>();
-            tsle.flexibleWidth = 1; tsle.preferredHeight = 20; tsle.flexibleHeight = 0;
-            UIHelpers.ActionBtn(tsr.transform, "Reset", () => { TopSpeed.Reset(); RefreshAll(); }, 52);
-
-            var srtr = UIHelpers.StatRow("Speedrun Timer", pg);
-            srtVal = UIHelpers.Txt("SrV", srtr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
-            srtVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
-            UIHelpers.Toggle(srtr.transform, "SrT", () => { SpeedrunTimer.Toggle(); RefreshAll(); }, out srtTrack, out srtKnob);
-            UIHelpers.ActionBtn(srtr.transform, "Reset", () => { SpeedrunTimer.ResetTime(); }, 52);
-            UIHelpers.InfoBox(pg, "Requires Speedrun Timer ON in Settings > Gameplay.");
-
-            var bcr = UIHelpers.StatRow("Bails", pg);
-            bailCountVal = UIHelpers.Txt("BcV", bcr.transform, SessionTrackers.BailCountDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var bcle = bailCountVal.gameObject.AddComponent<LayoutElement>();
-            bcle.flexibleWidth = 1; bcle.preferredHeight = 20; bcle.flexibleHeight = 0;
-            UIHelpers.ActionBtn(bcr.transform, "Reset", () => { SessionTrackers.ResetBails(); RefreshAll(); }, 52);
-
-            var cpcr = UIHelpers.StatRow("Checkpoints", pg);
-            checkpointCountVal = UIHelpers.Txt("CpCV", cpcr.transform,
-                SessionTrackers.CheckpointCountDisplay, 12, FontStyle.Bold,
-                TextAnchor.MiddleRight, UIHelpers.Accent);
-            var cpcle = checkpointCountVal.gameObject.AddComponent<LayoutElement>();
-            cpcle.flexibleWidth = 1; cpcle.preferredHeight = 20; cpcle.flexibleHeight = 0;
-            UIHelpers.ActionBtn(cpcr.transform, "Reset", () => { SessionTrackers.ResetCheckpoints(); RefreshAll(); });
-
-            var atr = UIHelpers.StatRow("Longest Airtime", pg);
-            airtimeVal = UIHelpers.Txt("AtV", atr.transform, SessionTrackers.AirtimeDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var atle = airtimeVal.gameObject.AddComponent<LayoutElement>();
-            atle.flexibleWidth = 1; atle.preferredHeight = 20; atle.flexibleHeight = 0;
-            UIHelpers.ActionBtn(atr.transform, "Reset", () => { SessionTrackers.ResetAirtime(); RefreshAll(); }, 52);
-
-            var gfr = UIHelpers.StatRow("G-Force", pg);
-            gforceVal = UIHelpers.Txt("GfV", gfr.transform, SessionTrackers.GForceDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var gfle = gforceVal.gameObject.AddComponent<LayoutElement>();
-            gfle.flexibleWidth = 1; gfle.preferredHeight = 20; gfle.flexibleHeight = 0;
-
-            var pgfr = UIHelpers.StatRow("Peak G-Force", pg);
-            peakGforceVal = UIHelpers.Txt("PgV", pgfr.transform, SessionTrackers.PeakGForceDisplay, 12, FontStyle.Bold, TextAnchor.MiddleRight, UIHelpers.Accent);
-            var pgfle = peakGforceVal.gameObject.AddComponent<LayoutElement>();
-            pgfle.flexibleWidth = 1; pgfle.preferredHeight = 20; pgfle.flexibleHeight = 0;
-            UIHelpers.ActionBtn(pgfr.transform, "Reset", () => { SessionTrackers.ResetGForce(); RefreshAll(); }, 52);
-
-
             UIHelpers.AddScrollForwarders(content.transform);
         }
 
@@ -590,8 +510,9 @@ namespace DescendersModMenu.UI
             if (cur != 11) Page11UI.CancelRename(); if (pg12) pg12.SetActive(cur == 12);
             if (pg13) pg13.SetActive(cur == 13); if (pg14) pg14.SetActive(cur == 14);
             if (pg15) pg15.SetActive(cur == 15);
+            if (pg16) pg16.SetActive(cur == 16);
 
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 16; i++)
             {
                 bool on = PageOrder[i] == cur;
                 if (_navBars[i]) _navBars[i].color = on ? UIHelpers.Accent : new Color(0, 0, 0, 0);
@@ -696,18 +617,8 @@ namespace DescendersModMenu.UI
             UIHelpers.SetToggle(nswTrack, nswKnob, nsw);
 
             // ── Speedrun Timer ────────────────────────────────────────
-            bool srt = SpeedrunTimer.Enabled;
-            if (srtVal) { srtVal.text = srt ? "ON" : "OFF"; srtVal.color = srt ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(srtTrack, srtKnob, srt);
-
             // ── Session live values ───────────────────────────────────
-            if (topSpeedVal) topSpeedVal.text = TopSpeed.DisplayValue;
-            if (sessionTimeVal) sessionTimeVal.text = SessionTrackers.SessionTimeDisplay;
-            if (bailCountVal) bailCountVal.text = SessionTrackers.BailCountDisplay;
-            if (checkpointCountVal) checkpointCountVal.text = SessionTrackers.CheckpointCountDisplay;
-            if (airtimeVal) airtimeVal.text = SessionTrackers.AirtimeDisplay;
-            if (gforceVal) gforceVal.text = SessionTrackers.GForceDisplay;
-            if (peakGforceVal) peakGforceVal.text = SessionTrackers.PeakGForceDisplay;
+            PageSessionUI.RefreshAll();
         }
 
         private static void FlashHeader(Image img)
@@ -722,13 +633,7 @@ namespace DescendersModMenu.UI
 
         public static void TickLive()
         {
-            if (topSpeedVal) topSpeedVal.text = TopSpeed.DisplayValue;
-            if (sessionTimeVal) sessionTimeVal.text = SessionTrackers.SessionTimeDisplay;
-            if (bailCountVal) bailCountVal.text = SessionTrackers.BailCountDisplay;
-            if (checkpointCountVal) checkpointCountVal.text = SessionTrackers.CheckpointCountDisplay;
-            if (airtimeVal) airtimeVal.text = SessionTrackers.AirtimeDisplay;
-            if (gforceVal) gforceVal.text = SessionTrackers.GForceDisplay;
-            if (peakGforceVal) peakGforceVal.text = SessionTrackers.PeakGForceDisplay;
+            PageSessionUI.TickLive();
 
             if (_hdrFlashTimer > 0f)
             {

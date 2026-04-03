@@ -182,6 +182,7 @@
     <Compile Include="UI\Page8UI.cs" />
     <Compile Include="UI\Page9UI.cs" />
     <Compile Include="UI\PageModesUI.cs" />
+    <Compile Include="UI\PageSessionUI.cs" />
     <Compile Include="UI\PoliceHUD.cs" />
     <Compile Include="UI\SurvivalHUD.cs" />
     <Compile Include="UI\TrickAttackHUD.cs" />
