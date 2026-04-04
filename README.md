@@ -1,6 +1,6 @@
 # Descenders Mod Menu / Descenders Toolkit
 
-**v3.6.2** — The most complete mod menu for Descenders. 60+ mods, 6 game modes, ghost replay, map changer, outfit presets, mod chat and full scene persistence — all in one clean sidebar overlay.
+**v3.7.0** — The most complete mod menu for Descenders. 60+ mods, 6 game modes, ghost replay, map changer, outfit presets, mod chat and full scene persistence — all in one clean sidebar overlay.
 
 > Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded as Descenders Toolkit.
 
@@ -9,7 +9,7 @@ Physics tweaks, bike tuning, world controls, score tools, session trackers, ghos
 **Download:** [Nexus Mods](https://www.nexusmods.com/descenders/mods/7) · [GitHub Releases](https://github.com/NateHyden/DescendersModMenu/releases) · [Discord](https://discord.gg/rHvCrBdqaR)
 
 ---
-- **Nexus Mods:** [nexusmods.com/descenders/mods/7](https://www.nexusmods.com/descenders/mods/7)
+
 ## Requirements
 
 - [MelonLoader 0.5.7](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.7) *choose MelonLoader 0.5.7 from the drop down menu*
@@ -268,6 +268,12 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Your last s
 
 ---
 
+## Update Notifications
+
+The toolkit checks for new versions on GitHub when the game launches. If a newer release is available, a green notification appears in the menu header. The check runs on a background thread and never affects game performance.
+
+---
+
 ## Notes
 
 - Intended for single-player and private sessions
@@ -284,6 +290,9 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Your last s
 
 ## Changelog
 
+### v3.7.0
+- **Update notifications** — the toolkit now checks GitHub for new releases on startup. If a newer version is available, a green notification appears in the menu header. Runs on a background thread with no impact on game performance
+
 ### v3.6.2
 - **Scene transition system** — active mods now persist across map changes. Mods are snapshotted before scene unload and reapplied when you spawn into the next map. Intermediate scenes (EmptyScene) are skipped correctly. Each mod wrapped in individual error handling so one failure cannot affect the rest
 - **Auto-load on startup** — your last saved settings load automatically when you first spawn in, with no warnings or log noise
@@ -297,7 +306,7 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Your last s
 - **Newly persisted across scenes:** Bike Scale, Player Scale, Invisible Bike, Invisible Player, Wheel Size, Wide Tyres level, NoSpeedCap, Bike Torch, Camera Shake, Near Miss Sensitivity, Center of Mass, Suspension, Exploding Props
 - **Graphics tab false dot fixed** — Depth of Field default corrected so the Graphics tab no longer shows a green modified dot on startup
 - **Not persisted (always reset per-map):** Graphics tab, Sky section, Time of Day, Game Modes, Ghost Replay, ESP
-- **UI polish** — sidebar tab text brightened for readability, "Created by NateHyden" text brightened, version bumped to v3.6.2
+- **UI polish** — sidebar tab text brightened for readability, "Created by NateHyden" text brightened
 - **Log cleanup** — eliminated Type::op_Equality and FieldInfo::op_Equality log spam, removed unnecessary warnings during scene transitions and before player spawn
 
 ### v3.6.1
