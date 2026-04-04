@@ -1,10 +1,12 @@
-# Descenders Toolkit
+# Descenders Mod Menu / Descenders Toolkit
 
-**v3.6.2** — A modding toolkit for Descenders built from the ground up with a clean sidebar overlay.
+**v3.6.2** — The most complete mod menu for Descenders. 60+ mods, 6 game modes, ghost replay, map changer, outfit presets, mod chat and full scene persistence — all in one clean sidebar overlay.
 
-> Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded.
+> Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded as Descenders Toolkit.
 
-Physics tweaks, world controls, score tools, session trackers, ghost replay, game modes, map changer, outfit presets, mod chat and plenty of chaos — all in one place.
+Physics tweaks, bike tuning, world controls, score tools, session trackers, ghost replay, game modes, map changer, outfit presets, mod chat and plenty of chaos — all in one place. Works online and offline.
+
+**Download:** [Nexus Mods](https://www.nexusmods.com/descenders/mods/7) · [GitHub Releases](https://github.com/NateHyden/DescendersModMenu/releases) · [Discord](https://discord.gg/rHvCrBdqaR)
 
 ---
 - **Nexus Mods:** [nexusmods.com/descenders/mods/7](https://www.nexusmods.com/descenders/mods/7)
