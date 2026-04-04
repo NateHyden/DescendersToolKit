@@ -271,6 +271,7 @@ namespace DescendersModMenu
             FOV.Reset(); Acceleration.Reset(); MaxSpeedMultiplier.Reset();
             Movement.Reset(); LandingImpact.Reset();
             NoBail.ClearCache(); Page8UI.ResetWheelSize();
+            if (NoSpeedCap.Enabled) NoSpeedCap.Toggle(); // Reset to OFF before immediate restore
             BikeTorch.Reset(); CameraShake.Reset(); NearMissSensitivity.Reset();
             // Always-reset (NOT restored):
             SkyColours.Reset(); GraphicsSettings.Reset();
@@ -282,18 +283,18 @@ namespace DescendersModMenu
             if (ESP.Enabled) ESP.Toggle();
 
             // == RESTORE IMMEDIATE (Harmony patches) ==
-            if (wasSlowMotion) SlowMotion.Toggle();
-            if (wasCutBrakes) CutBrakes.Toggle();
-            if (wasReverseSteering) ReverseSteering.Toggle();
-            if (wasAutoBalance) AutoBalance.Toggle();
-            if (wasQuickBrake) QuickBrake.Toggle();
-            if (wasWheelieAngle) WheelieAngleLimit.Toggle();
-            if (wasNoSpeedWobbles) GameModifierMods.NoSpeedWobblesToggle();
-            if (wasSlowMoOnBail) SlowMoOnBail.Toggle();
-            if (wasIceMode) IceMode.Toggle();
-            if (wasStickyTyres) StickyTyres.Toggle();
-            if (wasAirControl) AirControl.Toggle();
-            if (wasNoSpeedCap) NoSpeedCap.Toggle();
+            if (wasSlowMotion) { SlowMotion.Toggle(); MelonLogger.Msg("[Reapply] IMM SlowMotion -> " + SlowMotion.Enabled); }
+            if (wasCutBrakes) { CutBrakes.Toggle(); MelonLogger.Msg("[Reapply] IMM CutBrakes -> " + CutBrakes.Enabled); }
+            if (wasReverseSteering) { ReverseSteering.Toggle(); MelonLogger.Msg("[Reapply] IMM ReverseSteering -> " + ReverseSteering.Enabled); }
+            if (wasAutoBalance) { AutoBalance.Toggle(); MelonLogger.Msg("[Reapply] IMM AutoBalance -> " + AutoBalance.Enabled); }
+            if (wasQuickBrake) { QuickBrake.Toggle(); MelonLogger.Msg("[Reapply] IMM QuickBrake -> " + QuickBrake.Enabled); }
+            if (wasWheelieAngle) { WheelieAngleLimit.Toggle(); MelonLogger.Msg("[Reapply] IMM WheelieAngle -> " + WheelieAngleLimit.Enabled); }
+            if (wasNoSpeedWobbles) { GameModifierMods.NoSpeedWobblesToggle(); MelonLogger.Msg("[Reapply] IMM NoSpeedWobbles -> " + GameModifierMods.NoSpeedWobblesEnabled); }
+            if (wasSlowMoOnBail) { SlowMoOnBail.Toggle(); MelonLogger.Msg("[Reapply] IMM SlowMoOnBail -> " + SlowMoOnBail.Enabled); }
+            if (wasIceMode) { IceMode.Toggle(); MelonLogger.Msg("[Reapply] IMM IceMode -> " + IceMode.Enabled); }
+            if (wasStickyTyres) { StickyTyres.Toggle(); MelonLogger.Msg("[Reapply] IMM StickyTyres -> " + StickyTyres.Enabled); }
+            if (wasAirControl) { AirControl.Toggle(); MelonLogger.Msg("[Reapply] IMM AirControl -> " + AirControl.Enabled); }
+            if (wasNoSpeedCap) { NoSpeedCap.Toggle(); MelonLogger.Msg("[Reapply] IMM NoSpeedCap -> " + NoSpeedCap.Enabled); }
             MelonLogger.Msg("[Reapply] Immediate restores done.");
 
             // == QUEUE DEFERRED ==
