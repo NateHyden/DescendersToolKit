@@ -18,7 +18,10 @@ namespace DescendersModMenu.BikeStats
         private static readonly string SaveFile =
             Path.Combine(SaveFolder, "BikeStats.json");
 
-        // ── Save ──────────────────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════
+        //  SAVE — captures everything EXCEPT:
+        //    Graphics tab, Sky section, Modes, Ghost Replay, ESP
+        // ══════════════════════════════════════════════════════════════
         public static void SaveStats()
         {
             try
@@ -52,11 +55,9 @@ namespace DescendersModMenu.BikeStats
                     PumpStrengthLevel = GameModifierMods.PumpStrengthLevel,
                     IcePhysicsLevel = GameModifierMods.IcePhysicsLevel,
 
-                    // World / Graphics
+                    // World (NOT sky, NOT time of day — gravity only)
                     FovLevel = FOV.Level,
                     GravityLevel = Gravity.Level,
-                    TimeOfDayLevel = TimeOfDay.Level,
-                    SkyPreset = SkyColours.CurrentPreset,
 
                     // Tyres
                     WideTyresEnabled = WideTyres.Enabled,
@@ -74,10 +75,8 @@ namespace DescendersModMenu.BikeStats
                     MirrorModeEnabled = MirrorMode.Enabled,
                     DrunkModeEnabled = DrunkMode.Enabled,
                     FlyModeEnabled = FlyMode.Enabled,
-                    EspEnabled = ESP.Enabled,
                     SpeedrunTimerEnabled = SpeedrunTimer.Enabled,
                     SlowMoOnBailEnabled = SlowMoOnBail.Enabled,
-                    GhostReplayEnabled = GhostReplay.Enabled,
 
                     WheelieAngleLimitEnabled = WheelieAngleLimit.Enabled,
                     WheelieAngleLimitLevel = WheelieAngleLimit.Level,
@@ -106,7 +105,6 @@ namespace DescendersModMenu.BikeStats
                     // Floats
                     FlyMoveSpeed = FlyMode.MoveSpeed,
                     FlyClimbSpeed = FlyMode.ClimbSpeed,
-                    GhostAlpha = GhostReplay.GhostAlpha,
 
                     // Menu Customiser
                     MenuPositionPreset = MenuCustomiser.PositionPreset,
@@ -133,47 +131,41 @@ namespace DescendersModMenu.BikeStats
                     NearMissEnabled = NearMissSensitivity.Enabled,
                     NearMissLevel = NearMissSensitivity.Level,
 
-                    // Graphics
-                    GraphicsBloomEnabled = GraphicsSettings.BloomEnabled,
-                    GraphicsAmbientOccEnabled = GraphicsSettings.AmbientOccEnabled,
-                    GraphicsVignetteEnabled = GraphicsSettings.VignetteEnabled,
-                    GraphicsDepthOfFieldEnabled = GraphicsSettings.DepthOfFieldEnabled,
-                    GraphicsChromaticAbEnabled = GraphicsSettings.ChromaticAbEnabled,
-
-                    // Sky Storm / Rain
-                    StormEnabled = SkyColours.StormEnabled,
-                    RainIntensityLevel = SkyColours.RainIntensityLevel,
+                    // Bike / Player Scale
+                    BikeScale = Page8UI.CurrentBikeScale,
+                    PlayerScale = Page9UI.CurrentPlayerScale,
+                    InvisibleBikeEnabled = Page8UI.IsInvisibleBike,
+                    InvisiblePlayerEnabled = Page9UI.IsInvisiblePlayer,
+                    WheelSizeEnabled = Page8UI.IsWheelSizeEnabled,
+                    WheelSizeMode = Page8UI.CurrentWheelSizeMode,
                 };
 
                 string json = JsonUtility.ToJson(data, true);
                 File.WriteAllText(SaveFile, json);
                 MelonLogger.Msg("[StatsManager] Saved to: " + SaveFile);
             }
-            catch (Exception ex)
-            {
-                MelonLogger.Error("[StatsManager] SaveStats: " + ex.Message);
-            }
+            catch (Exception ex) { MelonLogger.Error("[StatsManager] SaveStats: " + ex.Message); }
         }
 
-        // ── Load ──────────────────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════
+        //  LOAD — restores everything that was saved (same exclusions)
+        // ══════════════════════════════════════════════════════════════
         public static void LoadStats()
         {
+            // Reset to clean defaults first — ensures mods that are currently ON
+            // but saved as OFF get properly turned off
+            try { ResetStats(); }
+            catch (System.Exception ex) { MelonLogger.Warning("[StatsManager] Pre-load reset: " + ex.Message); }
+
             try
             {
                 if (!File.Exists(SaveFile))
-                {
-                    MelonLogger.Warning("[StatsManager] No save file found: " + SaveFile);
-                    return;
-                }
+                { MelonLogger.Warning("[StatsManager] No save file found: " + SaveFile); return; }
 
                 string json = File.ReadAllText(SaveFile);
                 BikeStatsData data = JsonUtility.FromJson<BikeStatsData>(json);
-
                 if (data == null)
-                {
-                    MelonLogger.Warning("[StatsManager] JSON returned null.");
-                    return;
-                }
+                { MelonLogger.Warning("[StatsManager] JSON returned null."); return; }
 
                 // Bike / Stats
                 Acceleration.SetLevel(data.AccelerationLevel);
@@ -182,10 +174,9 @@ namespace DescendersModMenu.BikeStats
                 NoBail.SetEnabled(data.NoBailEnabled);
                 BikeSwitcher.SetBike(data.BikeIndex);
 
-                // Floats first (some toggles read them)
+                // Floats first
                 FlyMode.MoveSpeed = data.FlyMoveSpeed;
                 FlyMode.ClimbSpeed = data.FlyClimbSpeed;
-                GhostReplay.GhostAlpha = data.GhostAlpha;
                 StickyTyres.SuctionForce = data.StickyForce;
                 SlowMotion.SetLevel(data.SlowMotionLevel);
 
@@ -204,8 +195,6 @@ namespace DescendersModMenu.BikeStats
                 GameModifierMods.SetIcePhysicsLevel(data.IcePhysicsLevel);
                 FOV.SetLevel(data.FovLevel);
                 Gravity.SetLevel(data.GravityLevel);
-                TimeOfDay.SetLevelSilent(data.TimeOfDayLevel);
-                if (data.SkyPreset != 0) SkyColours.ApplyPreset(data.SkyPreset);
                 WideTyres.SetLevel(data.WideTyresLevel);
 
                 // Toggles — only enable if saved true, don't double-toggle
@@ -219,17 +208,14 @@ namespace DescendersModMenu.BikeStats
                 if (data.MirrorModeEnabled && !MirrorMode.Enabled) MirrorMode.Toggle();
                 if (data.DrunkModeEnabled && !DrunkMode.Enabled) DrunkMode.Toggle();
                 if (data.FlyModeEnabled && !FlyMode.Enabled) FlyMode.Toggle();
-                if (data.EspEnabled && !ESP.Enabled) ESP.Toggle();
                 if (data.SpeedrunTimerEnabled && !SpeedrunTimer.Enabled) SpeedrunTimer.Toggle();
                 if (data.SlowMoOnBailEnabled && !SlowMoOnBail.Enabled) SlowMoOnBail.Toggle();
-                if (data.GhostReplayEnabled && !GhostReplay.Enabled) GhostReplay.Toggle();
 
                 WheelieAngleLimit.SetLevel(data.WheelieAngleLimitLevel);
                 AirControl.SetLevel(data.AirControlLevel);
                 if (data.WheelieAngleLimitEnabled && !WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
                 if (data.AirControlEnabled && !AirControl.Enabled) AirControl.Toggle();
 
-                // General toggles
                 if (data.AccelerationEnabled && !Acceleration.Enabled) Acceleration.Toggle();
                 if (data.MaxSpeedEnabled && !MaxSpeedMultiplier.Enabled) MaxSpeedMultiplier.Toggle();
                 if (data.LandingImpactEnabled && !LandingImpact.Enabled) LandingImpact.Toggle();
@@ -238,13 +224,11 @@ namespace DescendersModMenu.BikeStats
                 if (data.AutoBalanceEnabled && !AutoBalance.Enabled) AutoBalance.Toggle();
                 if (data.NoSpeedWobblesEnabled && !GameModifierMods.NoSpeedWobblesEnabled) GameModifierMods.NoSpeedWobblesToggle();
 
-                // Movement toggles
                 if (data.SpinEnabled && !Movement.SpinEnabled) Movement.ToggleSpin();
                 if (data.HopEnabled && !Movement.HopEnabled) Movement.ToggleHop();
                 if (data.WheelieEnabled && !Movement.WheelieEnabled) Movement.ToggleWheelie();
                 if (data.LeanEnabled && !Movement.LeanEnabled) Movement.ToggleLean();
 
-                // Quick Brake
                 QuickBrake.SetLevel(data.QuickBrakeLevel);
                 if (data.QuickBrakeEnabled && !QuickBrake.Enabled) QuickBrake.Toggle();
 
@@ -270,81 +254,82 @@ namespace DescendersModMenu.BikeStats
                 // Exploding Props
                 if (data.ExplodingPropsEnabled && !ExplodingProps.Enabled) ExplodingProps.Toggle();
 
-                // Near Miss Sensitivity
+                // Near Miss
                 NearMissSensitivity.SetLevel(data.NearMissLevel);
                 if (data.NearMissEnabled && !NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
 
-                // Graphics
-                if (data.GraphicsBloomEnabled != GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
-                if (data.GraphicsAmbientOccEnabled != GraphicsSettings.AmbientOccEnabled) GraphicsSettings.ToggleAO();
-                if (data.GraphicsVignetteEnabled != GraphicsSettings.VignetteEnabled) GraphicsSettings.ToggleVignette();
-                if (data.GraphicsDepthOfFieldEnabled != GraphicsSettings.DepthOfFieldEnabled) GraphicsSettings.ToggleDOF();
-                if (data.GraphicsChromaticAbEnabled != GraphicsSettings.ChromaticAbEnabled) GraphicsSettings.ToggleChromatic();
-
-                // Sky Storm / Rain
-                SkyColours.SetRainIntensityLevel(data.RainIntensityLevel);
-                if (data.StormEnabled && !SkyColours.StormEnabled) SkyColours.ToggleStorm();
-                else if (!data.StormEnabled && SkyColours.StormEnabled) SkyColours.ToggleStorm();
+                // Bike / Player Scale (deferred — may not have player yet)
+                Page8UI.CurrentBikeScale = data.BikeScale;
+                Page9UI.CurrentPlayerScale = data.PlayerScale;
+                // These will be applied by the scene reapply system when Player_Human exists
+                // Direct apply attempted here in case player already exists:
+                if (data.BikeScale != 1f) try { Page8UI.ApplyBikeScale(data.BikeScale); } catch { }
+                if (data.PlayerScale != 1f) try { Page9UI.ApplyPlayerScale(data.PlayerScale); } catch { }
+                if (data.InvisibleBikeEnabled) try { Page8UI.SetInvisibleBike(true); } catch { }
+                if (data.InvisiblePlayerEnabled) try { Page9UI.SetInvisiblePlayer(true); } catch { }
+                if (data.WheelSizeEnabled) try { Page8UI.ApplyWheelSize(true, data.WheelSizeMode); } catch { }
 
                 MelonLogger.Msg("[StatsManager] Loaded from: " + SaveFile);
             }
-            catch (Exception ex)
-            {
-                MelonLogger.Error("[StatsManager] LoadStats: " + ex.Message);
-            }
+            catch (Exception ex) { MelonLogger.Error("[StatsManager] LoadStats: " + ex.Message); }
+
+            // Refresh all pages
+            try { Page6UI.RefreshAll(); } catch { }
+            try { Page7UI.RefreshAll(); } catch { }
+            try { Page8UI.RefreshAll(); } catch { }
+            try { Page9UI.RefreshAll(); } catch { }
+            try { Page10UI.RefreshAll(); } catch { }
+            try { PageModesUI.RefreshAll(); } catch { }
+            try { PageSessionUI.RefreshAll(); } catch { }
+            try { Page3UI.Refresh(); } catch { }
+            try { Page14UI.RefreshAll(); } catch { }
         }
 
-        // ── Reset ─────────────────────────────────────────────────────
+        // ══════════════════════════════════════════════════════════════
+        //  RESET — resets EVERYTHING to defaults (including graphics,
+        //  sky, modes, ghost, ESP — those aren't saved but still reset)
+        // ══════════════════════════════════════════════════════════════
         public static void ResetStats()
         {
             try
             {
-                // Run page GlobalResets FIRST so Moon Mode deactivation restores
-                // suspension/gravity before we override them with defaults below
                 Page7UI.GlobalReset();
                 Page8UI.GlobalReset();
                 Page9UI.GlobalReset();
 
-                // Bike / Stats
                 Acceleration.SetLevel(1);
                 MaxSpeedMultiplier.SetLevel(1);
                 LandingImpact.SetLevel(1);
                 NoBail.SetEnabled(false);
                 BikeSwitcher.SetBike(0);
 
-                // Movement
                 Movement.SetSpinLevel(1);
                 Movement.SetHopLevel(1);
                 Movement.SetWheelieLevel(1);
                 Movement.SetLeanLevel(1);
 
-                // Suspension
                 Suspension.SetTravelLevel(5);
                 Suspension.SetStiffnessLevel(5);
                 Suspension.SetDampingLevel(5);
 
-                // Game Modifiers
                 GameModifierMods.SetWheelieBalanceLevel(5);
                 GameModifierMods.SetInAirCorrLevel(5);
                 GameModifierMods.SetFakieBalanceLevel(5);
                 GameModifierMods.SetPumpStrengthLevel(5);
                 GameModifierMods.SetIcePhysicsLevel(5);
 
-                // World / Graphics
                 FOV.SetLevel(5);
                 Gravity.SetLevel(5);
                 TimeOfDay.ResetToSceneDefault();
                 SkyColours.RestoreDefault();
                 WideTyres.SetLevel(5);
 
-                // Floats
                 FlyMode.MoveSpeed = 30f;
                 FlyMode.ClimbSpeed = 20f;
                 GhostReplay.GhostAlpha = 0.45f;
                 StickyTyres.SuctionForce = 150f;
                 SlowMotion.SetLevel(5);
 
-                // Toggles — turn off anything that's on
                 if (WideTyres.Enabled) WideTyres.Toggle();
                 if (StickyTyres.Enabled) StickyTyres.Toggle();
                 if (SlowMotion.Enabled) SlowMotion.Toggle();
@@ -360,7 +345,6 @@ namespace DescendersModMenu.BikeStats
                 if (SlowMoOnBail.Enabled) SlowMoOnBail.Toggle();
                 if (GhostReplay.Enabled) GhostReplay.Toggle();
 
-                // General toggles
                 if (Acceleration.Enabled) Acceleration.Toggle();
                 if (MaxSpeedMultiplier.Enabled) MaxSpeedMultiplier.Toggle();
                 if (LandingImpact.Enabled) LandingImpact.Toggle();
@@ -369,59 +353,58 @@ namespace DescendersModMenu.BikeStats
                 AutoBalance.SetStrengthLevel(5);
                 if (GameModifierMods.NoSpeedWobblesEnabled) GameModifierMods.NoSpeedWobblesToggle();
 
-                // Movement toggles
                 if (Movement.SpinEnabled) Movement.ToggleSpin();
                 if (Movement.HopEnabled) Movement.ToggleHop();
                 if (Movement.WheelieEnabled) Movement.ToggleWheelie();
                 if (Movement.LeanEnabled) Movement.ToggleLean();
 
-                // Quick Brake
                 if (QuickBrake.Enabled) QuickBrake.Toggle();
                 QuickBrake.SetLevel(5);
 
-                // Bike Torch
                 if (BikeTorch.Enabled) BikeTorch.Toggle();
                 BikeTorch.IntensityIndex = 2;
 
-                // Camera Shake
                 if (CameraShake.Enabled) CameraShake.Toggle();
                 CameraShake.SetLevel(5);
 
-                // Center of Mass
                 CenterOfMass.SetLR(0f);
                 CenterOfMass.SetFB(0f);
                 CenterOfMass.SetUD(0f);
 
-                // Exploding Props
                 if (ExplodingProps.Enabled) ExplodingProps.Toggle();
 
-                // Near Miss Sensitivity
                 if (NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
                 NearMissSensitivity.SetLevel(5);
 
-                // Graphics (reset to all enabled except Depth of Field which defaults OFF)
+                // Bike / Player Scale
+                Page8UI.CurrentBikeScale = 1f;
+                Page9UI.CurrentPlayerScale = 1f;
+                try { Page8UI.ApplyBikeScale(1f); } catch { }
+                try { Page9UI.ApplyPlayerScale(1f); } catch { }
+                if (Page8UI.IsInvisibleBike) try { Page8UI.SetInvisibleBike(false); } catch { }
+                if (Page9UI.IsInvisiblePlayer) try { Page9UI.SetInvisiblePlayer(false); } catch { }
+                if (Page8UI.IsWheelSizeEnabled) try { Page8UI.ApplyWheelSize(false, 0); } catch { }
+
+                // Graphics — always reset to defaults (not saved)
                 if (!GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
                 if (!GraphicsSettings.AmbientOccEnabled) GraphicsSettings.ToggleAO();
                 if (!GraphicsSettings.VignetteEnabled) GraphicsSettings.ToggleVignette();
                 if (GraphicsSettings.DepthOfFieldEnabled) GraphicsSettings.ToggleDOF();
                 if (!GraphicsSettings.ChromaticAbEnabled) GraphicsSettings.ToggleChromatic();
 
-                // Wheelie Angle Limit
                 if (WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
                 WheelieAngleLimit.SetLevel(5);
 
-                // Air Control
                 if (AirControl.Enabled) AirControl.Toggle();
                 AirControl.SetLevel(5);
 
-                // Sky Storm / Rain
+                // Sky — always reset (not saved)
                 if (SkyColours.StormEnabled) SkyColours.ToggleStorm();
                 SkyColours.SetRainIntensityLevel(5);
 
-                // Session HUD
                 SessionHUD.Enabled = false;
 
-                // Modes — stop any active mode
+                // Modes — always reset (not saved)
                 if (AvalancheMode.Enabled) AvalancheMode.Reset();
                 if (EarthquakeMode.Enabled) EarthquakeMode.Reset();
                 if (PoliceChaseMode.Enabled) PoliceChaseMode.Reset();
@@ -431,19 +414,17 @@ namespace DescendersModMenu.BikeStats
 
                 MelonLogger.Msg("[StatsManager] Reset to defaults.");
             }
-            catch (Exception ex)
-            {
-                MelonLogger.Error("[StatsManager] ResetStats: " + ex.Message);
-            }
+            catch (Exception ex) { MelonLogger.Error("[StatsManager] ResetStats: " + ex.Message); }
 
-            // Refresh all page UIs outside the main try/catch so they always
-            // run even if a mid-reset exception was caught above.
             try { Page6UI.RefreshAll(); } catch { }
             try { Page7UI.RefreshAll(); } catch { }
             try { Page8UI.RefreshAll(); } catch { }
             try { Page9UI.RefreshAll(); } catch { }
             try { Page10UI.RefreshAll(); } catch { }
             try { PageModesUI.RefreshAll(); } catch { }
+            try { PageSessionUI.RefreshAll(); } catch { }
+            try { Page3UI.Refresh(); } catch { }
+            try { Page14UI.RefreshAll(); } catch { }
         }
 
         private static void EnsureSaveFolder()

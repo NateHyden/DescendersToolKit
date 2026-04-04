@@ -9,6 +9,10 @@ namespace DescendersModMenu.UI
     {
         // ── Invisible Player ──────────────────────────────────────────
         private static bool _invisiblePlayer = false;
+
+        // Public accessors for snapshot/save system
+        public static float CurrentPlayerScale = 1f;
+        public static bool IsInvisiblePlayer => _invisiblePlayer;
         private static Renderer[] _hiddenPlayerRenderers = null;
         private static Image _invisTrack; private static RectTransform _invisKnob;
         private static Text _invisVal;
@@ -337,6 +341,7 @@ namespace DescendersModMenu.UI
                 if ((object)cyclist == null) return;
                 if (!_playerScaleCaptured) { _defaultPlayerScale = cyclist.localScale; _playerScaleCaptured = true; }
                 cyclist.localScale = new Vector3(scale, scale, scale);
+                CurrentPlayerScale = scale;
             }
             catch (System.Exception ex) { MelonLogger.Error("[Silly] SetPlayerScale: " + ex.Message); }
         }
@@ -345,6 +350,7 @@ namespace DescendersModMenu.UI
         {
             try
             {
+                CurrentPlayerScale = 1f;
                 GameObject player = GameObject.Find("Player_Human");
                 if ((object)player == null) return;
                 Transform cyclist = player.transform.Find("Cyclist");
@@ -352,6 +358,10 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex) { MelonLogger.Error("[Silly] ResetPlayerScale: " + ex.Message); }
         }
+
+        // Called by reapply system
+        public static void ApplyPlayerScale(float scale) { SetPlayerScale(scale); }
+        public static void SetInvisiblePlayer(bool v) { if (v != _invisiblePlayer) { _invisiblePlayer = v; ToggleInvisible(v); } }
 
         private static void SetAllPlayersScale(float scale)
         {

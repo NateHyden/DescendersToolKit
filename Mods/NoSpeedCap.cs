@@ -94,8 +94,14 @@ namespace DescendersModMenu.Mods
                     "Prefix",
                     BindingFlags.Public | BindingFlags.Static
                 );
+                MethodInfo postfix = typeof(NoSpeedCap_EKzaPatch).GetMethod(
+                    "Postfix",
+                    BindingFlags.Public | BindingFlags.Static
+                );
 
-                harmony.Patch(target, prefix: new HarmonyMethod(prefix));
+                harmony.Patch(target,
+                    prefix: new HarmonyMethod(prefix),
+                    postfix: new HarmonyMethod(postfix));
                 MelonLogger.Msg("[NoSpeedCap] Patched successfully.");
             }
             catch (System.Exception ex)
@@ -201,74 +207,58 @@ namespace DescendersModMenu.Mods
     {
         // Cache fields via reflection
         private static FieldInfo _rbField = null; // Rigidbody
-        private static FieldInfo _accelField = null; // cPkCE^ (acceleration force ~14)
+        private static bool _fieldsCached = false;
 
-        private static PropertyInfo _onGroundPropInfo = null;
-        private static PropertyInfo _inputAccelProp = null;
+        // State passed from Prefix to Postfix
+        private static bool _active = false;
+        private static Vector3 _savedVelocity;
 
-        public static bool Prefix(Vehicle __instance)
+        // ── Prefix: zero the velocity so E{Kza's speed cap (num2) sees speed=0
+        //    and applies FULL acceleration. Then Postfix restores real velocity.
+        public static void Prefix(Vehicle __instance)
         {
-            if (!NoSpeedCap.Enabled) return true;
-            if ((object)__instance == null) return true;
+            _active = false;
+            if (!NoSpeedCap.Enabled) return;
+            if ((object)__instance == null) return;
             if (!string.Equals(__instance.gameObject.name, "Player_Human",
-                System.StringComparison.Ordinal)) return true;
+                System.StringComparison.Ordinal)) return;
 
             EnsureFields(__instance);
 
-            // Check if on ground
-            if ((object)_onGroundPropInfo != null)
-            {
-                object val = _onGroundPropInfo.GetValue(__instance, null);
-                if (val is bool && !(bool)val) return true;
-            }
-
-            // Get rigidbody
             Rigidbody rb = null;
             if ((object)_rbField != null)
                 rb = _rbField.GetValue(__instance) as Rigidbody;
-            if ((object)rb == null) return true;
+            if ((object)rb == null) return;
 
-            // Get input acceleration
-            float inputAccel = 0f;
-            if ((object)_inputAccelProp != null)
-            {
-                object val = _inputAccelProp.GetValue(__instance, null);
-                if (val is float) inputAccel = (float)val;
-            }
-            float speed = rb.velocity.magnitude;
-
-            // Get acceleration force
-            float accelForce = 14f;
-            if ((object)_accelField != null)
-            {
-                object val = _accelField.GetValue(__instance);
-                if (val is float) accelForce = (float)val;
-            }
-
-            // Calculate what the original num2 cap would be
-
-            // If not pedaling, run the original (which will do nothing anyway)
-            if (inputAccel <= 0.001f) return true;
-
-            // Apply force with NO num2 cap
-            rb.velocity += accelForce * inputAccel *
-                __instance.transform.forward *
-                Time.fixedDeltaTime;
-
-            return false; // skip original
+            // Save real velocity and zero it so E{Kza thinks speed=0
+            _savedVelocity = rb.velocity;
+            rb.velocity = Vector3.zero;
+            _active = true;
         }
 
-        private static bool _fieldsCached = false;
+        // ── Postfix: E{Kza ran with velocity=0, so it applied full uncapped
+        //    acceleration to "zero". Now velocity = just the acceleration delta.
+        //    Add that delta to the real velocity we saved.
+        public static void Postfix(Vehicle __instance)
+        {
+            if (!_active) return;
+            _active = false;
+
+            Rigidbody rb = null;
+            if ((object)_rbField != null)
+                rb = _rbField.GetValue(__instance) as Rigidbody;
+            if ((object)rb == null) return;
+
+            Vector3 accelDelta = rb.velocity; // what E{Kza added to "zero"
+            rb.velocity = _savedVelocity + accelDelta; // real velocity + uncapped accel
+        }
 
         private static void EnsureFields(Vehicle v)
         {
             if (_fieldsCached) return;
             _fieldsCached = true;
 
-            System.Type t = v.GetType();
-
-            // Rigidbody - find the backing field
-            FieldInfo[] fields = t.GetFields(
+            FieldInfo[] fields = v.GetType().GetFields(
                 BindingFlags.Public | BindingFlags.NonPublic |
                 BindingFlags.Instance | BindingFlags.FlattenHierarchy
             );
@@ -280,50 +270,7 @@ namespace DescendersModMenu.Mods
                     System.StringComparison.Ordinal) >= 0)
                 {
                     _rbField = fields[i];
-                }
-
-                // cPkCE^ = acceleration force = ~14
-                if (string.Equals(fields[i].FieldType.Name, "Single",
-                    System.StringComparison.Ordinal) &&
-                    (object)_accelField == null)
-                {
-                    object val = fields[i].GetValue(v);
-                    if (val is float && Mathf.Approximately((float)val, 14f))
-                    {
-                        _accelField = fields[i];
-                    }
-                }
-            }
-
-            // TDEX{ib - onGround bool property
-            // j[fCiJt - inputAcceleration float property
-            PropertyInfo[] props = t.GetProperties(
-                BindingFlags.Public | BindingFlags.Instance
-            );
-            for (int i = 0; i < props.Length; i++)
-            {
-                if (!props[i].CanRead) continue;
-
-                if ((object)_onGroundPropInfo == null &&
-                    string.Equals(props[i].PropertyType.Name, "Boolean",
-                    System.StringComparison.Ordinal))
-                {
-                    // TDEX{ib starts with 'T' - pick the first readable bool prop
-                    if (props[i].Name.StartsWith("T"))
-                    {
-                        _onGroundPropInfo = props[i];
-                    }
-                }
-
-                if ((object)_inputAccelProp == null &&
-                    string.Equals(props[i].PropertyType.Name, "Single",
-                    System.StringComparison.Ordinal))
-                {
-                    // j[fCiJt is inputAcceleration - starts with 'j'
-                    if (props[i].Name.StartsWith("j"))
-                    {
-                        _inputAccelProp = props[i];
-                    }
+                    break;
                 }
             }
         }

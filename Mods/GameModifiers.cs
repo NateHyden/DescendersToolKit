@@ -17,23 +17,43 @@ namespace DescendersModMenu.Mods
 
         public static void WheelieBalanceIncrease() { if (WheelieBalanceLevel < 10) { WheelieBalanceLevel++; ApplyMod("WHEELIEBALANCE", WheelieBalanceLevel); } }
         public static void WheelieBalanceDecrease() { if (WheelieBalanceLevel > 1) { WheelieBalanceLevel--; ApplyMod("WHEELIEBALANCE", WheelieBalanceLevel); } }
-        public static void SetWheelieBalanceLevel(int v) { WheelieBalanceLevel = System.Math.Max(1, System.Math.Min(10, v)); }
+        public static void SetWheelieBalanceLevel(int v)
+        {
+            WheelieBalanceLevel = System.Math.Max(1, System.Math.Min(10, v));
+            ApplyMod("WHEELIEBALANCE", WheelieBalanceLevel);
+        }
 
         public static void InAirCorrIncrease() { if (InAirCorrLevel < 10) { InAirCorrLevel++; ApplyMod("AIRCORRECTION", InAirCorrLevel); } }
         public static void InAirCorrDecrease() { if (InAirCorrLevel > 1) { InAirCorrLevel--; ApplyMod("AIRCORRECTION", InAirCorrLevel); } }
-        public static void SetInAirCorrLevel(int v) { InAirCorrLevel = System.Math.Max(1, System.Math.Min(10, v)); }
+        public static void SetInAirCorrLevel(int v)
+        {
+            InAirCorrLevel = System.Math.Max(1, System.Math.Min(10, v));
+            ApplyMod("AIRCORRECTION", InAirCorrLevel);
+        }
 
         public static void FakieBalanceIncrease() { if (FakieBalanceLevel < 10) { FakieBalanceLevel++; ApplyMod("FAKIEBALANCE", FakieBalanceLevel); } }
         public static void FakieBalanceDecrease() { if (FakieBalanceLevel > 1) { FakieBalanceLevel--; ApplyMod("FAKIEBALANCE", FakieBalanceLevel); } }
-        public static void SetFakieBalanceLevel(int v) { FakieBalanceLevel = System.Math.Max(1, System.Math.Min(10, v)); }
+        public static void SetFakieBalanceLevel(int v)
+        {
+            FakieBalanceLevel = System.Math.Max(1, System.Math.Min(10, v));
+            ApplyMod("FAKIEBALANCE", FakieBalanceLevel);
+        }
 
         public static void PumpStrengthIncrease() { if (PumpStrengthLevel < 10) { PumpStrengthLevel++; ApplyMod("PUMPSTRENGTH", PumpStrengthLevel); } }
         public static void PumpStrengthDecrease() { if (PumpStrengthLevel > 1) { PumpStrengthLevel--; ApplyMod("PUMPSTRENGTH", PumpStrengthLevel); } }
-        public static void SetPumpStrengthLevel(int v) { PumpStrengthLevel = System.Math.Max(1, System.Math.Min(10, v)); }
+        public static void SetPumpStrengthLevel(int v)
+        {
+            PumpStrengthLevel = System.Math.Max(1, System.Math.Min(10, v));
+            ApplyMod("PUMPSTRENGTH", PumpStrengthLevel);
+        }
 
         public static void IcePhysicsIncrease() { if (IcePhysicsLevel < 10) { IcePhysicsLevel++; ApplyMod("OFFROADFRICTION", IcePhysicsLevel); } }
         public static void IcePhysicsDecrease() { if (IcePhysicsLevel > 1) { IcePhysicsLevel--; ApplyMod("OFFROADFRICTION", IcePhysicsLevel); } }
-        public static void SetIcePhysicsLevel(int v) { IcePhysicsLevel = System.Math.Max(1, System.Math.Min(10, v)); }
+        public static void SetIcePhysicsLevel(int v)
+        {
+            IcePhysicsLevel = System.Math.Max(1, System.Math.Min(10, v));
+            ApplyMod("OFFROADFRICTION", IcePhysicsLevel);
+        }
 
         private static float IceMult(int level)
         {
@@ -58,23 +78,27 @@ namespace DescendersModMenu.Mods
                 if ((object)gameData == null) return;
                 FieldInfo modArrayField = gameData.GetType().GetField("\u0081jU\u0080h\u0084c",
                     BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                if ((object)modArrayField == null) { MelonLogger.Warning("[GameMod] Mod array field not found."); return; }
+                if ((object)modArrayField == null) return;
                 GameModifier[] mods = modArrayField.GetValue(gameData) as GameModifier[];
                 if ((object)mods == null) return;
-                GameModifier target = null;
                 for (int i = 0; i < mods.Length; i++)
+                {
                     if ((object)mods[i] != null && mods[i].name == "SPEEDWOBBLES")
-                    { target = mods[i]; break; }
-                if ((object)target == null) { MelonLogger.Warning("[GameMod] SPEEDWOBBLES modifier not found."); return; }
-                target.modifiers[0].percentageValue = value;
-                PlayerManager pm = UnityEngine.Object.FindObjectOfType<PlayerManager>();
-                if ((object)pm == null) return;
-                PlayerInfoImpact pi = pm.GetPlayerImpact();
-                if ((object)pi == null) return;
-                pi.AddGameModifier(target);
+                    {
+                        mods[i].modifiers[0].percentageValue = value;
+                        PlayerManager pm = Object.FindObjectOfType<PlayerManager>();
+                        if ((object)pm != null)
+                        {
+                            PlayerInfoImpact pi = pm.GetPlayerImpact();
+                            if ((object)pi != null) pi.AddGameModifier(mods[i]);
+                        }
+                        break;
+                    }
+                }
             }
-            catch (System.Exception ex) { MelonLogger.Error("[GameMod] ApplySpeedWobbles: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("[GameMod] SpeedWobbles: " + ex.Message); }
         }
+
         public static void NoSpeedWobblesReset()
         {
             if (NoSpeedWobblesEnabled)
@@ -168,26 +192,30 @@ namespace DescendersModMenu.Mods
                     BindingFlags.Public | BindingFlags.Instance);
                 for (int i = 0; i < props.Length; i++)
                 {
-                    // Z\u0082kM\u005DJM — steering wobble, starts with Z, float, read/write
-                    if (!props[i].CanWrite || !props[i].CanRead) continue;
-                    if (!props[i].PropertyType.Equals(typeof(float))) continue;
-                    if (props[i].Name.StartsWith("Z"))
-                    { _wobbleProp = props[i]; break; }
+                    if (string.Equals(props[i].PropertyType.Name, "Single", System.StringComparison.Ordinal)
+                        && props[i].CanWrite
+                        && props[i].Name.Contains("kM"))
+                    {
+                        _wobbleProp = props[i];
+                        MelonLogger.Msg("[GameMod] NoSpeedWobbles found property: " + props[i].Name);
+                        break;
+                    }
                 }
             }
-
             if ((object)_wobbleProp != null)
-                _wobbleProp.SetValue(__instance, 0f, null);
+            {
+                try { _wobbleProp.SetValue(__instance, 0f, null); }
+                catch { }
+            }
         }
     }
 
-    // Postfix on BikeCamera.FixedUpdate — calls the game's own RemoveCameraShake()
-    // which zeroes VgM\u007Fk\u0080u (shake velocity) and OXXnhI\u0081 (shake offset) every frame.
-    // FixedUpdate dispatches to whichever camera mode is active, so one patch
-    // covers all views (first person, third person, head cam, etc).
     public static class NoSpeedWobbles_CamPatch
     {
-        private static MethodInfo _removeCameraShake = null;
+        // Remove all camera-shake vectors produced by the speed wobble system.
+        // These are separate from the CameraAngle.cameraShake field.
+        private static FieldInfo _shakeVel = null;   // VgM\u007Fk\u0080u  — Vector3
+        private static FieldInfo _shakeOff = null;   // OXXnhI\u0081  — Vector3
         private static bool _cached = false;
 
         public static void Postfix(BikeCamera __instance)
@@ -198,12 +226,26 @@ namespace DescendersModMenu.Mods
             if (!_cached)
             {
                 _cached = true;
-                _removeCameraShake = typeof(BikeCamera).GetMethod("RemoveCameraShake",
-                    BindingFlags.Public | BindingFlags.Instance);
+                FieldInfo[] fields = typeof(BikeCamera).GetFields(
+                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    if (string.Equals(fields[i].FieldType.Name, "Vector3", System.StringComparison.Ordinal))
+                    {
+                        if ((object)_shakeVel == null) _shakeVel = fields[i];
+                        else { _shakeOff = fields[i]; break; }
+                    }
+                }
             }
 
-            if ((object)_removeCameraShake != null)
-                try { _removeCameraShake.Invoke(__instance, null); } catch { }
+            try
+            {
+                if ((object)_shakeVel != null)
+                    _shakeVel.SetValue(__instance, Vector3.zero);
+                if ((object)_shakeOff != null)
+                    _shakeOff.SetValue(__instance, Vector3.zero);
+            }
+            catch { }
         }
     }
 }

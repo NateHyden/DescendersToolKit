@@ -53,17 +53,30 @@ namespace DescendersModMenu.Mods
 
         public static void SetLevel(int v) { Level = System.Math.Max(1, System.Math.Min(20, v)); }
 
-        // Called from OnLateUpdate every frame — reapplies after BikeModel Animation component runs
+        // Called from OnLateUpdate every frame — reapplies after BikeModel Animation component runs.
+        // Reads Y scale (set by WheelSizeTick in Update) to preserve wheel size while adding width.
         public static void Tick()
         {
             if (!Enabled) return;
             try
             {
+                // Silent check — don't spam warnings every frame before player spawns
+                if ((object)GameObject.Find("Player_Human") == null) return;
                 Transform frontBone, backBone;
                 if (!GetBones(out frontBone, out backBone)) return;
                 float w = Width;
-                if ((object)frontBone != null) frontBone.localScale = new Vector3(w, 1f, 1f);
-                if ((object)backBone != null) backBone.localScale = new Vector3(w, 1f, 1f);
+                if ((object)frontBone != null)
+                {
+                    float bs = frontBone.localScale.y;
+                    if (bs <= 0f) bs = 1f;
+                    frontBone.localScale = new Vector3(w * bs, bs, bs);
+                }
+                if ((object)backBone != null)
+                {
+                    float bs = backBone.localScale.y;
+                    if (bs <= 0f) bs = 1f;
+                    backBone.localScale = new Vector3(w * bs, bs, bs);
+                }
             }
             catch { }
         }
@@ -76,9 +89,17 @@ namespace DescendersModMenu.Mods
 
                 float w = Width;
                 if ((object)frontBone != null)
-                    frontBone.localScale = new Vector3(w, 1f, 1f);
+                {
+                    float bs = frontBone.localScale.y;
+                    if (bs <= 0f) bs = 1f;
+                    frontBone.localScale = new Vector3(w * bs, bs, bs);
+                }
                 if ((object)backBone != null)
-                    backBone.localScale = new Vector3(w, 1f, 1f);
+                {
+                    float bs = backBone.localScale.y;
+                    if (bs <= 0f) bs = 1f;
+                    backBone.localScale = new Vector3(w * bs, bs, bs);
+                }
 
                 MelonLogger.Msg("[WideTyres] Width -> " + w + "x (level " + Level + ")");
             }
@@ -94,8 +115,19 @@ namespace DescendersModMenu.Mods
             {
                 Transform frontBone, backBone;
                 if (!GetBones(out frontBone, out backBone)) return;
-                if ((object)frontBone != null) frontBone.localScale = Vector3.one;
-                if ((object)backBone != null) backBone.localScale = Vector3.one;
+                // Preserve wheel size scale (Y) when resetting width — only reset X back to match Y/Z
+                if ((object)frontBone != null)
+                {
+                    float bs = frontBone.localScale.y;
+                    if (bs <= 0f) bs = 1f;
+                    frontBone.localScale = new Vector3(bs, bs, bs);
+                }
+                if ((object)backBone != null)
+                {
+                    float bs = backBone.localScale.y;
+                    if (bs <= 0f) bs = 1f;
+                    backBone.localScale = new Vector3(bs, bs, bs);
+                }
             }
             catch (System.Exception ex)
             {

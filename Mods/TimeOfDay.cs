@@ -29,7 +29,11 @@ namespace DescendersModMenu.Mods
             Apply();
         }
 
-        public static void ResetToSceneDefault() { SetLevel(_sceneDefaultLevel); }
+        public static void ResetToSceneDefault()
+        {
+            CaptureSceneDefault(); // re-read live TOD_Sky in case it loaded late
+            SetLevel(_sceneDefaultLevel);
+        }
 
         public static void CaptureSceneDefault()
         {

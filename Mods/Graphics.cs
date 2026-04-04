@@ -9,7 +9,7 @@ namespace DescendersModMenu.Mods
         public static bool BloomEnabled { get; private set; } = true;
         public static bool AmbientOccEnabled { get; private set; } = true;
         public static bool VignetteEnabled { get; private set; } = true;
-        public static bool DepthOfFieldEnabled { get; private set; } = true;
+        public static bool DepthOfFieldEnabled { get; private set; } = false;
         public static bool ChromaticAbEnabled { get; private set; } = true;
 
         public static string[] QualityNames = { "Low", "Medium", "High", "Ultra" };
@@ -219,7 +219,7 @@ namespace DescendersModMenu.Mods
             BloomEnabled = true;
             AmbientOccEnabled = true;
             VignetteEnabled = true;
-            DepthOfFieldEnabled = true;
+            DepthOfFieldEnabled = false;
             ChromaticAbEnabled = true;
         }
     }

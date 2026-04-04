@@ -114,11 +114,19 @@ namespace DescendersModMenu.BikeStats
         public bool NearMissEnabled = false;
         public int NearMissLevel = 5;
 
+        // ── Bike / Player Scale ──────────────────────────────────────
+        public float BikeScale = 1f;
+        public float PlayerScale = 1f;
+        public bool InvisibleBikeEnabled = false;
+        public bool InvisiblePlayerEnabled = false;
+        public bool WheelSizeEnabled = false;
+        public int WheelSizeMode = 0;
+
         // ── Graphics ───────────────────────────────────────────────────
         public bool GraphicsBloomEnabled = true;
         public bool GraphicsAmbientOccEnabled = true;
         public bool GraphicsVignetteEnabled = true;
-        public bool GraphicsDepthOfFieldEnabled = true;
+        public bool GraphicsDepthOfFieldEnabled = false;  // v3.6.2: DOF defaults OFF (matches ResetStats)
         public bool GraphicsChromaticAbEnabled = true;
 
         // ── Sky Storm / Rain ───────────────────────────────────────────

@@ -145,11 +145,11 @@ namespace DescendersModMenu.UI
                 var vbBdr = UIHelpers.Panel("VBBdr", verBadge.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
                 vbBdr.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(vbBdr));
                 vbBdr.AddComponent<LayoutElement>().ignoreLayout = true;
-                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.6.1", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.6.2", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                 UIHelpers.Fill(UIHelpers.RT(verTxt.gameObject));
 
                 // "Created by NateHyden" — pinned to top-right corner
-                var byTxt = UIHelpers.Txt("By", hdr.transform, "Created by NateHyden", 9, FontStyle.Normal, TextAnchor.UpperRight, UIHelpers.TextDim);
+                var byTxt = UIHelpers.Txt("By", hdr.transform, "Created by NateHyden", 9, FontStyle.Normal, TextAnchor.UpperRight, UIHelpers.TextMid);
                 var byrt = UIHelpers.RT(byTxt.gameObject);
                 byrt.anchorMin = new Vector2(1, 1); byrt.anchorMax = new Vector2(1, 1);
                 byrt.pivot = new Vector2(1, 1);
@@ -220,7 +220,7 @@ namespace DescendersModMenu.UI
                     barRT.anchorMin = Vector2.zero; barRT.anchorMax = new Vector2(0, 1);
                     barRT.pivot = new Vector2(0, .5f); barRT.offsetMin = Vector2.zero; barRT.offsetMax = new Vector2(3, 0);
                     _navBars[i] = bar.GetComponent<Image>();
-                    var lbl = UIHelpers.Txt("L", item.transform, NavLabels[i], 11, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.TextDim);
+                    var lbl = UIHelpers.Txt("L", item.transform, NavLabels[i], 11, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.TextMid);
                     var lblRT = UIHelpers.RT(lbl.gameObject);
                     lblRT.anchorMin = Vector2.zero; lblRT.anchorMax = Vector2.one;
                     lblRT.offsetMin = new Vector2(18, 0); lblRT.offsetMax = Vector2.zero;
@@ -540,16 +540,17 @@ namespace DescendersModMenu.UI
             {
                 switch (pageNum)
                 {
-                    case 1:  return Mods.Acceleration.Enabled || Mods.MaxSpeedMultiplier.Enabled ||
+                    case 1:
+                        return Mods.Acceleration.Enabled || Mods.MaxSpeedMultiplier.Enabled ||
                                     Mods.NoSpeedCap.Enabled || Mods.LandingImpact.Enabled ||
                                     Mods.QuickBrake.Enabled || Mods.NoBail.Enabled ||
                                     Mods.AutoBalance.Enabled || Mods.FOV.Enabled ||
                                     Mods.SlowMotion.Enabled || Mods.SlowMoOnBail.Enabled ||
                                     Mods.GameModifierMods.NoSpeedWobblesEnabled;
-                    case 6:  return Page6UI.IsAnyActive;
-                    case 7:  return Page7UI.IsAnyActive;
-                    case 8:  return Page8UI.IsAnyActive;
-                    case 9:  return Page9UI.IsAnyActive;
+                    case 6: return Page6UI.IsAnyActive;
+                    case 7: return Page7UI.IsAnyActive;
+                    case 8: return Page8UI.IsAnyActive;
+                    case 9: return Page9UI.IsAnyActive;
                     case 10: return Page10UI.IsAnyActive;
                     case 13: return PageModesUI.IsAnyActive;
                     case 14: return Mods.GhostReplay.Enabled;
@@ -581,7 +582,7 @@ namespace DescendersModMenu.UI
                 bool on = PageOrder[i] == cur;
                 bool active = IsPageActive(PageOrder[i]);
                 if (_navBars[i]) _navBars[i].color = on ? UIHelpers.Accent : new Color(0, 0, 0, 0);
-                if (_navTxts[i]) _navTxts[i].color = on ? UIHelpers.Accent : UIHelpers.TextDim;
+                if (_navTxts[i]) _navTxts[i].color = on ? UIHelpers.Accent : UIHelpers.TextMid;
                 if (_navBgs[i]) _navBgs[i].color = on ? UIHelpers.NavActive : new Color(0, 0, 0, 0);
                 // Show active dot only when tab is not currently selected
                 if (_activeDots[i]) _activeDots[i].enabled = active && !on;

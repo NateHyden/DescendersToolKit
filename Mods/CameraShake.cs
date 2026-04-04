@@ -46,11 +46,13 @@ namespace DescendersModMenu.Mods
             if (Enabled) Apply(ShakeValue);
         }
 
+        // Reset state only — no Apply() because scene objects are destroyed
+        // during unload. ResetStats handles restoration via Toggle() which
+        // calls Apply() when scene objects exist.
         public static void Reset()
         {
             Enabled = false;
             Level = 5;
-            Apply(DefaultShake);
         }
 
         private static System.Reflection.FieldInfo _caFld = null;

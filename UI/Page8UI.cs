@@ -13,6 +13,12 @@ namespace DescendersModMenu.UI
 
         // ── Invisible Bike ────────────────────────────────────────────
         private static bool _invisibleBike = false;
+
+        // Public accessors for snapshot/save system
+        public static float CurrentBikeScale = 1f;
+        public static bool IsInvisibleBike => _invisibleBike;
+        public static bool IsWheelSizeEnabled => _wheelSizeEnabled;
+        public static int CurrentWheelSizeMode => _wheelSizeMode;
         private static Renderer[] _hiddenBikeRenderers = null;
         private static Image _invisBikeTrack; private static RectTransform _invisBikeKnob;
         private static Text _invisBikeVal;
@@ -311,6 +317,7 @@ namespace DescendersModMenu.UI
                 if ((object)bikeModel == null) { MelonLogger.Warning("[BikeSize] BikeModel not found."); return; }
                 if (!_bikeScaleCaptured) { _defaultBikeScale = bikeModel.localScale; _bikeScaleCaptured = true; }
                 bikeModel.localScale = new Vector3(scale, scale, scale);
+                CurrentBikeScale = scale;
                 MelonLogger.Msg("[BikeSize] Scale -> " + scale);
             }
             catch (System.Exception ex) { MelonLogger.Error("[BikeSize] " + ex.Message); }
@@ -320,12 +327,29 @@ namespace DescendersModMenu.UI
         {
             try
             {
+                CurrentBikeScale = 1f;
                 GameObject player = GameObject.Find("Player_Human");
                 if ((object)player == null) return;
                 Transform bikeModel = player.transform.Find("BikeModel");
                 if ((object)bikeModel != null) bikeModel.localScale = _defaultBikeScale;
             }
             catch (System.Exception ex) { MelonLogger.Error("[BikeSize] ResetDefault: " + ex.Message); }
+        }
+
+        // Called by reapply system to restore bike scale after scene change
+        public static void ApplyBikeScale(float scale) { SetBikeScale(scale); }
+
+        // Called by reapply system to restore invisible bike
+        public static void SetInvisibleBike(bool v) { if (v != _invisibleBike) { _invisibleBike = v; ToggleInvisibleBike(v); } }
+
+        // Called by reapply system to restore wheel size
+        public static void ApplyWheelSize(bool enabled, int mode)
+        {
+            int oldMode = _wheelSizeMode;
+            _wheelSizeEnabled = enabled;
+            _wheelSizeMode = mode;
+            if (enabled && mode != 0) SetWheelSize(mode);
+            else if (!enabled && oldMode != 0) SetWheelSize(0); // restore physics to default
         }
 
         // ── Invisible Bike ────────────────────────────────────────────
@@ -373,6 +397,8 @@ namespace DescendersModMenu.UI
 
         public static void ResetWheelSize()
         {
+            // Restore wheel radius physics and bone scales to 1.0 BEFORE clearing caches
+            if (_wheelSizeMode != 0) try { SetWheelSize(0); } catch { }
             _wheelSizeMode = 0;
             _wheelSizeEnabled = false;
             _cachedFrontBone = null;

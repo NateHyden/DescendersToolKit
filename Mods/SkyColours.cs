@@ -375,6 +375,7 @@ namespace DescendersModMenu.Mods
         // Restore sky to exactly what it was when the scene loaded
         public static void RestoreDefault()
         {
+            CaptureSceneDefaults(); // re-read live TOD_Sky in case it loaded late
             CurrentPreset = 0;
             SetTODHour(_defaultsCaptured ? _defaultHour : 12f);
             MelonLogger.Msg("[SkyColours] Restored default (hour=" + (_defaultsCaptured ? _defaultHour : 12f) + ")");
