@@ -68,6 +68,7 @@ namespace DescendersModMenu.UI
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
         public static RectTransform RootRT { get; private set; }
+        private static GameObject _updateBanner;
 
         // ── Header button flash ───────────────────────────────────────
         private static Image _hdrSaveImg, _hdrLoadImg, _hdrResetImg;
@@ -156,6 +157,18 @@ namespace DescendersModMenu.UI
                 byrt.sizeDelta = new Vector2(160, 16);
                 byrt.anchoredPosition = new Vector2(-8, -3);
                 byrt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+
+                // ── Update notification (hidden until check completes) ────
+                _updateBanner = UIHelpers.Obj("UpdateBanner", hdr.transform);
+                var ubTxt = UIHelpers.Txt("UBT", _updateBanner.transform,
+                    "Update available!", 9, FontStyle.Bold, TextAnchor.UpperRight, UIHelpers.OnColor);
+                var ubrt = UIHelpers.RT(_updateBanner);
+                ubrt.anchorMin = new Vector2(1, 1); ubrt.anchorMax = new Vector2(1, 1);
+                ubrt.pivot = new Vector2(1, 1);
+                ubrt.sizeDelta = new Vector2(160, 14);
+                ubrt.anchoredPosition = new Vector2(-8, -18);
+                _updateBanner.AddComponent<LayoutElement>().ignoreLayout = true;
+                _updateBanner.SetActive(false);
 
                 // SAVE / LOAD / RESET — centred in the gap between version badge and "Created by"
                 // Badge right edge ~346px, Created by left edge ~632px, gap centre ~489px.
@@ -702,6 +715,14 @@ namespace DescendersModMenu.UI
         public static void TickLive()
         {
             PageSessionUI.TickLive();
+
+            // Show update banner once check completes
+            if ((object)_updateBanner != null && !_updateBanner.activeSelf
+                && UpdateChecker.CheckComplete && UpdateChecker.UpdateAvailable)
+            {
+                _updateBanner.SetActive(true);
+                MelonLogger.Msg("[UpdateChecker] Banner shown — v" + UpdateChecker.LatestVersion + " available.");
+            }
 
             if (_hdrFlashTimer > 0f)
             {

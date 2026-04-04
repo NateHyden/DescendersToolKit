@@ -162,6 +162,7 @@
     <Compile Include="Mods\TopSpeed.cs" />
     <Compile Include="Mods\TrickAttackMode.cs" />
     <Compile Include="Mods\UnlockAll.cs" />
+    <Compile Include="Mods\UpdateChecker.cs" />
     <Compile Include="Mods\WheelieAngleLimit.cs" />
     <Compile Include="Mods\WideTyres.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

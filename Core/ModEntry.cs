@@ -123,6 +123,9 @@ namespace DescendersModMenu
             DiagnosticsManager.Report("SpeedrunTimer", true); DiagnosticsManager.Report("SlowMoOnBail", true);
             DiagnosticsManager.Report("AirControl", true); DiagnosticsManager.Report("ModDetection", true);
             TopSpeed.Load(); TopSpeed.StartTracking();
+
+            // Check for updates on a background thread
+            try { UpdateChecker.CheckAsync(); } catch { }
         }
 
         public override void OnSceneWasLoaded(int buildindex, string sceneName)
