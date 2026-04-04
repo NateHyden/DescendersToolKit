@@ -7,7 +7,7 @@
 Physics tweaks, world controls, score tools, session trackers, ghost replay, game modes, map changer, outfit presets, mod chat and plenty of chaos — all in one place.
 
 ---
-
+- **Nexus Mods:** [nexusmods.com/descenders/mods/7](https://www.nexusmods.com/descenders/mods/7)
 ## Requirements
 
 - [MelonLoader 0.5.7](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.7) *choose MelonLoader 0.5.7 from the drop down menu*
@@ -107,8 +107,8 @@ Scrollable tab. All mods have active row highlighting when enabled.
 
 **Bike Parts**
 - **Invisible Bike** — hides the entire bike model
-- **Wheel Size** — toggle + 5 presets (Tiny / Small / Default / Large / Huge)
-- **Wide Tyres** — 20-level slider
+- **Wheel Size** — toggle + 5 presets (Tiny / Small / Default / Large / Huge). Works alongside Wide Tyres
+- **Wide Tyres** — 20-level slider. Scales relative to the current wheel size so both mods combine properly
 - **Sticky Tyres** — grip any surface including slopes, walls and ceilings
 
 **Controls**
@@ -126,6 +126,7 @@ Scrollable tab. All mods have active row highlighting when enabled.
 - Toggle **Bloom**, **Ambient Occlusion**, **Vignette**, **Chromatic Aberration** individually (all default ON)
 - Toggle **Depth of Field** (defaults OFF)
 - Quality presets — Low, Medium, High, Ultra, Default
+- Graphics always reset to the map's native defaults on scene change — they are not persisted
 
 ---
 
@@ -137,7 +138,7 @@ Scrollable tab. All mods have active row highlighting when enabled.
 - Gravity — level 1 is floaty, level 5 is default (-17.5 m/s²), level 10 is heavy
 
 **Environment**
-- **Time of Day** — Dawn to Night. Resets to the loaded map's native time when reset is pressed
+- **Time of Day** — Dawn to Night. Each map loads with its own native time of day. Resets to the loaded map's native time when reset is pressed
 - **Trees & Foliage** — toggle
 - **Music** — toggle; restores exact volume on unmute
 - **Fog** — toggle; saves and restores original density
@@ -185,7 +186,7 @@ Scrollable tab. All mods have active row highlighting when enabled.
 
 ### Modes *(Experimental)*
 
-All modes are designed for single-player freeride sessions. Global Reset turns off any active mode.
+All modes are designed for single-player freeride sessions. Global Reset turns off any active mode. Modes always reset on scene change and are not saved.
 
 - **Avalanche** — Boulders spawn above you and roll downhill. Configurable spawn rate, size, gravity and difficulty scaling
 - **Earthquake** — The ground shakes beneath you
@@ -204,6 +205,7 @@ All modes are designed for single-player freeride sessions. Global Reset turns o
 - Ghost HUD overlay showing recording status and run length
 - Toggle: F3 or double-click RS — Save: F4 or RS click — Set spawn: LS click
 - Max recording length ~5 minutes
+- Ghost Replay resets on scene change and is not saved globally
 
 ---
 
@@ -213,6 +215,7 @@ All modes are designed for single-player freeride sessions. Global Reset turns o
 - ESP Tracers — draws lines to all nearby players
 - **Teleport to Last Checkpoint** — snaps back to your last triggered checkpoint
 - **Mod Users** — scans for and highlights other Descenders Toolkit users in your session
+- ESP resets on scene change and is not saved globally
 
 ---
 
@@ -253,7 +256,13 @@ The mod menu can be repositioned, resized and made more or less transparent to s
 
 ## Save System
 
-All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Saved: all levels, all toggle states, tyre settings, suspension, graphics toggles, sky preset, torch state and intensity, camera shake, center of mass, fly mode speeds, ghost replay alpha, menu layout and more.
+All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Your last saved settings **auto-load when you first spawn in** — no need to press Load manually.
+
+**Saved:** all levels, all toggle states, tyre settings, suspension, game modifiers, bike/player/wheel size, invisible states, torch state and intensity, camera shake, center of mass, fly mode speeds, menu layout and more.
+
+**Not saved (always reset per-map):** Graphics tab, Sky section (sky colour preset, storm, rain), Time of Day, Game Modes, Ghost Replay, ESP.
+
+**Scene persistence:** Active mods are snapshotted when you leave a map and automatically reapplied when you spawn into the next one. Each map loads with its own native time of day and graphics.
 
 ---
 
@@ -261,7 +270,8 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Saved: all 
 
 - Intended for single-player and private sessions
 - Suspension sliders default to level 5 — stock game behaviour
-- No Speed Cap removes the hard-coded 55 km/h input limit; you still need to lean to accelerate
+- No Speed Cap uses a velocity-zeroing technique to let the game's native acceleration run without the hard-coded speed limit. Works alongside the Acceleration mod
+- Wide Tyres and Wheel Size combine properly — wide tyres scale relative to the current wheel size
 - Cut Brakes resets automatically on scene change
 - Moon Mode saves your gravity and suspension before activating and restores them on deactivate
 - Ghost Replay records every 2 frames; max ~5 minutes. Saves persist until cleared
@@ -271,6 +281,22 @@ All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Saved: all 
 ---
 
 ## Changelog
+
+### v3.6.2
+- **Scene transition system** — active mods now persist across map changes. Mods are snapshotted before scene unload and reapplied when you spawn into the next map. Intermediate scenes (EmptyScene) are skipped correctly. Each mod wrapped in individual error handling so one failure cannot affect the rest
+- **Auto-load on startup** — your last saved settings load automatically when you first spawn in, with no warnings or log noise
+- **Load button now resets first** — pressing Load clears all current state before applying saved values, ensuring stale mods get properly turned off
+- **NoSpeedCap + Acceleration compatibility** — completely reworked. NoSpeedCap now uses a velocity-zeroing technique to let the game's native acceleration run uncapped instead of replacing it with simplified physics. Both mods work together naturally
+- **Wide Tyres + Wheel Size compatibility** — fixed execution order and scale combination. Wide tyres now scale relative to the current wheel size instead of overwriting it
+- **Wheel Size reset fixed** — now properly restores wheel radius physics value before clearing caches. No more tiny-wheel RPM or sinking into the floor after global reset
+- **Scene-native time of day** — each map loads with its own intended time. Dark maps stay dark, afternoon maps stay bright. Time of Day removed from scene persistence and global save
+- **Scene defaults re-captured live** — Reset and Load buttons now re-read the current scene's actual time of day and sky values instead of using potentially stale captures
+- **GameModifiers apply on Load/Reset** — SetLevel functions now call ApplyMod so Pump Strength, Wheelie Balance and other game modifiers actually take effect after Load or Reset (was previously UI-only)
+- **Newly persisted across scenes:** Bike Scale, Player Scale, Invisible Bike, Invisible Player, Wheel Size, Wide Tyres level, NoSpeedCap, Bike Torch, Camera Shake, Near Miss Sensitivity, Center of Mass, Suspension, Exploding Props
+- **Graphics tab false dot fixed** — Depth of Field default corrected so the Graphics tab no longer shows a green modified dot on startup
+- **Not persisted (always reset per-map):** Graphics tab, Sky section, Time of Day, Game Modes, Ghost Replay, ESP
+- **UI polish** — sidebar tab text brightened for readability, "Created by NateHyden" text brightened, version bumped to v3.6.2
+- **Log cleanup** — eliminated Type::op_Equality and FieldInfo::op_Equality log spam, removed unnecessary warnings during scene transitions and before player spawn
 
 ### v3.6.1
 - **Storm fully rebuilt** — heavy rain now renders via a custom particle system attached to the camera (up to 20,000 particles, intensity-scaled). Storm persists correctly throughout the session. Old TickStorm moved from destroyed TOD_Sky to OnUpdate. Environment flags enforced every frame via new Harmony patches
