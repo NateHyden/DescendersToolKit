@@ -1,6 +1,6 @@
 # Descenders Toolkit
 
-**v3.6.1** — A modding toolkit for Descenders built from the ground up with a clean sidebar overlay.
+**v3.6.2** — A modding toolkit for Descenders built from the ground up with a clean sidebar overlay.
 
 > Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded.
 
