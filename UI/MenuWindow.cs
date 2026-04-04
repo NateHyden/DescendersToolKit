@@ -68,7 +68,7 @@ namespace DescendersModMenu.UI
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
         public static RectTransform RootRT { get; private set; }
-        private static GameObject _updateBanner;
+        private static Text _updateStatusText;
 
         // ── Header button flash ───────────────────────────────────────
         private static Image _hdrSaveImg, _hdrLoadImg, _hdrResetImg;
@@ -158,17 +158,16 @@ namespace DescendersModMenu.UI
                 byrt.anchoredPosition = new Vector2(-8, -3);
                 byrt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
 
-                // ── Update notification (hidden until check completes) ────
-                _updateBanner = UIHelpers.Obj("UpdateBanner", hdr.transform);
-                var ubTxt = UIHelpers.Txt("UBT", _updateBanner.transform,
-                    "Update available!", 9, FontStyle.Bold, TextAnchor.UpperRight, UIHelpers.OnColor);
-                var ubrt = UIHelpers.RT(_updateBanner);
-                ubrt.anchorMin = new Vector2(1, 1); ubrt.anchorMax = new Vector2(1, 1);
-                ubrt.pivot = new Vector2(1, 1);
-                ubrt.sizeDelta = new Vector2(160, 14);
-                ubrt.anchoredPosition = new Vector2(-8, -18);
-                _updateBanner.AddComponent<LayoutElement>().ignoreLayout = true;
-                _updateBanner.SetActive(false);
+                // ── Update status (below Created by in header) ────
+                var usTxt = UIHelpers.Txt("UST", hdr.transform,
+                    "", 9, FontStyle.Normal, TextAnchor.UpperRight, UIHelpers.TextMid);
+                _updateStatusText = usTxt;
+                var usrt = UIHelpers.RT(usTxt.gameObject);
+                usrt.anchorMin = new Vector2(1, 1); usrt.anchorMax = new Vector2(1, 1);
+                usrt.pivot = new Vector2(1, 1);
+                usrt.sizeDelta = new Vector2(200, 14);
+                usrt.anchoredPosition = new Vector2(-8, -18);
+                usTxt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
 
                 // SAVE / LOAD / RESET — centred in the gap between version badge and "Created by"
                 // Badge right edge ~346px, Created by left edge ~632px, gap centre ~489px.
@@ -712,16 +711,28 @@ namespace DescendersModMenu.UI
             img.color = UIHelpers.OnColor;
         }
 
+        private static bool _updateStatusSet = false;
+
         public static void TickLive()
         {
             PageSessionUI.TickLive();
 
-            // Show update banner once check completes
-            if ((object)_updateBanner != null && !_updateBanner.activeSelf
-                && UpdateChecker.CheckComplete && UpdateChecker.UpdateAvailable)
+            // Update status text once check completes
+            if (!_updateStatusSet && UpdateChecker.CheckComplete && (object)_updateStatusText != null)
             {
-                _updateBanner.SetActive(true);
-                MelonLogger.Msg("[UpdateChecker] Banner shown — v" + UpdateChecker.LatestVersion + " available.");
+                _updateStatusSet = true;
+                if (UpdateChecker.UpdateAvailable)
+                {
+                    _updateStatusText.text = "\u25B2 v" + UpdateChecker.LatestVersion + " available!";
+                    _updateStatusText.color = UIHelpers.OnColor;
+                    _updateStatusText.fontStyle = FontStyle.Bold;
+                    MelonLogger.Msg("[UpdateChecker] v" + UpdateChecker.LatestVersion + " available.");
+                }
+                else
+                {
+                    _updateStatusText.text = "\u2713 Up to date";
+                    _updateStatusText.color = UIHelpers.TextMid;
+                }
             }
 
             if (_hdrFlashTimer > 0f)
