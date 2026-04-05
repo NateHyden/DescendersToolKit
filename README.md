@@ -13,11 +13,11 @@ Physics tweaks, bike tuning, world controls, score tools, session trackers, ghos
 ## Requirements
 
 - [MelonLoader 0.5.7](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.7) *choose MelonLoader 0.5.7 from the drop down menu*
-- Descenders (Steam)
+- Descenders (Steam or Microsoft Store / Xbox PC)
 
 ---
 
-## Installation
+## Installation — Steam
 
 1. Run the MelonLoader installer, select your Descenders executable and choose version **0.5.7** — it will not work on other versions
 2. Launch the game once to let MelonLoader populate, then close it
@@ -26,6 +26,47 @@ Physics tweaks, bike tuning, world controls, score tools, session trackers, ghos
 5. Launch the game and press **F6** to open the menu
 
 > If updating from an older version, delete any previous `DescendersModMenu.dll` or `DescendersToolKit.dll` from your Mods folder first.
+
+---
+
+## Installation — Microsoft Store / Xbox PC (Game Pass)
+
+MelonLoader and the toolkit also work on the Microsoft Store and Xbox PC (Game Pass) version of Descenders. The installer won't auto-detect the Xbox version, so you need to point it there manually.
+
+> **Note:** The Microsoft Store version is largely untested. MelonLoader installs correctly and the mod menu loads and functions, but not every mod has been fully tested on this version. If you encounter issues specific to the Microsoft Store build, please report them on [Discord](https://discord.gg/rHvCrBdqaR) or [GitHub](https://github.com/NateHyden/DescendersModMenu/issues).
+
+### Recommended: Install Descenders to a custom folder
+
+The default Microsoft Store install location (`C:\Program Files\WindowsApps`) is hidden and heavily permission-locked, making it difficult to access game files. It is **strongly recommended** to install Descenders to a custom folder on any drive before proceeding.
+
+To change where Xbox games install:
+1. Open the **Xbox app** → click your profile picture → **Settings** → **Installation options**
+2. Change the default install location to a folder you have full access to (e.g. `D:\XboxGames`)
+3. If Descenders is already installed in the default location, uninstall it and reinstall — it will now go to your chosen folder
+
+This avoids all permission issues and makes the Mods folder easy to access.
+
+### Finding your game files
+
+If you've installed to a custom folder, simply navigate there in File Explorer. Otherwise:
+
+1. Open the **Xbox app** on your PC
+2. Go to **Library**, find **Descenders**, click the **three dots (⋯)**
+3. Select **Manage** then click **Files** — this will open the game's install folder in File Explorer
+
+> If using the default WindowsApps location, you may need to grant yourself folder permissions. Right-click the game folder → Properties → Security → Edit → Add your user account → grant Full Control.
+
+### Installing MelonLoader
+
+1. Run the [MelonLoader 0.5.7](https://github.com/LavaGang/MelonLoader/releases/tag/v0.5.7) installer
+2. MelonLoader will **not** auto-detect the Xbox version — click the **Select Game** or **Add Game** button in the installer
+3. Navigate to your Descenders install folder and select **Descenders.exe**
+4. Make sure version **0.5.7** is selected and install
+5. Launch the game once to let MelonLoader populate its folders, then close it
+6. Download `DescendersToolKit.dll` from the [Releases page](https://github.com/NateHyden/DescendersModMenu/releases) and drop it into the `Mods` folder inside your Descenders directory
+7. Launch the game and press **F6** to open the menu
+
+> This has been tested and confirmed working. Despite previous reports that mods are not possible on the Microsoft Store version, MelonLoader installs and runs correctly when pointed to the game manually.
 
 ---
 
@@ -188,7 +229,7 @@ Scrollable tab. All mods have active row highlighting when enabled.
 
 ### Modes *(Experimental)*
 
-All modes are designed for single-player freeride sessions. Global Reset turns off any active mode. Modes always reset on scene change and are not saved.
+All modes work in both procedural worlds and bike parks. Global Reset turns off any active mode. Modes always reset on scene change and are not saved.
 
 - **Avalanche** — Boulders spawn above you and roll downhill. Configurable spawn rate, size, gravity and difficulty scaling
 - **Earthquake** — The ground shakes beneath you
@@ -283,7 +324,6 @@ The toolkit checks for new versions on GitHub when the game launches. If a newer
 - Cut Brakes resets automatically on scene change
 - Moon Mode saves your gravity and suspension before activating and restores them on deactivate
 - Ghost Replay records every 2 frames; max ~5 minutes. Saves persist until cleared
-- Game modes only work in procedural worlds — not bike parks
 - If the mod does not load, check your MelonLoader log in the game folder
 
 ---
