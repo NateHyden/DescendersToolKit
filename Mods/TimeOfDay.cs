@@ -16,6 +16,7 @@ namespace DescendersModMenu.Mods
 
         public static int Level { get; private set; } = 4;
         private static int _sceneDefaultLevel = 4;
+        private static bool _sceneDefaultCaptured = false;
 
         public static string DisplayValue { get { return Labels[Level - 1]; } }
 
@@ -31,12 +32,16 @@ namespace DescendersModMenu.Mods
 
         public static void ResetToSceneDefault()
         {
-            CaptureSceneDefault(); // re-read live TOD_Sky in case it loaded late
+            // Only capture if we have not already — re-capturing after a mod change
+            // would read the modified hour, not the original scene hour
+            if (!_sceneDefaultCaptured)
+                CaptureSceneDefault();
             SetLevel(_sceneDefaultLevel);
         }
 
         public static void CaptureSceneDefault()
         {
+            _sceneDefaultCaptured = false;
             try
             {
                 MonoBehaviour[] all = UnityEngine.Object.FindObjectsOfType<MonoBehaviour>();
@@ -60,6 +65,7 @@ namespace DescendersModMenu.Mods
                         if (diff < bestDiff) { bestDiff = diff; best = j + 1; }
                     }
                     _sceneDefaultLevel = best;
+                    _sceneDefaultCaptured = true;
                     Level = best;
                     MelonLogger.Msg("[TimeOfDay] Scene default: " + hour + "h → Level " + best + " (" + Labels[best - 1] + ")");
                     return;
@@ -78,6 +84,10 @@ namespace DescendersModMenu.Mods
 
         public static void Apply()
         {
+            // Capture the scene default BEFORE we change it — OnSceneWasInitialized
+            // may have been too early if TOD_Sky wasn't ready yet
+            if (!_sceneDefaultCaptured)
+                CaptureSceneDefault();
             try
             {
                 // Find TOD_Sky by scanning all MonoBehaviours

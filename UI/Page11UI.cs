@@ -146,6 +146,37 @@ namespace DescendersModMenu.UI
                 var leaveLe = leaveBtn.gameObject.AddComponent<LayoutElement>();
                 leaveLe.preferredWidth = 140; leaveLe.preferredHeight = 44; leaveLe.minHeight = 44;
 
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                Transform opHdr = c.Find("OUTFIT PRESETSH");
+                if ((object)opHdr != null)
+                    FavouritesManager.RegisterStarButton("OutfitPresets", UIHelpers.StarBtnAbs(opHdr, "OutfitPresets", () => FavouritesManager.Toggle("OutfitPresets")));
+                Transform qaHdr = c.Find("QUICK ACTIONSH");
+                if ((object)qaHdr != null)
+                    FavouritesManager.RegisterStarButton("OutfitActions", UIHelpers.StarBtnAbs(qaHdr, "OutfitActions", () => FavouritesManager.Toggle("OutfitActions")));
+
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "OutfitPresets", DisplayName = "Outfit Presets", TabBadge = "OUTFIT",
+                    BuildControls = (p) => {
+                        for (int s = 0; s < OutfitPresets.SlotCount; s++)
+                        {
+                            int idx = s;
+                            var row = UIHelpers.StatRow(OutfitPresets.GetName(s), p);
+                            UIHelpers.ActionBtn(row.transform, "SAVE", () => { OutfitPresets.Save(idx); }, 50);
+                            UIHelpers.ActionBtn(row.transform, "LOAD", () => { OutfitPresets.Load(idx); }, 50);
+                        }
+                    },
+                    IsActive = () => false
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "OutfitActions", DisplayName = "Shed Actions", TabBadge = "OUTFIT",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Shed", p);
+                        UIHelpers.ActionBtn(row.transform, "Go To Shed", () => GoToShed(), 80);
+                        UIHelpers.ActionBtnOrange(row.transform, "Leave Shed", () => LeaveShed(), 80);
+                    },
+                    IsActive = () => false
+                });
+
                 UIHelpers.AddScrollForwarders(c);
                 RefreshAll();
             }

@@ -97,8 +97,6 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Warning("MapChanger.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("MapChanger", false, ex.Message); }
             try { NoBail.ApplyPatch(harmony); }
             catch (System.Exception ex) { MelonLogger.Error("NoBail.ApplyPatch: " + ex.Message); }
-            try { SlowMoOnBail.ApplyPatch(harmony); }
-            catch (System.Exception ex) { MelonLogger.Error("SlowMoOnBail.ApplyPatch: " + ex.Message); }
             try { OutfitPresets.Init(); }
             catch (System.Exception ex) { MelonLogger.Error("OutfitPresets.Init: " + ex.Message); }
             try { ModChat.Init(); }

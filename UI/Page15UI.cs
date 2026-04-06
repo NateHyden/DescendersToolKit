@@ -44,6 +44,7 @@ namespace DescendersModMenu.UI
                 crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
                 crt.pivot = new Vector2(0.5f, 1); crt.sizeDelta = Vector2.zero;
                 sr.content = crt;
+                UIHelpers.AddScrollbar(sr);
                 content.AddComponent<ContentSizeFitter>().verticalFit =
                     ContentSizeFitter.FitMode.PreferredSize;
                 var vlg = content.AddComponent<VerticalLayoutGroup>();

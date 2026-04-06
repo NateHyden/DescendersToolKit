@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace DescendersModMenu.BikeStats
 {
@@ -115,12 +115,18 @@ namespace DescendersModMenu.BikeStats
         public int NearMissLevel = 5;
 
         // ── Bike / Player Scale ──────────────────────────────────────
-        public float BikeScale = 1f;
-        public float PlayerScale = 1f;
+        public float BikeScale = 1f;  // legacy — kept for old save compat
+        public float PlayerScale = 1f;  // legacy — kept for old save compat
+        public int BikeSizeLevel = 10;
+        public int PlayerSizeLevel = 10;
         public bool InvisibleBikeEnabled = false;
         public bool InvisiblePlayerEnabled = false;
         public bool WheelSizeEnabled = false;
-        public int WheelSizeMode = 0;
+        public int WheelSizeMode = 0;   // legacy
+        public int WheelSizeLevel = 10;
+        public int FrontWheelSizeLevel = 10;
+        public int RearWheelSizeLevel = 10;
+        public bool IndividualWheelMode = false;
 
         // ── Graphics ───────────────────────────────────────────────────
         public bool GraphicsBloomEnabled = true;
@@ -132,5 +138,11 @@ namespace DescendersModMenu.BikeStats
         // ── Sky Storm / Rain ───────────────────────────────────────────
         public bool StormEnabled = false;
         public int RainIntensityLevel = 5;
+
+        // ── Suspension HUD ─────────────────────────────────────────────
+        public bool SuspensionHUDEnabled = false;
+
+        // ── Brake Fade ─────────────────────────────────────────────────
+        public bool BrakeFadeEnabled = false;
     }
 }

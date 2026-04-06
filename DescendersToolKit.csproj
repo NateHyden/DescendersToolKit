@@ -113,6 +113,7 @@
     <Compile Include="Mods\BikeSwitcher.cs" />
     <Compile Include="Mods\BikeTorch.cs" />
     <Compile Include="Mods\BoulderDodgeMode.cs" />
+    <Compile Include="Mods\BrakeFade.cs" />
     <Compile Include="Mods\CameraShake.cs" />
     <Compile Include="Mods\CenterOfMass.cs" />
     <Compile Include="Mods\CutBrakes.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Mods\SpeedrunTimer.cs" />
     <Compile Include="Mods\SpeedWatcher.cs" />
     <Compile Include="BikeStats\StatsManager.cs" />
+    <Compile Include="Mods\SteamPlayerCount.cs" />
     <Compile Include="Mods\StickyTyres.cs" />
     <Compile Include="Mods\SurvivalMode.cs" />
     <Compile Include="Mods\Suspension.cs" />
@@ -167,6 +169,7 @@
     <Compile Include="Mods\WideTyres.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ModEntry.cs" />
+    <Compile Include="UI\FavouritesManager.cs" />
     <Compile Include="UI\GhostHUD.cs" />
     <Compile Include="UI\Page10UI.cs" />
     <Compile Include="UI\Page11UI.cs" />
@@ -182,11 +185,13 @@
     <Compile Include="UI\Page7UI.cs" />
     <Compile Include="UI\Page8UI.cs" />
     <Compile Include="UI\Page9UI.cs" />
+    <Compile Include="UI\PageFavsUI.cs" />
     <Compile Include="UI\PageModesUI.cs" />
     <Compile Include="UI\PageSessionUI.cs" />
     <Compile Include="UI\PoliceHUD.cs" />
     <Compile Include="UI\SessionHUD.cs" />
     <Compile Include="UI\SurvivalHUD.cs" />
+    <Compile Include="UI\SuspensionHUD.cs" />
     <Compile Include="UI\TrickAttackHUD.cs" />
     <Compile Include="UI\UIHelpers.cs" />
     <Compile Include="UI\MenuWindow.cs" />

@@ -37,6 +37,7 @@ namespace DescendersModMenu.UI
 
         // System tab
         private static Text _unityVersionTxt;
+        private static Text _steamPlayerTxt;
         private static Text _unityMatchTxt;
         private static Text _mlVersionTxt;
 
@@ -197,9 +198,13 @@ namespace DescendersModMenu.UI
 
             UIHelpers.Divider(vlg.transform);
             UIHelpers.SectionHeader("TOOLKIT", vlg.transform);
-            MakeInfoRow2("Version", "3.7.0", vlg.transform, UIHelpers.Accent);
+            MakeInfoRow2("Version", BuildInfo.Version, vlg.transform, UIHelpers.Accent);
             MakeInfoRow2("Output DLL", "DescendersToolKit.dll", vlg.transform);
             MakeInfoRow2("Author", "NateHyden", vlg.transform);
+
+            UIHelpers.Divider(vlg.transform);
+            UIHelpers.SectionHeader("COMMUNITY", vlg.transform);
+            _steamPlayerTxt = MakeInfoRow("Steam Players Online", vlg.transform);
         }
 
         // ── Mod Status page ───────────────────────────────────────────
@@ -685,6 +690,11 @@ namespace DescendersModMenu.UI
         {
             if ((object)_custSavedRow != null)
                 _custSavedRow.SetActive(Mods.MenuCustomiser.ShowSavedIndicator);
+
+            // Refresh system tab once steam fetch completes
+            if (_steamPlayerTxt && Mods.SteamPlayerCount.FetchComplete
+                && _steamPlayerTxt.text == "...")
+                Refresh();
         }
 
         // ── Refresh / Rebuild ─────────────────────────────────────────
@@ -710,6 +720,14 @@ namespace DescendersModMenu.UI
                 {
                     _summaryTxt.text = ok + " OK   " + (fail > 0 ? fail + " FAILED" : "0 failed");
                     _summaryTxt.color = fail > 0 ? UIHelpers.OffColor : UIHelpers.OnColor;
+                }
+
+                // Steam player count — updates once fetch completes
+                if (_steamPlayerTxt)
+                {
+                    _steamPlayerTxt.text = Mods.SteamPlayerCount.DisplayValue;
+                    _steamPlayerTxt.color = Mods.SteamPlayerCount.FetchFailed
+                        ? UIHelpers.OffColor : UIHelpers.Accent;
                 }
 
                 // Only rebuild rows if status tab is visible

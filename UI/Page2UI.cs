@@ -1,4 +1,4 @@
-﻿using DescendersModMenu.Mods;
+using DescendersModMenu.Mods;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
@@ -120,6 +120,30 @@ namespace DescendersModMenu.UI
                 _modUsersText.verticalOverflow = VerticalWrapMode.Truncate;
                 var mutle = _modUsersText.gameObject.AddComponent<LayoutElement>();
                 mutle.preferredHeight = 60; mutle.flexibleWidth = 1;
+
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("ESP", UIHelpers.StarBtn(er.transform, "ESP", () => FavouritesManager.Toggle("ESP")));
+                FavouritesManager.RegisterStarButton("ESPDistance", UIHelpers.StarBtn(dr.transform, "ESPDistance", () => FavouritesManager.Toggle("ESPDistance")));
+                FavouritesManager.RegisterStarButton("ESPTracers", UIHelpers.StarBtn(tr.transform, "ESPTracers", () => FavouritesManager.Toggle("ESPTracers")));
+
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "ESP", DisplayName = "ESP", TabBadge = "SYSTEM",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ESP", "ESP",
+                        () => ESP.Enabled, () => ESP.Toggle(), () => RefreshTexts()),
+                    IsActive = () => ESP.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "ESPDistance", DisplayName = "ESP Distance", TabBadge = "SYSTEM",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ESPDistance", "ESP Distance",
+                        () => ESP.ShowDistance, () => ESP.ToggleDistance(), () => RefreshTexts()),
+                    IsActive = () => !ESP.ShowDistance
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "ESPTracers", DisplayName = "ESP Tracers", TabBadge = "SYSTEM",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ESPTracers", "ESP Tracers",
+                        () => ESP.ShowTracers, () => ESP.ToggleTracers(), () => RefreshTexts()),
+                    IsActive = () => !ESP.ShowTracers
+                });
 
                 RefreshTexts();
 

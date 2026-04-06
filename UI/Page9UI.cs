@@ -12,6 +12,15 @@ namespace DescendersModMenu.UI
 
         // Public accessors for snapshot/save system
         public static float CurrentPlayerScale = 1f;
+        public static int CurrentPlayerSizeLevel => _playerSizeLevel;
+
+        private static readonly float[] PlayerScales = {
+            0.10f, 0.15f, 0.20f, 0.30f, 0.40f, 0.55f, 0.70f, 0.85f, 0.92f, 1.00f,
+            1.20f, 1.50f, 1.80f, 2.20f, 2.60f, 3.00f, 3.50f, 4.00f, 5.00f, 6.00f
+        };
+        private static int _playerSizeLevel = 10;
+        private static Text _playerSizeLvlVal;
+        private static UnityEngine.UI.Button _playerSizeMinus, _playerSizePlus;
         public static bool IsInvisiblePlayer => _invisiblePlayer;
         private static Renderer[] _hiddenPlayerRenderers = null;
         private static Image _invisTrack; private static RectTransform _invisKnob;
@@ -73,6 +82,7 @@ namespace DescendersModMenu.UI
         {
             if (_invisiblePlayer) { ToggleInvisible(false); _invisiblePlayer = false; }
             if (_moonModeActive) ToggleMoonMode();
+            _playerSizeLevel = 10;
             ResetPlayerScaleToDefault();
         }
 
@@ -104,6 +114,7 @@ namespace DescendersModMenu.UI
                 crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
                 crt.pivot = new Vector2(0.5f, 1); crt.sizeDelta = new Vector2(0, 0);
                 sr.content = crt;
+                UIHelpers.AddScrollbar(sr);
                 content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 var vlg = content.AddComponent<VerticalLayoutGroup>();
                 vlg.spacing = UIHelpers.RowGap;
@@ -118,11 +129,19 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtnOrange(rstRow.transform, "↺  Reset Tab to Defaults", () => { GlobalReset(); RefreshAll(); }, 186);
                 UIHelpers.SectionHeader("PLAYER SIZE", pg9);
                 var psr = UIHelpers.StatRow("Size", pg9);
-                UIHelpers.ActionBtn(psr.transform, "Giant", () => SetPlayerScale(3.5f), 52);
-                UIHelpers.ActionBtn(psr.transform, "Big", () => SetPlayerScale(1.5f), 44);
-                UIHelpers.ActionBtn(psr.transform, "Default", () => ResetPlayerScaleToDefault(), 58);
-                UIHelpers.ActionBtn(psr.transform, "Small", () => SetPlayerScale(0.6f), 52);
-                UIHelpers.ActionBtn(psr.transform, "Tiny", () => SetPlayerScale(0.2f), 44);
+                _playerSizeMinus = UIHelpers.SmallBtn(psr.transform, "◀", () =>
+                {
+                    if (_playerSizeLevel > 1) { _playerSizeLevel--; ApplyPlayerSizeLevel(_playerSizeLevel); RefreshAll(); }
+                });
+                _playerSizeLvlVal = UIHelpers.Txt("PsL", psr.transform, _playerSizeLevel.ToString(), 13,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _playerSizeLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
+                _playerSizePlus = UIHelpers.SmallBtn(psr.transform, "▶", () =>
+                {
+                    if (_playerSizeLevel < 20) { _playerSizeLevel++; ApplyPlayerSizeLevel(_playerSizeLevel); RefreshAll(); }
+                });
+                UIHelpers.InfoBox(pg9, "10 = default size. Lower numbers shrink the player, higher numbers grow them.");
+
                 UIHelpers.Divider(pg9);
 
                 // ── PRESETS ───────────────────────────────────────────
@@ -145,8 +164,6 @@ namespace DescendersModMenu.UI
                 mmhlg.childForceExpandWidth = false; mmhlg.childForceExpandHeight = false;
                 var mml = UIHelpers.Txt("MML", mmtop.transform, "Moon Mode", 12, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.TextLight);
                 mml.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
-                var mmdesc = UIHelpers.Txt("MMD", mmtop.transform, "Low gravity + bouncy suspension", 10, FontStyle.Italic, TextAnchor.MiddleRight, UIHelpers.TextDim);
-                mmdesc.gameObject.AddComponent<LayoutElement>().preferredWidth = 200;
                 var mmBtn = UIHelpers.Obj("MMBtn", mmo.transform);
                 _moonBg = mmBtn.AddComponent<Image>(); _moonBg.sprite = UIHelpers.BtnSp;
                 _moonBg.type = Image.Type.Sliced; _moonBg.color = UIHelpers.NeonBlue;
@@ -295,6 +312,120 @@ namespace DescendersModMenu.UI
                     11, FontStyle.Bold, TextAnchor.MiddleLeft, UIHelpers.TextDim);
                 _nameActiveText.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
 
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("DrunkMode", UIHelpers.StarBtn(_drunkRow.transform, "DrunkMode", () => FavouritesManager.Toggle("DrunkMode")));
+                FavouritesManager.RegisterStarButton("FlyMode", UIHelpers.StarBtn(_flyRow.transform, "FlyMode", () => FavouritesManager.Toggle("FlyMode")));
+                FavouritesManager.RegisterStarButton("MirrorMode", UIHelpers.StarBtn(_mirrorRow.transform, "MirrorMode", () => FavouritesManager.Toggle("MirrorMode")));
+                FavouritesManager.RegisterStarButton("CameraShake", UIHelpers.StarBtn(csr.transform, "CameraShake", () => FavouritesManager.Toggle("CameraShake")));
+                FavouritesManager.RegisterStarButton("PlayerSize", UIHelpers.StarBtn(psr.transform, "PlayerSize", () => FavouritesManager.Toggle("PlayerSize")));
+                FavouritesManager.RegisterStarButton("InvisiblePlayer", UIHelpers.StarBtn(_invisPlayerRow.transform, "InvisiblePlayer", () => FavouritesManager.Toggle("InvisiblePlayer")));
+                FavouritesManager.RegisterStarButton("MoonMode", UIHelpers.StarBtnAbs(mmtop.transform, "MoonMode", () => FavouritesManager.Toggle("MoonMode")));
+                FavouritesManager.RegisterStarButton("GiantEveryone", UIHelpers.StarBtn(gsr.transform, "GiantEveryone", () => FavouritesManager.Toggle("GiantEveryone")));
+                Transform identHdr = pg9.Find("IDENTITYH");
+                if ((object)identHdr != null)
+                    FavouritesManager.RegisterStarButton("Identity", UIHelpers.StarBtnAbs(identHdr, "Identity", () => FavouritesManager.Toggle("Identity")));
+
+                // ── FACTORY REGISTRATIONS (Fun tab mods) ───────────────
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "DrunkMode",
+                    DisplayName = "Drunk Mode",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "DrunkMode", "Drunk Mode",
+                        () => DrunkMode.Enabled, () => DrunkMode.Toggle(), () => RefreshAll()),
+                    IsActive = () => DrunkMode.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "FlyMode",
+                    DisplayName = "Fly Mode",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "FlyMode", "Fly Mode",
+                        () => FlyMode.Enabled, () => FlyMode.Toggle(), () => RefreshAll()),
+                    IsActive = () => FlyMode.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "MirrorMode",
+                    DisplayName = "Mirror Mode",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "MirrorMode", "Mirror Mode",
+                        () => MirrorMode.Enabled, () => MirrorMode.Toggle(), () => RefreshAll()),
+                    IsActive = () => MirrorMode.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "CameraShake",
+                    DisplayName = "Camera Shake",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "CameraShake", "Camera Shake",
+                        () => CameraShake.Enabled, () => CameraShake.Toggle(),
+                        () => CameraShake.Level, () => CameraShake.Increase(), () => CameraShake.Decrease(),
+                        10, () => (CameraShake.Level - 1) / 9f, () => RefreshAll(),
+                        () => CameraShake.DisplayValue),
+                    IsActive = () => CameraShake.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "PlayerSize",
+                    DisplayName = "Player Size",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildStepper(p, "PlayerSize", "Player Size",
+                        () => _playerSizeLevel,
+                        () => { if (_playerSizeLevel > 1) { _playerSizeLevel--; ApplyPlayerSizeLevel(_playerSizeLevel); } },
+                        () => { if (_playerSizeLevel < 20) { _playerSizeLevel++; ApplyPlayerSizeLevel(_playerSizeLevel); } },
+                        1, 20, () => RefreshAll(), 10),
+                    IsActive = () => _playerSizeLevel != 10
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "InvisiblePlayer",
+                    DisplayName = "Invisible Player",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "InvisiblePlayer", "Invisible Player",
+                        () => _invisiblePlayer, () => { _invisiblePlayer = !_invisiblePlayer; ToggleInvisible(_invisiblePlayer); }, () => RefreshAll()),
+                    IsActive = () => _invisiblePlayer
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "MoonMode",
+                    DisplayName = "Moon Mode",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "MoonMode", "Moon Mode",
+                        () => _moonModeActive, () => ToggleMoonMode(), () => RefreshAll()),
+                    IsActive = () => _moonModeActive
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "GiantEveryone",
+                    DisplayName = "Giant Everyone",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Giant Everyone", p);
+                        UIHelpers.ActionBtnOrange(row.transform, "Colossal", () => SetAllPlayersScale(6.0f), 62);
+                        UIHelpers.ActionBtnOrange(row.transform, "Giant", () => SetAllPlayersScale(3.5f), 52);
+                        UIHelpers.ActionBtn(row.transform, "Default", () => SetAllPlayersScale(1.0f), 58);
+                        UIHelpers.ActionBtn(row.transform, "Tiny", () => SetAllPlayersScale(0.2f), 44);
+                    },
+                    IsActive = () => false
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Identity",
+                    DisplayName = "Set Player Name",
+                    TabBadge = "FUN",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Active Name", p);
+                        var ntxt = UIHelpers.Txt("FNmV", row.transform, _activeName.Length > 0 ? _activeName : "\u2014",
+                            11, FontStyle.Bold, TextAnchor.MiddleLeft, _activeName.Length > 0 ? UIHelpers.Accent : UIHelpers.TextDim);
+                        ntxt.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
+                        FavouritesManager.RegisterRefresh("Identity", () => {
+                            if (ntxt) { ntxt.text = _activeName.Length > 0 ? _activeName : "\u2014"; ntxt.color = _activeName.Length > 0 ? UIHelpers.Accent : UIHelpers.TextDim; }
+                        });
+                    },
+                    IsActive = () => _activeName.Length > 0
+                });
+
                 UIHelpers.InfoBox(pg9, "Name updates in chat and in other players’ ESP. Resets on map change.");
 
                 RefreshAll();
@@ -360,7 +491,14 @@ namespace DescendersModMenu.UI
         }
 
         // Called by reapply system
-        public static void ApplyPlayerScale(float scale) { SetPlayerScale(scale); }
+        public static void ApplyPlayerScale(float scale) { SetPlayerScale(scale); } // kept for compat
+
+        public static void ApplyPlayerSizeLevel(int level)
+        {
+            _playerSizeLevel = Mathf.Clamp(level, 1, 20);
+            if (_playerSizeLevel == 10) ResetPlayerScaleToDefault();
+            else SetPlayerScale(PlayerScales[_playerSizeLevel - 1]);
+        }
         public static void SetInvisiblePlayer(bool v) { if (v != _invisiblePlayer) { _invisiblePlayer = v; ToggleInvisible(v); } }
 
         private static void SetAllPlayersScale(float scale)
@@ -472,6 +610,11 @@ namespace DescendersModMenu.UI
         // ── RefreshAll ────────────────────────────────────────────────
         public static void RefreshAll()
         {
+            // Player size level
+            if (_playerSizeLvlVal) _playerSizeLvlVal.text = _playerSizeLevel.ToString();
+            if ((object)_playerSizeMinus != null) _playerSizeMinus.interactable = _playerSizeLevel > 1;
+            if ((object)_playerSizePlus != null) _playerSizePlus.interactable = _playerSizeLevel < 20;
+
             if (_invisVal) { _invisVal.text = _invisiblePlayer ? "ON" : "OFF"; _invisVal.color = _invisiblePlayer ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_invisTrack, _invisKnob, _invisiblePlayer);
             UIHelpers.SetRowActive(_invisPlayerRow, _invisiblePlayer);

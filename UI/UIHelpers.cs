@@ -273,6 +273,50 @@ namespace DescendersModMenu.UI
             if (img) img.color = active ? NavActive : RowBg;
         }
 
+        // ── Star button for Favourites ───────────────────────────────
+        public static Button StarBtn(Transform parent, string id, UnityEngine.Events.UnityAction onClick)
+        {
+            var b = Btn("Star_" + id, parent, "\u2605", new Vector2(22, 22), 13, onClick,
+                new Color(0, 0, 0, 0),
+                FavouritesManager.IsFavourited(id) ? Accent : TextDim);
+            var le = b.gameObject.AddComponent<LayoutElement>();
+            le.preferredWidth = 22; le.preferredHeight = 22;
+            le.minWidth = 22; le.minHeight = 22;
+            return b;
+        }
+
+        public static void SetStarActive(Button btn, bool active)
+        {
+            if ((object)btn == null) return;
+            var t = btn.GetComponentInChildren<Text>();
+            if (t) t.color = active ? Accent : TextDim;
+            var img = btn.GetComponent<Image>();
+            if (img) img.color = new Color(0, 0, 0, 0);
+        }
+
+        // ── Star button for section headers (absolute position) ──────
+        public static Button StarBtnAbs(Transform parent, string id, UnityEngine.Events.UnityAction onClick)
+        {
+            var g = Obj("Star_" + id, parent);
+            var im = g.AddComponent<Image>();
+            im.color = new Color(0, 0, 0, 0); im.raycastTarget = true;
+            var b = g.AddComponent<Button>();
+            b.onClick.AddListener(onClick);
+            var cb = b.colors;
+            cb.normalColor = Color.white; cb.highlightedColor = new Color(1, 1, 1, 1.15f);
+            cb.pressedColor = new Color(.7f, .7f, .7f, 1); cb.colorMultiplier = 1; b.colors = cb;
+            var t = Txt("ST", g.transform, "\u2605", 13, FontStyle.Bold, TextAnchor.MiddleCenter,
+                FavouritesManager.IsFavourited(id) ? Accent : TextDim);
+            Fill(RT(t.gameObject));
+            var rt = RT(g);
+            rt.anchorMin = new Vector2(1, 0.5f); rt.anchorMax = new Vector2(1, 0.5f);
+            rt.pivot = new Vector2(1, 0.5f);
+            rt.sizeDelta = new Vector2(22, 22);
+            rt.anchoredPosition = new Vector2(-6, 0);
+            g.AddComponent<LayoutElement>().ignoreLayout = true;
+            return b;
+        }
+
         public static void Toggle(Transform p, string n, UnityEngine.Events.UnityAction clk,
             out Image track, out RectTransform knob)
         {
@@ -416,6 +460,117 @@ namespace DescendersModMenu.UI
             Fill(RT(kt.gameObject));
         }
 
+        // ── Circle sprite — anti-aliased disk, used for scrollbar handle caps ──
+        // Rendered at 8× the world-unit size for quality, then scaled down by ppu.
+        private static Sprite CreateCircleSprite(int worldDiameter)
+        {
+            int scale = 8;
+            int px = worldDiameter * scale;
+            var tex = new Texture2D(px, px, TextureFormat.ARGB32, false);
+            tex.filterMode = FilterMode.Bilinear;
+            float r = px * 0.5f;
+            float cx = r, cy = r;
+            for (int y = 0; y < px; y++)
+                for (int x = 0; x < px; x++)
+                {
+                    float dx = x - cx + 0.5f, dy = y - cy + 0.5f;
+                    float a = Mathf.Clamp01(r - Mathf.Sqrt(dx * dx + dy * dy) + 0.5f);
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+                }
+            tex.Apply();
+            // pixelsPerUnit = scale so the sprite renders at worldDiameter world units
+            return Sprite.Create(tex, new Rect(0, 0, px, px),
+                new Vector2(0.5f, 0.5f), (float)scale);
+        }
+
+        // ── Scrollbar — custom manual implementation ─────────────────────
+        // Unity's Scrollbar component is unreliable when created at runtime in
+        // Unity 2017.4 Mono. ManualScrollbar directly drives verticalNormalizedPosition.
+        // Track anchored to LEFT edge — sits in the gap between sidebar and content.
+        public static void AddScrollbar(ScrollRect sr)
+        {
+            try
+            {
+                float s = Screen.height / 1080f;
+                float trackW = Mathf.Max(4f, 6f * s);
+                float inset = Mathf.Max(1f, 1f * s);
+
+                // ── Track ─────────────────────────────────────────────────────
+                var trackGO = Obj("SBTrack", sr.transform);
+                var trackRT = RT(trackGO);
+                trackRT.anchorMin = new Vector2(0f, 0f);
+                trackRT.anchorMax = new Vector2(0f, 1f);
+                trackRT.pivot = new Vector2(0f, 0.5f);
+                trackRT.sizeDelta = new Vector2(trackW, 0f);
+                trackRT.anchoredPosition = Vector2.zero;
+                var trackImg = trackGO.AddComponent<Image>();
+                trackImg.color = new Color(0.067f, 0.071f, 0.078f, 1f);
+                trackImg.raycastTarget = true;
+                // Block clicks on the track from bubbling to the menu window drag handler
+                trackGO.AddComponent<ScrollbarEventBlocker>();
+
+                // ── Handle container — ManualScrollbar drives its position ──────
+                var handleGO = Obj("SBHandle", trackGO.transform);
+                var handleRT = RT(handleGO);
+                handleRT.anchorMin = new Vector2(0f, 1f);
+                handleRT.anchorMax = new Vector2(1f, 1f);
+                handleRT.pivot = new Vector2(0.5f, 1f);
+                handleRT.offsetMin = new Vector2(inset, -40f); // ManualScrollbar overrides this
+                handleRT.offsetMax = new Vector2(-inset, 0f);
+                // No Image on the container itself — three child pieces form the pill
+
+                int capD = Mathf.Max(2, Mathf.RoundToInt(trackW - inset * 2f));
+                var circleSp = CreateCircleSprite(capD);
+
+                // ── Top cap (circle, anchored top) ────────────────────────────
+                var topGO = Obj("SBTop", handleGO.transform);
+                var topRT = RT(topGO);
+                topRT.anchorMin = new Vector2(0f, 1f);
+                topRT.anchorMax = new Vector2(1f, 1f);
+                topRT.pivot = new Vector2(0.5f, 1f);
+                topRT.sizeDelta = new Vector2(0f, capD);
+                topRT.anchoredPosition = Vector2.zero;
+                var topImg = topGO.AddComponent<Image>();
+                topImg.sprite = circleSp;
+                topImg.color = NeonBlue;
+                topImg.raycastTarget = true;
+
+                // ── Bottom cap (circle, anchored bottom) ──────────────────────
+                var botGO = Obj("SBBot", handleGO.transform);
+                var botRT = RT(botGO);
+                botRT.anchorMin = new Vector2(0f, 0f);
+                botRT.anchorMax = new Vector2(1f, 0f);
+                botRT.pivot = new Vector2(0.5f, 0f);
+                botRT.sizeDelta = new Vector2(0f, capD);
+                botRT.anchoredPosition = Vector2.zero;
+                var botImg = botGO.AddComponent<Image>();
+                botImg.sprite = circleSp;
+                botImg.color = NeonBlue;
+                botImg.raycastTarget = true;
+
+                // ── Middle (solid rect, fills between caps) ───────────────────
+                var midGO = Obj("SBMid", handleGO.transform);
+                var midRT = RT(midGO);
+                midRT.anchorMin = Vector2.zero;
+                midRT.anchorMax = Vector2.one;
+                // Overlap halfway into each cap — hides the inner half of each circle,
+                // leaving only the outer semicircle visible as the rounded end
+                midRT.offsetMin = new Vector2(0f, capD / 2f);
+                midRT.offsetMax = new Vector2(0f, -capD / 2f);
+                var midImg = midGO.AddComponent<Image>();
+                midImg.color = NeonBlue;
+                midImg.raycastTarget = true;
+
+                // ── ManualScrollbar — handles positioning and drag ────────────
+                var msb = handleGO.AddComponent<ManualScrollbar>();
+                msb.Init(sr, trackRT, handleRT, inset);
+            }
+            catch (System.Exception ex)
+            {
+                MelonLoader.MelonLogger.Warning("[UIHelpers] AddScrollbar: " + ex.Message);
+            }
+        }
+
         // ── Scroll fix: forward scroll events from buttons to parent ScrollRect ──
         public static void AddScrollForwarders(Transform root)
         {
@@ -457,5 +612,116 @@ namespace DescendersModMenu.UI
             if ((object)target != null)
                 target.OnScroll(eventData);
         }
+    }
+
+    // Blocks IPointerDown on the scrollbar TRACK so clicking the empty track area
+    // doesn't bubble to the menu window drag handler and move the whole window.
+    public class ScrollbarEventBlocker : MonoBehaviour,
+        UnityEngine.EventSystems.IPointerDownHandler
+    {
+        public void OnPointerDown(UnityEngine.EventSystems.PointerEventData e) { }
+    }
+
+    // Custom scrollbar — replaces Unity's Scrollbar component which is unreliable
+    // when created at runtime in Unity 2017.4 Mono.
+    // Lives on the HANDLE. Positions itself each LateUpdate and handles drag events.
+    public class ManualScrollbar : MonoBehaviour,
+        UnityEngine.EventSystems.IPointerDownHandler,
+        UnityEngine.EventSystems.IBeginDragHandler,
+        UnityEngine.EventSystems.IDragHandler,
+        UnityEngine.EventSystems.IEndDragHandler
+    {
+        private ScrollRect _sr;
+        private RectTransform _trackRT;
+        private RectTransform _handleRT;
+        private float _inset;
+        private bool _dragging;
+        private float _dragStartLocalY;
+        private float _dragStartNormPos;
+        private const float MinHandleH = 24f;
+
+        public void Init(ScrollRect sr, RectTransform trackRT, RectTransform handleRT, float inset)
+        {
+            _sr = sr;
+            _trackRT = trackRT;
+            _handleRT = handleRT;
+            _inset = inset;
+        }
+
+        // Position the handle every frame to match the ScrollRect's scroll position
+        private void LateUpdate()
+        {
+            if ((object)_sr == null || (object)_trackRT == null || (object)_handleRT == null) return;
+            if ((object)_sr.viewport == null || (object)_sr.content == null) return;
+            try
+            {
+                float viewH = _sr.viewport.rect.height;
+                float contentH = _sr.content.rect.height;
+                if (contentH <= 0f) return;
+
+                float trackH = _trackRT.rect.height;
+                float ratio = Mathf.Clamp01(viewH / contentH);
+                float handleH = Mathf.Max(MinHandleH, trackH * ratio);
+                float maxOff = trackH - handleH;
+
+                // normalizedPosition: 1=top, 0=bottom → offset from top: 0=top, maxOff=bottom
+                float norm = Mathf.Clamp01(_sr.verticalNormalizedPosition);
+                float topOff = (1f - norm) * maxOff;
+
+                // Drive handle RectTransform directly
+                _handleRT.anchorMin = new Vector2(0f, 1f);
+                _handleRT.anchorMax = new Vector2(1f, 1f);
+                _handleRT.pivot = new Vector2(0.5f, 1f);
+                _handleRT.offsetMin = new Vector2(_inset, -topOff - handleH);
+                _handleRT.offsetMax = new Vector2(-_inset, -topOff);
+
+                // Hide when content fits
+                gameObject.SetActive(ratio < 0.999f);
+            }
+            catch { }
+        }
+
+        // Consume pointer down on handle so menu drag doesn't start
+        public void OnPointerDown(UnityEngine.EventSystems.PointerEventData e) { }
+
+        public void OnBeginDrag(UnityEngine.EventSystems.PointerEventData e)
+        {
+            if ((object)_sr == null || (object)_trackRT == null) return;
+            _dragging = true;
+            Vector2 local;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                _trackRT, e.position, e.pressEventCamera, out local);
+            _dragStartLocalY = local.y;
+            _dragStartNormPos = _sr.verticalNormalizedPosition;
+        }
+
+        public void OnDrag(UnityEngine.EventSystems.PointerEventData e)
+        {
+            if (!_dragging || (object)_sr == null || (object)_trackRT == null) return;
+            try
+            {
+                float viewH = _sr.viewport.rect.height;
+                float contentH = _sr.content.rect.height;
+                if (contentH <= viewH) return;
+
+                float trackH = _trackRT.rect.height;
+                float ratio = viewH / contentH;
+                float handleH = Mathf.Max(MinHandleH, trackH * ratio);
+                float maxOff = trackH - handleH;
+                if (maxOff <= 0f) return;
+
+                Vector2 local;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                    _trackRT, e.position, e.pressEventCamera, out local);
+
+                // Local Y increases going UP. Drag up = positive delta = scroll toward top.
+                float deltaY = local.y - _dragStartLocalY;
+                float normDelta = deltaY / maxOff;
+                _sr.verticalNormalizedPosition = Mathf.Clamp01(_dragStartNormPos + normDelta);
+            }
+            catch { }
+        }
+
+        public void OnEndDrag(UnityEngine.EventSystems.PointerEventData e) { _dragging = false; }
     }
 }

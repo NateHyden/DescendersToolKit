@@ -64,6 +64,7 @@ namespace DescendersModMenu.UI
                 crt.pivot = new Vector2(0.5f, 1);
                 crt.sizeDelta = new Vector2(0, 0);
                 scrollRect.content = crt;
+                UIHelpers.AddScrollbar(scrollRect);
 
                 var csf = content.AddComponent<ContentSizeFitter>();
                 csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -217,6 +218,120 @@ namespace DescendersModMenu.UI
                 UIHelpers.SmallBtn(comUDr.transform, "+", () => { CenterOfMass.IncreaseUD(); RefreshAll(); });
 
                 UIHelpers.InfoBox(pg6, "Shifts the bike's balance point. All axes start at 0. + moves right / forward / up. Press 0 to reset that axis.");
+
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("Spin", UIHelpers.StarBtn(sr.transform, "Spin", () => FavouritesManager.Toggle("Spin")));
+                FavouritesManager.RegisterStarButton("Hop", UIHelpers.StarBtn(hr.transform, "Hop", () => FavouritesManager.Toggle("Hop")));
+                FavouritesManager.RegisterStarButton("Wheelie", UIHelpers.StarBtn(wr.transform, "Wheelie", () => FavouritesManager.Toggle("Wheelie")));
+                FavouritesManager.RegisterStarButton("Lean", UIHelpers.StarBtn(lr.transform, "Lean", () => FavouritesManager.Toggle("Lean")));
+                FavouritesManager.RegisterStarButton("WheelieAngle", UIHelpers.StarBtn(wbr.transform, "WheelieAngle", () => FavouritesManager.Toggle("WheelieAngle")));
+                FavouritesManager.RegisterStarButton("AirControl", UIHelpers.StarBtn(iacr.transform, "AirControl", () => FavouritesManager.Toggle("AirControl")));
+                FavouritesManager.RegisterStarButton("PumpStrength", UIHelpers.StarBtn(fbr.transform, "PumpStrength", () => FavouritesManager.Toggle("PumpStrength")));
+                FavouritesManager.RegisterStarButton("NearMiss", UIHelpers.StarBtn(nmr.transform, "NearMiss", () => FavouritesManager.Toggle("NearMiss")));
+                Transform comHdr = pg6.Find("CENTER OF MASSH");
+                if ((object)comHdr != null)
+                    FavouritesManager.RegisterStarButton("CenterOfMass", UIHelpers.StarBtnAbs(comHdr, "CenterOfMass", () => FavouritesManager.Toggle("CenterOfMass")));
+
+                // ── FACTORY REGISTRATIONS (Move tab mods) ──────────────
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Spin", DisplayName = "Rotation Speed", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Spin", "Rotation Speed",
+                        () => Movement.SpinEnabled, () => Movement.ToggleSpin(),
+                        () => Movement.SpinLevel, () => Movement.SpinIncrease(), () => Movement.SpinDecrease(),
+                        10, () => (Movement.SpinLevel - 1) / 9f, () => RefreshAll()),
+                    IsActive = () => Movement.SpinEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Hop", DisplayName = "Hop Force", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Hop", "Hop Force",
+                        () => Movement.HopEnabled, () => Movement.ToggleHop(),
+                        () => Movement.HopLevel, () => Movement.HopIncrease(), () => Movement.HopDecrease(),
+                        10, () => (Movement.HopLevel - 1) / 9f, () => RefreshAll()),
+                    IsActive = () => Movement.HopEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Wheelie", DisplayName = "Wheelie Force", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Wheelie", "Wheelie Force",
+                        () => Movement.WheelieEnabled, () => Movement.ToggleWheelie(),
+                        () => Movement.WheelieLevel, () => Movement.WheelieIncrease(), () => Movement.WheelieDecrease(),
+                        10, () => (Movement.WheelieLevel - 1) / 9f, () => RefreshAll()),
+                    IsActive = () => Movement.WheelieEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Lean", DisplayName = "Lean Strength", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Lean", "Lean Strength",
+                        () => Movement.LeanEnabled, () => Movement.ToggleLean(),
+                        () => Movement.LeanLevel, () => Movement.LeanIncrease(), () => Movement.LeanDecrease(),
+                        10, () => (Movement.LeanLevel - 1) / 9f, () => RefreshAll()),
+                    IsActive = () => Movement.LeanEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "WheelieAngle", DisplayName = "Wheelie Angle Limit", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "WheelieAngle", "Wheelie Angle Limit",
+                        () => WheelieAngleLimit.Enabled, () => WheelieAngleLimit.Toggle(),
+                        () => WheelieAngleLimit.Level, () => WheelieAngleLimit.Increase(), () => WheelieAngleLimit.Decrease(),
+                        10, () => (WheelieAngleLimit.Level - 1) / 9f, () => RefreshAll(),
+                        () => WheelieAngleLimit.DisplayValue),
+                    IsActive = () => WheelieAngleLimit.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "AirControl", DisplayName = "Air Control", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "AirControl", "Air Control",
+                        () => AirControl.Enabled, () => AirControl.Toggle(),
+                        () => AirControl.Level, () => AirControl.Increase(), () => AirControl.Decrease(),
+                        10, () => (AirControl.Level - 1) / 9f, () => RefreshAll(),
+                        () => AirControl.DisplayValue),
+                    IsActive = () => AirControl.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "PumpStrength", DisplayName = "Pump Strength", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "PumpStrength", "Pump Strength",
+                        () => GameModifierMods.PumpStrengthLevel, () => GameModifierMods.PumpStrengthIncrease(), () => GameModifierMods.PumpStrengthDecrease(),
+                        () => (GameModifierMods.PumpStrengthLevel - 1) / 9f, () => RefreshAll(),
+                        null, () => GameModifierMods.PumpStrengthLevel != 5),
+                    IsActive = () => GameModifierMods.PumpStrengthLevel != 5
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "NearMiss", DisplayName = "Near Miss Sensitivity", TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "NearMiss", "Near Miss Sensitivity",
+                        () => NearMissSensitivity.Enabled, () => NearMissSensitivity.Toggle(),
+                        () => NearMissSensitivity.Level, () => NearMissSensitivity.Increase(), () => NearMissSensitivity.Decrease(),
+                        10, () => (NearMissSensitivity.Level - 1) / 9f, () => RefreshAll(),
+                        () => NearMissSensitivity.DisplayValue),
+                    IsActive = () => NearMissSensitivity.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "CenterOfMass", DisplayName = "Center of Mass", TabBadge = "MOVE",
+                    BuildControls = (p) => {
+                        var r1 = UIHelpers.StatRow("Left / Right", p);
+                        var b1 = UIHelpers.MakeBar("CLr", r1.transform, CenterOfMass.BarLR);
+                        var v1 = UIHelpers.Txt("CLrV", r1.transform, CenterOfMass.DisplayLR, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                        v1.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
+                        UIHelpers.ActionBtn(r1.transform, "0", () => { CenterOfMass.ResetLR(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); }, 22);
+                        UIHelpers.SmallBtn(r1.transform, "-", () => { CenterOfMass.DecreaseLR(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        UIHelpers.SmallBtn(r1.transform, "+", () => { CenterOfMass.IncreaseLR(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        var r2 = UIHelpers.StatRow("Forward / Back", p);
+                        var b2 = UIHelpers.MakeBar("CFb", r2.transform, CenterOfMass.BarFB);
+                        var v2 = UIHelpers.Txt("CFbV", r2.transform, CenterOfMass.DisplayFB, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                        v2.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
+                        UIHelpers.ActionBtn(r2.transform, "0", () => { CenterOfMass.ResetFB(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); }, 22);
+                        UIHelpers.SmallBtn(r2.transform, "-", () => { CenterOfMass.DecreaseFB(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        UIHelpers.SmallBtn(r2.transform, "+", () => { CenterOfMass.IncreaseFB(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        var r3 = UIHelpers.StatRow("Up / Down", p);
+                        var b3 = UIHelpers.MakeBar("CUd", r3.transform, CenterOfMass.BarUD);
+                        var v3 = UIHelpers.Txt("CUdV", r3.transform, CenterOfMass.DisplayUD, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                        v3.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
+                        UIHelpers.ActionBtn(r3.transform, "0", () => { CenterOfMass.ResetUD(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); }, 22);
+                        UIHelpers.SmallBtn(r3.transform, "-", () => { CenterOfMass.DecreaseUD(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        UIHelpers.SmallBtn(r3.transform, "+", () => { CenterOfMass.IncreaseUD(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        FavouritesManager.RegisterRefresh("CenterOfMass", () => {
+                            UIHelpers.SetBar(b1, CenterOfMass.BarLR); if (v1) v1.text = CenterOfMass.DisplayLR;
+                            UIHelpers.SetBar(b2, CenterOfMass.BarFB); if (v2) v2.text = CenterOfMass.DisplayFB;
+                            UIHelpers.SetBar(b3, CenterOfMass.BarUD); if (v3) v3.text = CenterOfMass.DisplayUD;
+                        });
+                    },
+                    IsActive = () => CenterOfMass.OffsetLR != 0f || CenterOfMass.OffsetFB != 0f || CenterOfMass.OffsetUD != 0f
+                });
 
                 UIHelpers.AddScrollForwarders(pg6);
             }

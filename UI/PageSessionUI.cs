@@ -149,6 +149,23 @@ namespace DescendersModMenu.UI
                 _peakGforceVal.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1;
                 UIHelpers.ActionBtn(pgfr.transform, "Reset", () => { SessionTrackers.ResetGForce(); RefreshAll(); }, 52);
 
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("ShowHUD", UIHelpers.StarBtn(hudr.transform, "ShowHUD", () => FavouritesManager.Toggle("ShowHUD")));
+                FavouritesManager.RegisterStarButton("SpeedrunTimer", UIHelpers.StarBtn(srtr.transform, "SpeedrunTimer", () => FavouritesManager.Toggle("SpeedrunTimer")));
+
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "ShowHUD", DisplayName = "Show HUD", TabBadge = "SESSION",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ShowHUD", "Show HUD",
+                        () => SessionHUD.Enabled, () => { SessionHUD.Enabled = !SessionHUD.Enabled; }, () => RefreshAll()),
+                    IsActive = () => SessionHUD.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "SpeedrunTimer", DisplayName = "Speedrun Timer", TabBadge = "SESSION",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "SpeedrunTimer", "Speedrun Timer",
+                        () => SpeedrunTimer.Enabled, () => SpeedrunTimer.Toggle(), () => RefreshAll()),
+                    IsActive = () => SpeedrunTimer.Enabled
+                });
+
                 UIHelpers.AddScrollForwarders(c);
             }
             catch (System.Exception ex) { MelonLogger.Error("PageSessionUI.CreatePage: " + ex.Message); return null; }

@@ -134,10 +134,22 @@ namespace DescendersModMenu.BikeStats
                     // Bike / Player Scale
                     BikeScale = Page8UI.CurrentBikeScale,
                     PlayerScale = Page9UI.CurrentPlayerScale,
+                    BikeSizeLevel = Page8UI.CurrentBikeSizeLevel,
+                    PlayerSizeLevel = Page9UI.CurrentPlayerSizeLevel,
                     InvisibleBikeEnabled = Page8UI.IsInvisibleBike,
                     InvisiblePlayerEnabled = Page9UI.IsInvisiblePlayer,
                     WheelSizeEnabled = Page8UI.IsWheelSizeEnabled,
                     WheelSizeMode = Page8UI.CurrentWheelSizeMode,
+                    WheelSizeLevel = Page8UI.CurrentWheelSizeLevel,
+                    FrontWheelSizeLevel = Page8UI.CurrentFrontWheelLevel,
+                    RearWheelSizeLevel = Page8UI.CurrentRearWheelLevel,
+                    IndividualWheelMode = Page8UI.IsIndividualWheelMode,
+
+                    // Suspension HUD
+                    SuspensionHUDEnabled = SuspensionHUD.Enabled,
+
+                    // Brake Fade
+                    BrakeFadeEnabled = BrakeFade.Enabled,
                 };
 
                 string json = JsonUtility.ToJson(data, true);
@@ -263,11 +275,26 @@ namespace DescendersModMenu.BikeStats
                 Page9UI.CurrentPlayerScale = data.PlayerScale;
                 // These will be applied by the scene reapply system when Player_Human exists
                 // Direct apply attempted here in case player already exists:
-                if (data.BikeScale != 1f) try { Page8UI.ApplyBikeScale(data.BikeScale); } catch { }
-                if (data.PlayerScale != 1f) try { Page9UI.ApplyPlayerScale(data.PlayerScale); } catch { }
+                if (data.BikeSizeLevel != 10) try { Page8UI.ApplyBikeSizeLevel(data.BikeSizeLevel); } catch { }
+                else if (data.BikeScale != 1f) try { Page8UI.ApplyBikeScale(data.BikeScale); } catch { } // legacy
+                if (data.PlayerSizeLevel != 10) try { Page9UI.ApplyPlayerSizeLevel(data.PlayerSizeLevel); } catch { }
+                else if (data.PlayerScale != 1f) try { Page9UI.ApplyPlayerScale(data.PlayerScale); } catch { } // legacy
                 if (data.InvisibleBikeEnabled) try { Page8UI.SetInvisibleBike(true); } catch { }
                 if (data.InvisiblePlayerEnabled) try { Page9UI.SetInvisiblePlayer(true); } catch { }
-                if (data.WheelSizeEnabled) try { Page8UI.ApplyWheelSize(true, data.WheelSizeMode); } catch { }
+                if (data.IndividualWheelMode)
+                {
+                    try { Page8UI.ApplyIndividualWheelFromSave(data.FrontWheelSizeLevel, data.RearWheelSizeLevel); } catch { }
+                }
+                else if (data.WheelSizeEnabled)
+                {
+                    try { Page8UI.ApplyWheelSizeFromSave(true, data.WheelSizeLevel, data.WheelSizeMode); } catch { }
+                }
+
+                // Suspension HUD
+                if (data.SuspensionHUDEnabled && !SuspensionHUD.Enabled) SuspensionHUD.Toggle();
+
+                // Brake Fade
+                if (data.BrakeFadeEnabled && !BrakeFade.Enabled) BrakeFade.Toggle();
 
                 MelonLogger.Msg("[StatsManager] Loaded from: " + SaveFile);
             }
@@ -379,11 +406,11 @@ namespace DescendersModMenu.BikeStats
                 // Bike / Player Scale
                 Page8UI.CurrentBikeScale = 1f;
                 Page9UI.CurrentPlayerScale = 1f;
-                try { Page8UI.ApplyBikeScale(1f); } catch { }
-                try { Page9UI.ApplyPlayerScale(1f); } catch { }
+                try { Page8UI.ApplyBikeSizeLevel(10); } catch { }
+                try { Page9UI.ApplyPlayerSizeLevel(10); } catch { }
                 if (Page8UI.IsInvisibleBike) try { Page8UI.SetInvisibleBike(false); } catch { }
                 if (Page9UI.IsInvisiblePlayer) try { Page9UI.SetInvisiblePlayer(false); } catch { }
-                if (Page8UI.IsWheelSizeEnabled) try { Page8UI.ApplyWheelSize(false, 0); } catch { }
+                try { Page8UI.ResetWheelSize(); } catch { }
 
                 // Graphics — always reset to defaults (not saved)
                 if (!GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
@@ -403,6 +430,8 @@ namespace DescendersModMenu.BikeStats
                 SkyColours.SetRainIntensityLevel(5);
 
                 SessionHUD.Enabled = false;
+                if (SuspensionHUD.Enabled) SuspensionHUD.Toggle();
+                if (BrakeFade.Enabled) BrakeFade.Toggle();
 
                 // Modes — always reset (not saved)
                 if (AvalancheMode.Enabled) AvalancheMode.Reset();

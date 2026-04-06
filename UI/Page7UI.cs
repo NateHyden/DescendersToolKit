@@ -85,6 +85,7 @@ namespace DescendersModMenu.UI
                 crt.pivot = new Vector2(0.5f, 1);
                 crt.sizeDelta = new Vector2(0, 0);
                 scrollRect.content = crt;
+                UIHelpers.AddScrollbar(scrollRect);
 
                 var csf = content.AddComponent<ContentSizeFitter>();
                 csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
@@ -223,6 +224,84 @@ namespace DescendersModMenu.UI
                     try { DevCommandsGameplay.SkipSong(); }
                     catch (System.Exception ex) { MelonLogger.Error("[SkipSong]: " + ex.Message); }
                 }, 60);
+
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("Gravity", UIHelpers.StarBtn(gr.transform, "Gravity", () => FavouritesManager.Toggle("Gravity")));
+                FavouritesManager.RegisterStarButton("TimeOfDay", UIHelpers.StarBtn(tr.transform, "TimeOfDay", () => FavouritesManager.Toggle("TimeOfDay")));
+                FavouritesManager.RegisterStarButton("TurboWind", UIHelpers.StarBtn(wr.transform, "TurboWind", () => FavouritesManager.Toggle("TurboWind")));
+                FavouritesManager.RegisterStarButton("ExplodingProps", UIHelpers.StarBtn(er.transform, "ExplodingProps", () => FavouritesManager.Toggle("ExplodingProps")));
+                FavouritesManager.RegisterStarButton("Storm", UIHelpers.StarBtn(stmr.transform, "Storm", () => FavouritesManager.Toggle("Storm")));
+                FavouritesManager.RegisterStarButton("Trees", UIHelpers.StarBtn(ter.transform, "Trees", () => FavouritesManager.Toggle("Trees")));
+                FavouritesManager.RegisterStarButton("Music", UIHelpers.StarBtn(mur.transform, "Music", () => FavouritesManager.Toggle("Music")));
+                FavouritesManager.RegisterStarButton("Fog", UIHelpers.StarBtn(fogr.transform, "Fog", () => FavouritesManager.Toggle("Fog")));
+                FavouritesManager.RegisterStarButton("SkyColour", UIHelpers.StarBtn(skpr.transform, "SkyColour", () => FavouritesManager.Toggle("SkyColour")));
+
+                // ── FACTORY REGISTRATIONS (World tab mods) ─────────────
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Gravity", DisplayName = "Gravity", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "Gravity", "Gravity",
+                        () => Gravity.Level, () => Gravity.Increase(), () => Gravity.Decrease(),
+                        () => (Gravity.Level - 1) / 9f, () => RefreshAll(),
+                        () => Gravity.DisplayValue, () => Gravity.Level != 5),
+                    IsActive = () => Gravity.Level != 5
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "TimeOfDay", DisplayName = "Time of Day", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "TimeOfDay", "Time of Day",
+                        () => TimeOfDay.Level, () => TimeOfDay.Increase(), () => TimeOfDay.Decrease(),
+                        () => (TimeOfDay.Level - 1) / 9f, () => RefreshAll(),
+                        () => TimeOfDay.DisplayValue, null),
+                    IsActive = () => false
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "ExplodingProps", DisplayName = "Exploding Props", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ExplodingProps", "Exploding Props",
+                        () => ExplodingProps.Enabled, () => { ExplodingProps.Toggle(); _explodingProps = ExplodingProps.Enabled; }, () => RefreshAll()),
+                    IsActive = () => ExplodingProps.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "TurboWind", DisplayName = "Turbo Wind", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "TurboWind", "Turbo Wind",
+                        () => _turboWind, () => { _turboWind = !_turboWind; ToggleTurboWind(_turboWind); }, () => RefreshAll()),
+                    IsActive = () => _turboWind
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Storm", DisplayName = "Storm", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Storm", "Storm",
+                        () => SkyColours.StormEnabled, () => SkyColours.ToggleStorm(), () => RefreshAll()),
+                    IsActive = () => SkyColours.StormEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Trees", DisplayName = "Trees & Foliage", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Trees", "Trees & Foliage",
+                        () => !TreesEnabled, () => { TreesEnabled = !TreesEnabled; ToggleTrees(TreesEnabled); }, () => RefreshAll()),
+                    IsActive = () => !TreesEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Music", DisplayName = "Music", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Music", "Music",
+                        () => !MusicEnabled, () => { MusicEnabled = !MusicEnabled; ToggleMusic(MusicEnabled); }, () => RefreshAll()),
+                    IsActive = () => !MusicEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Fog", DisplayName = "Fog", TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Fog", "Fog",
+                        () => !FogEnabled, () => { FogEnabled = !FogEnabled; ToggleFog(FogEnabled); }, () => RefreshAll()),
+                    IsActive = () => !FogEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "SkyColour", DisplayName = "Sky Colour", TabBadge = "WORLD",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Colour", p);
+                        UIHelpers.ActionBtn(row.transform, "Default", () => { SkyColours.RestoreDefault(); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 50);
+                        UIHelpers.ActionBtn(row.transform, "Blood Red", () => { SkyColours.ApplyPreset(1); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 58);
+                        UIHelpers.ActionBtn(row.transform, "Alien", () => { SkyColours.ApplyPreset(2); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 40);
+                        UIHelpers.ActionBtn(row.transform, "Synthwave", () => { SkyColours.ApplyPreset(3); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 60);
+                        UIHelpers.ActionBtn(row.transform, "Midnight", () => { SkyColours.ApplyPreset(4); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 55);
+                        UIHelpers.ActionBtn(row.transform, "Toxic", () => { SkyColours.ApplyPreset(5); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 40);
+                    },
+                    IsActive = () => SkyColours.CurrentPreset != 0
+                });
 
                 RefreshAll();
                 UIHelpers.AddScrollForwarders(pg7);

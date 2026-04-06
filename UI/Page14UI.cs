@@ -38,6 +38,7 @@ namespace DescendersModMenu.UI
                 crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
                 crt.pivot = new Vector2(0.5f, 1); crt.sizeDelta = Vector2.zero;
                 sr.content = crt;
+                UIHelpers.AddScrollbar(sr);
                 content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 var vlg = content.AddComponent<VerticalLayoutGroup>();
                 vlg.spacing = UIHelpers.RowGap;
@@ -119,6 +120,15 @@ namespace DescendersModMenu.UI
                 var clrLe = clearBtn.gameObject.AddComponent<LayoutElement>();
                 clrLe.preferredWidth = 160; clrLe.minWidth = 160;
                 clrLe.preferredHeight = 32; clrLe.minHeight = 32;
+
+                // ── STAR BUTTON (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("GhostReplay", UIHelpers.StarBtn(enableRow.transform, "GhostReplay", () => FavouritesManager.Toggle("GhostReplay")));
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "GhostReplay", DisplayName = "Ghost Replay", TabBadge = "TOOLS",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "GhostReplay", "Ghost Replay",
+                        () => GhostReplay.Enabled, () => GhostReplay.Toggle(), () => RefreshAll()),
+                    IsActive = () => GhostReplay.Enabled
+                });
 
                 UIHelpers.AddScrollForwarders(c);
                 RefreshAll();

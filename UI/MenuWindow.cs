@@ -53,17 +53,17 @@ namespace DescendersModMenu.UI
         // No Speed Cap
         private static Image capBg, capBdr; private static Text capTxt;
         // ── Pages ─────────────────────────────────────────────────────
-        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15, pg16;
+        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15, pg16, pg17;
         private static int cur = 1;
 
-        private static readonly int[] PageOrder = { 1, 16, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
-        private static readonly string[] NavLabels = { "General", "Session", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info/Customise" };
-        private static readonly string[] GroupLabels = { "BIKE", null, null, null, "WORLD", null, "TOOLS", null, null, null, null, null, "SYSTEM", null, null, null };
+        private static readonly int[] PageOrder = { 17, 1, 16, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
+        private static readonly string[] NavLabels = { "\u2605 Favourites", "General", "Session", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info/Customise" };
+        private static readonly string[] GroupLabels = { null, "SEP", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null };
 
-        private static Image[] _navBars = new Image[16];
-        private static Text[] _navTxts = new Text[16];
-        private static Image[] _navBgs = new Image[16];
-        private static Image[] _activeDots = new Image[16];
+        private static Image[] _navBars = new Image[17];
+        private static Text[] _navTxts = new Text[17];
+        private static Image[] _navBgs = new Image[17];
+        private static Image[] _activeDots = new Image[17];
         private static UnityEngine.UI.Image _infoTabDot;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
@@ -82,6 +82,7 @@ namespace DescendersModMenu.UI
             {
                 if (UIHelpers.GetFont() == null) { MelonLogger.Error("Font null"); return null; }
                 cur = 1;
+                FavouritesManager.ClearStarButtons();
 
                 var cv = new GameObject("DescendersMenu");
                 var c = cv.AddComponent<Canvas>();
@@ -104,7 +105,8 @@ namespace DescendersModMenu.UI
                 win.AddComponent<Mask>().showMaskGraphic = true;
 
                 // Header
-                var hdr = UIHelpers.Panel("Hdr", win.transform, UIHelpers.HeaderBg);
+                // Header panel transparent — win provides uniform background, text/buttons define the header
+                var hdr = UIHelpers.Panel("Hdr", win.transform, new Color(0f, 0f, 0f, 0f));
                 var hrt = UIHelpers.RT(hdr);
                 hrt.anchorMin = new Vector2(0, 1); hrt.anchorMax = new Vector2(1, 1);
                 hrt.pivot = new Vector2(.5f, 1);
@@ -146,7 +148,7 @@ namespace DescendersModMenu.UI
                 var vbBdr = UIHelpers.Panel("VBBdr", verBadge.transform, UIHelpers.AccentBdr, UIHelpers.BtnSp);
                 vbBdr.GetComponent<Image>().raycastTarget = false; UIHelpers.Fill(UIHelpers.RT(vbBdr));
                 vbBdr.AddComponent<LayoutElement>().ignoreLayout = true;
-                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v3.7.0", 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                var verTxt = UIHelpers.Txt("VT", verBadge.transform, "v" + BuildInfo.Version, 10, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                 UIHelpers.Fill(UIHelpers.RT(verTxt.gameObject));
 
                 // "Created by NateHyden" — pinned to top-right corner
@@ -158,15 +160,15 @@ namespace DescendersModMenu.UI
                 byrt.anchoredPosition = new Vector2(-8, -3);
                 byrt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
 
-                // ── Update status (below Created by in header) ────
+                // ── Update status — pinned top-right, always visible ────
                 var usTxt = UIHelpers.Txt("UST", hdr.transform,
-                    "", 9, FontStyle.Normal, TextAnchor.UpperRight, UIHelpers.TextMid);
+                    "checking...", 10, FontStyle.Bold, TextAnchor.UpperRight, UIHelpers.TextDim);
                 _updateStatusText = usTxt;
                 var usrt = UIHelpers.RT(usTxt.gameObject);
                 usrt.anchorMin = new Vector2(1, 1); usrt.anchorMax = new Vector2(1, 1);
                 usrt.pivot = new Vector2(1, 1);
-                usrt.sizeDelta = new Vector2(200, 14);
-                usrt.anchoredPosition = new Vector2(-8, -18);
+                usrt.sizeDelta = new Vector2(220, 16);
+                usrt.anchoredPosition = new Vector2(-8, -19);
                 usTxt.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
 
                 // SAVE / LOAD / RESET — centred in the gap between version badge and "Created by"
@@ -183,7 +185,8 @@ namespace DescendersModMenu.UI
                 bodyRT.offsetMin = new Vector2(0, 0); bodyRT.offsetMax = new Vector2(0, -UIHelpers.HeaderH);
 
                 // Sidebar
-                var sidebar = UIHelpers.Panel("Sidebar", body.transform, UIHelpers.SidebarBg);
+                // Sidebar panel transparent — nav indicators and text define it visually
+                var sidebar = UIHelpers.Panel("Sidebar", body.transform, new Color(0f, 0f, 0f, 0f));
                 var sibRT = UIHelpers.RT(sidebar);
                 sibRT.anchorMin = Vector2.zero; sibRT.anchorMax = new Vector2(0, 1);
                 sibRT.offsetMin = Vector2.zero; sibRT.offsetMax = new Vector2(UIHelpers.SidebarW, 0);
@@ -213,8 +216,22 @@ namespace DescendersModMenu.UI
                 sVlg.childAlignment = TextAnchor.UpperCenter;
                 sVlg.childForceExpandWidth = true; sVlg.childForceExpandHeight = false;
 
-                for (int i = 0; i < 16; i++)
+                for (int i = 0; i < 17; i++)
                 {
+                    // ── Group separator ────────────────────────────────
+                    if (GroupLabels[i] != null)
+                    {
+                        var sep = UIHelpers.Obj("Sep" + i, sibContent.transform);
+                        var sepLe = sep.AddComponent<LayoutElement>();
+                        sepLe.preferredHeight = 18; sepLe.minHeight = 18; sepLe.flexibleHeight = 0;
+                        var sepLine = UIHelpers.Panel("SepLine", sep.transform, UIHelpers.RowBorder);
+                        var slRT = UIHelpers.RT(sepLine);
+                        slRT.anchorMin = new Vector2(0.1f, 0.5f); slRT.anchorMax = new Vector2(0.9f, 0.5f);
+                        slRT.pivot = new Vector2(0.5f, 0.5f); slRT.sizeDelta = new Vector2(0, 1);
+                        slRT.anchoredPosition = Vector2.zero;
+                        sepLine.AddComponent<LayoutElement>().ignoreLayout = true;
+                    }
+
                     int navIdx = i;
                     int pageNum = PageOrder[i];
                     var item = UIHelpers.Obj("Nav" + i, sibContent.transform);
@@ -296,6 +313,8 @@ namespace DescendersModMenu.UI
 
                 pg16 = UIHelpers.Obj("P16", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg16)); PageSessionUI.CreatePage(pg16.transform);
 
+                pg17 = UIHelpers.Obj("P17", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg17)); PageFavsUI.CreatePage(pg17.transform);
+
                 RefreshAll(); RefreshTabs();
                 Mods.MenuCustomiser.LoadFromFile();
                 cv.SetActive(false);
@@ -325,6 +344,7 @@ namespace DescendersModMenu.UI
             crt.anchorMin = new Vector2(0, 1); crt.anchorMax = new Vector2(1, 1);
             crt.pivot = new Vector2(0.5f, 1); crt.sizeDelta = new Vector2(0, 0);
             sr.content = crt;
+            UIHelpers.AddScrollbar(sr);
             content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
             var vlg = content.AddComponent<VerticalLayoutGroup>();
             vlg.spacing = UIHelpers.RowGap;
@@ -403,7 +423,7 @@ namespace DescendersModMenu.UI
             landVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
             UIHelpers.SmallBtn(lr.transform, "-", () => { LandingImpact.Decrease(); RefreshAll(); });
             UIHelpers.SmallBtn(lr.transform, "+", () => { LandingImpact.Increase(); RefreshAll(); });
-            UIHelpers.InfoBox(pg, "Raises the impact speed required to bail. Level 10 = almost impossible to fall off.");
+            UIHelpers.InfoBox(pg, "Raises the impact speed required to bail. Level 200 = almost impossible to fall off.");
 
             // ── No Bail ───────────────────────────────────────────────
             var nr = UIHelpers.StatRow("No Bail", pg);
@@ -510,6 +530,179 @@ namespace DescendersModMenu.UI
             }, 60);
             UIHelpers.InfoBox(pg, "Launch: fires you forward at high speed.");
 
+            // ── STAR BUTTONS (Favourites) ──────────────────────────────
+            FavouritesManager.RegisterStarButton("Acceleration", UIHelpers.StarBtn(ar.transform, "Acceleration", () => FavouritesManager.Toggle("Acceleration")));
+            FavouritesManager.RegisterStarButton("MaxSpeed", UIHelpers.StarBtn(mst.transform, "MaxSpeed", () => FavouritesManager.Toggle("MaxSpeed")));
+            FavouritesManager.RegisterStarButton("NoSpeedCap", UIHelpers.StarBtnAbs(cap.transform, "NoSpeedCap", () => FavouritesManager.Toggle("NoSpeedCap")));
+            FavouritesManager.RegisterStarButton("LandingImpact", UIHelpers.StarBtn(lr.transform, "LandingImpact", () => FavouritesManager.Toggle("LandingImpact")));
+            FavouritesManager.RegisterStarButton("NoBail", UIHelpers.StarBtn(nr.transform, "NoBail", () => FavouritesManager.Toggle("NoBail")));
+            FavouritesManager.RegisterStarButton("AutoBalance", UIHelpers.StarBtn(abTogRow.transform, "AutoBalance", () => FavouritesManager.Toggle("AutoBalance")));
+            FavouritesManager.RegisterStarButton("FOV", UIHelpers.StarBtn(fr.transform, "FOV", () => FavouritesManager.Toggle("FOV")));
+            FavouritesManager.RegisterStarButton("SlowMotion", UIHelpers.StarBtn(smr.transform, "SlowMotion", () => FavouritesManager.Toggle("SlowMotion")));
+            FavouritesManager.RegisterStarButton("SlowMoOnBail", UIHelpers.StarBtn(smobr.transform, "SlowMoOnBail", () => FavouritesManager.Toggle("SlowMoOnBail")));
+            FavouritesManager.RegisterStarButton("NoSpeedWobbles", UIHelpers.StarBtn(nswr.transform, "NoSpeedWobbles", () => FavouritesManager.Toggle("NoSpeedWobbles")));
+            FavouritesManager.RegisterStarButton("QuickBrake", UIHelpers.StarBtn(brakeRow.transform, "QuickBrake", () => FavouritesManager.Toggle("QuickBrake")));
+            FavouritesManager.RegisterStarButton("BikeSwitcher", UIHelpers.StarBtn(br.transform, "BikeSwitcher", () => FavouritesManager.Toggle("BikeSwitcher")));
+            FavouritesManager.RegisterStarButton("Launch", UIHelpers.StarBtn(qar.transform, "Launch", () => FavouritesManager.Toggle("Launch")));
+
+            // ── FACTORY REGISTRATIONS (General tab mods) ───────────────
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "Acceleration",
+                DisplayName = "Acceleration",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "Acceleration", "Acceleration",
+                    () => Mods.Acceleration.Enabled, () => Mods.Acceleration.Toggle(),
+                    () => Mods.Acceleration.Level, () => Mods.Acceleration.Increase(), () => Mods.Acceleration.Decrease(),
+                    10, () => (Mods.Acceleration.Level - 1) / 9f, () => RefreshAll()),
+                IsActive = () => Mods.Acceleration.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "MaxSpeed",
+                DisplayName = "Max Speed",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "MaxSpeed", "Max Speed",
+                    () => Mods.MaxSpeedMultiplier.Enabled, () => Mods.MaxSpeedMultiplier.Toggle(),
+                    () => Mods.MaxSpeedMultiplier.Level, () => Mods.MaxSpeedMultiplier.Increase(), () => Mods.MaxSpeedMultiplier.Decrease(),
+                    10, () => (Mods.MaxSpeedMultiplier.Level - 1) / 9f, () => RefreshAll()),
+                IsActive = () => Mods.MaxSpeedMultiplier.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "NoSpeedCap",
+                DisplayName = "No Speed Cap",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "NoSpeedCap", "No Speed Cap",
+                    () => Mods.NoSpeedCap.Enabled, () => Mods.NoSpeedCap.Toggle(), () => RefreshAll()),
+                IsActive = () => Mods.NoSpeedCap.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "LandingImpact",
+                DisplayName = "Landing Impact",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "LandingImpact", "Landing Impact",
+                    () => Mods.LandingImpact.Enabled, () => Mods.LandingImpact.Toggle(),
+                    () => Mods.LandingImpact.Level, () => Mods.LandingImpact.Increase(), () => Mods.LandingImpact.Decrease(),
+                    10, () => (Mods.LandingImpact.Level - 1) / 9f, () => RefreshAll(),
+                    () => Mods.LandingImpact.DisplayValue),
+                IsActive = () => Mods.LandingImpact.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "NoBail",
+                DisplayName = "No Bail",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "NoBail", "No Bail",
+                    () => Mods.NoBail.Enabled, () => Mods.NoBail.Toggle(), () => RefreshAll()),
+                IsActive = () => Mods.NoBail.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "AutoBalance",
+                DisplayName = "Auto Balance",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "AutoBalance", "Auto Balance",
+                    () => Mods.AutoBalance.Enabled, () => Mods.AutoBalance.Toggle(),
+                    () => Mods.AutoBalance.StrengthLevel, () => Mods.AutoBalance.StrengthIncrease(), () => Mods.AutoBalance.StrengthDecrease(),
+                    10, () => (Mods.AutoBalance.StrengthLevel - 1) / 9f, () => RefreshAll()),
+                IsActive = () => Mods.AutoBalance.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "FOV",
+                DisplayName = "FOV",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "FOV", "FOV",
+                    () => Mods.FOV.Enabled, () => Mods.FOV.Toggle(),
+                    () => Mods.FOV.Level, () => Mods.FOV.Increase(), () => Mods.FOV.Decrease(),
+                    10, () => (Mods.FOV.Level - 1) / 9f, () => RefreshAll(),
+                    () => Mods.FOV.DisplayValue),
+                IsActive = () => Mods.FOV.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "SlowMotion",
+                DisplayName = "Slow Motion",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "SlowMotion", "Slow Motion",
+                    () => Mods.SlowMotion.Enabled, () => Mods.SlowMotion.Toggle(),
+                    () => Mods.SlowMotion.Level, () => Mods.SlowMotion.Increase(), () => Mods.SlowMotion.Decrease(),
+                    9, () => (Mods.SlowMotion.Level - 1) / 8f, () => RefreshAll(),
+                    () => Mods.SlowMotion.DisplayValue),
+                IsActive = () => Mods.SlowMotion.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "SlowMoOnBail",
+                DisplayName = "Slow Mo On Bail",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "SlowMoOnBail", "Slow Mo On Bail",
+                    () => Mods.SlowMoOnBail.Enabled, () => Mods.SlowMoOnBail.Toggle(), () => RefreshAll()),
+                IsActive = () => Mods.SlowMoOnBail.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "NoSpeedWobbles",
+                DisplayName = "No Speed Wobbles",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "NoSpeedWobbles", "No Speed Wobbles",
+                    () => Mods.GameModifierMods.NoSpeedWobblesEnabled, () => Mods.GameModifierMods.NoSpeedWobblesToggle(), () => RefreshAll()),
+                IsActive = () => Mods.GameModifierMods.NoSpeedWobblesEnabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "QuickBrake",
+                DisplayName = "Quick Brake",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "QuickBrake", "Quick Brake",
+                    () => Mods.QuickBrake.Enabled, () => Mods.QuickBrake.Toggle(),
+                    () => Mods.QuickBrake.Level, () => Mods.QuickBrake.Increase(), () => Mods.QuickBrake.Decrease(),
+                    10, () => (Mods.QuickBrake.Level - 1) / 9f, () => RefreshAll()),
+                IsActive = () => Mods.QuickBrake.Enabled
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "BikeSwitcher",
+                DisplayName = "Bike Switcher",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => {
+                    var row = UIHelpers.StatRow("Bike", fp);
+                    UIHelpers.SmallBtn(row.transform, "\u25C0", () => { Mods.BikeSwitcher.PreviousBike(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    var bv = UIHelpers.Txt("FBV", row.transform, "Enduro", 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                    bv.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
+                    UIHelpers.SmallBtn(row.transform, "\u25B6", () => { Mods.BikeSwitcher.NextBike(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    FavouritesManager.RegisterRefresh("BikeSwitcher", () => {
+                        if (bv) { switch (Mods.BikeSwitcher.CurrentBikeIndex) { case 0: bv.text = "Enduro"; break; case 1: bv.text = "Downhill"; break; case 2: bv.text = "Hardtail"; break; case 3: bv.text = "BRNZL Enduro"; break; default: bv.text = "Unknown"; break; } }
+                    });
+                },
+                IsActive = () => false
+            });
+            FavouritesManager.Register(new ModFavEntry
+            {
+                Id = "Launch",
+                DisplayName = "Super Launch",
+                TabBadge = "GENERAL",
+                BuildControls = (fp) => {
+                    var row = UIHelpers.StatRow("Actions", fp);
+                    UIHelpers.ActionBtn(row.transform, "Launch", () => {
+                        try
+                        {
+                            GameObject player = GameObject.Find("Player_Human");
+                            if ((object)player == null) return;
+                            Vehicle v = player.GetComponent<Vehicle>();
+                            if ((object)v == null) return;
+                            var setVel = typeof(Vehicle).GetMethod("SetVelocity", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                            if ((object)setVel == null) return;
+                            setVel.Invoke(v, new object[] { player.transform.forward * 80f + Vector3.up * 20f });
+                        }
+                        catch (System.Exception ex) { MelonLogger.Error("[SuperLaunch] " + ex.Message); }
+                    }, 60);
+                },
+                IsActive = () => false
+            });
+
             UIHelpers.AddScrollForwarders(content.transform);
         }
 
@@ -567,6 +760,7 @@ namespace DescendersModMenu.UI
                     case 13: return PageModesUI.IsAnyActive;
                     case 14: return Mods.GhostReplay.Enabled;
                     case 16: return PageSessionUI.IsAnyActive;
+                    case 17: return PageFavsUI.IsAnyActive;
                     default: return false;
                 }
             }
@@ -588,8 +782,10 @@ namespace DescendersModMenu.UI
             if (pg13) pg13.SetActive(cur == 13); if (pg14) pg14.SetActive(cur == 14);
             if (pg15) pg15.SetActive(cur == 15);
             if (pg16) pg16.SetActive(cur == 16);
+            if (pg17) pg17.SetActive(cur == 17);
+            if (cur == 17) PageFavsUI.CheckDirty();
 
-            for (int i = 0; i < 16; i++)
+            for (int i = 0; i < 17; i++)
             {
                 bool on = PageOrder[i] == cur;
                 bool active = IsPageActive(PageOrder[i]);
@@ -699,6 +895,10 @@ namespace DescendersModMenu.UI
             // ── Speedrun Timer ────────────────────────────────────────
             // ── Session live values ───────────────────────────────────
             PageSessionUI.RefreshAll();
+
+            // ── Favourites sync ───────────────────────────────────────
+            PageFavsUI.RefreshFavourites();
+            FavouritesManager.RefreshAllStars();
         }
 
         private static void FlashHeader(Image img)
@@ -711,27 +911,30 @@ namespace DescendersModMenu.UI
             img.color = UIHelpers.OnColor;
         }
 
-        private static bool _updateStatusSet = false;
-
         public static void TickLive()
         {
             PageSessionUI.TickLive();
 
-            // Update status text once check completes
-            if (!_updateStatusSet && UpdateChecker.CheckComplete && (object)_updateStatusText != null)
+            // Update status — reapplied every tick so it survives menu rebuilds after scene changes
+            if ((object)_updateStatusText != null)
             {
-                _updateStatusSet = true;
-                if (UpdateChecker.UpdateAvailable)
+                if (!UpdateChecker.CheckComplete)
                 {
-                    _updateStatusText.text = "\u25B2 v" + UpdateChecker.LatestVersion + " available!";
-                    _updateStatusText.color = UIHelpers.OnColor;
+                    _updateStatusText.text = "checking for updates...";
+                    _updateStatusText.color = UIHelpers.TextDim;
+                    _updateStatusText.fontStyle = FontStyle.Normal;
+                }
+                else if (UpdateChecker.UpdateAvailable)
+                {
+                    _updateStatusText.text = "\u25B2 v" + UpdateChecker.LatestVersion + " available";
+                    _updateStatusText.color = new UnityEngine.Color(1f, 0.20f, 0.20f, 1f); // red
                     _updateStatusText.fontStyle = FontStyle.Bold;
-                    MelonLogger.Msg("[UpdateChecker] v" + UpdateChecker.LatestVersion + " available.");
                 }
                 else
                 {
-                    _updateStatusText.text = "\u2713 Up to date";
-                    _updateStatusText.color = UIHelpers.TextMid;
+                    _updateStatusText.text = "\u2713 v" + BuildInfo.Version + " up to date";
+                    _updateStatusText.color = UIHelpers.OnColor; // lime green
+                    _updateStatusText.fontStyle = FontStyle.Normal;
                 }
             }
 

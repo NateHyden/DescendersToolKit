@@ -16,9 +16,40 @@ namespace DescendersModMenu.UI
 
         // Public accessors for snapshot/save system
         public static float CurrentBikeScale = 1f;
+
+        // ── Size level arrays (level 1–20, 10 = default) ─────────────
+        private static readonly float[] BikeScales = {
+            0.10f, 0.15f, 0.20f, 0.30f, 0.40f, 0.55f, 0.70f, 0.85f, 0.92f, 1.00f,
+            1.20f, 1.50f, 1.80f, 2.20f, 2.60f, 3.00f, 3.50f, 4.00f, 5.00f, 6.00f
+        };
+        private static readonly float[] WheelScaleLevels = {
+            0.10f, 0.15f, 0.20f, 0.25f, 0.35f, 0.50f, 0.65f, 0.75f, 0.90f, 1.00f,
+            1.20f, 1.50f, 1.80f, 2.20f, 2.60f, 3.00f, 3.50f, 4.00f, 5.00f, 6.00f
+        };
+
+        private static int _bikeSizeLevel = 10;
+        private static int _wheelSizeLevel = 10;
+        private static Text _bikeSizeLvlVal;
+        private static UnityEngine.UI.Button _bikeSizeMinus, _bikeSizePlus;
+        private static Text _wheelSizeLvlVal;
+        private static UnityEngine.UI.Button _wheelSizeMinus2, _wheelSizePlus2;
+
+        // ── Individual front/rear wheel size ─────────────────────────
+        private static int _frontWheelLevel = 10;
+        private static int _rearWheelLevel = 10;
+        private static bool _individualWheelMode = false; // true = front/rear override both-wheels
+        private static Text _frontWheelLvlVal;
+        private static Text _rearWheelLvlVal;
+        // Note: front/rear stepper buttons not stored — no interactable control needed
+        private static GameObject _frontWheelRow, _rearWheelRow;
+        public static int CurrentFrontWheelLevel => _frontWheelLevel;
+        public static int CurrentRearWheelLevel => _rearWheelLevel;
+        public static bool IsIndividualWheelMode => _individualWheelMode;
         public static bool IsInvisibleBike => _invisibleBike;
         public static bool IsWheelSizeEnabled => _wheelSizeEnabled;
-        public static int CurrentWheelSizeMode => _wheelSizeMode;
+        public static int CurrentWheelSizeLevel => _wheelSizeLevel;
+        public static int CurrentBikeSizeLevel => _bikeSizeLevel;
+        public static int CurrentWheelSizeMode => _wheelSizeMode; // kept for compat
         private static Renderer[] _hiddenBikeRenderers = null;
         private static Image _invisBikeTrack; private static RectTransform _invisBikeKnob;
         private static Text _invisBikeVal;
@@ -60,6 +91,16 @@ namespace DescendersModMenu.UI
         private static GameObject _invisBikeRow, _wheelSizeRow, _wideTyresRow, _stickyRow;
         private static GameObject _revSteerRow, _iceModeRow, _cutBrakesRow, _torchRow;
 
+        // ── Suspension HUD (Telemetry) ────────────────────────────────
+        private static GameObject _shRow;
+        private static Text _shVal;
+        private static Image _shTrack; private static RectTransform _shKnob;
+
+        // ── Brake Fade (Telemetry) ────────────────────────────────────
+        private static GameObject _bfRow;
+        private static Text _bfVal;
+        private static Image _bfTrack; private static RectTransform _bfKnob;
+
         // ── Wheel Size internals ──────────────────────────────────────
         private static readonly float[] WheelScales = { 1.0f, 0.25f, 0.5f, 1.5f, 3.0f };
         private static readonly string[] WheelLabels = { "Default", "Tiny", "Small", "Large", "Huge" };
@@ -93,7 +134,7 @@ namespace DescendersModMenu.UI
             _wheelSizeEnabled || _invisibleBike ||
             WideTyres.Enabled || StickyTyres.Enabled ||
             ReverseSteering.Enabled || IceMode.Enabled || CutBrakes.Enabled ||
-            BikeTorch.Enabled;
+            BikeTorch.Enabled || SuspensionHUD.Enabled || BrakeFade.Enabled;
 
         public static void GlobalReset()
         {
@@ -131,6 +172,7 @@ namespace DescendersModMenu.UI
                 crt.pivot = new Vector2(0.5f, 1);
                 crt.sizeDelta = new Vector2(0, 0);
                 scrollRect.content = crt;
+                UIHelpers.AddScrollbar(scrollRect);
 
                 content.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 var vlg = content.AddComponent<VerticalLayoutGroup>();
@@ -179,18 +221,22 @@ namespace DescendersModMenu.UI
                 UIHelpers.SectionHeader("BIKE SIZE", pg8);
 
                 var szr = UIHelpers.StatRow("Size", pg8);
-                UIHelpers.ActionBtn(szr.transform, "Colossal", () => SetBikeScale(6.0f), 62);
-                UIHelpers.ActionBtn(szr.transform, "Giant", () => SetBikeScale(3.5f), 50);
-                UIHelpers.ActionBtn(szr.transform, "Huge", () => SetBikeScale(2.5f), 48);
-                UIHelpers.ActionBtn(szr.transform, "Big", () => SetBikeScale(1.5f), 42);
-                UIHelpers.ActionBtn(szr.transform, "Large", () => SetBikeScale(1.25f), 50);
+                _bikeSizeMinus = UIHelpers.SmallBtn(szr.transform, "◀", () =>
+                {
+                    if (_bikeSizeLevel > 1) { _bikeSizeLevel--; ApplyBikeSizeLevel(_bikeSizeLevel); RefreshAll(); }
+                });
+                _bikeSizeLvlVal = UIHelpers.Txt("BsL", szr.transform, _bikeSizeLevel.ToString(), 13,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _bikeSizeLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
+                _bikeSizePlus = UIHelpers.SmallBtn(szr.transform, "▶", () =>
+                {
+                    if (_bikeSizeLevel < 20) { _bikeSizeLevel++; ApplyBikeSizeLevel(_bikeSizeLevel); RefreshAll(); }
+                });
 
-                var szr2 = UIHelpers.StatRow("", pg8);
-                UIHelpers.ActionBtn(szr2.transform, "Default", () => ResetBikeScaleToDefault(), 58);
-                UIHelpers.ActionBtn(szr2.transform, "Medium", () => SetBikeScale(0.75f), 56);
-                UIHelpers.ActionBtn(szr2.transform, "Small", () => SetBikeScale(0.5f), 48);
-                UIHelpers.ActionBtn(szr2.transform, "Tiny", () => SetBikeScale(0.25f), 44);
-                UIHelpers.ActionBtn(szr2.transform, "Micro", () => SetBikeScale(0.1f), 48);
+                UIHelpers.Divider(pg8);
+
+                // Add info box for bike size
+                UIHelpers.InfoBox(pg8, "10 = default size. Lower numbers shrink the bike, higher numbers grow it.");
 
                 UIHelpers.Divider(pg8);
 
@@ -217,15 +263,83 @@ namespace DescendersModMenu.UI
                 UIHelpers.Toggle(gwr.transform, "WsT", () =>
                 {
                     _wheelSizeEnabled = !_wheelSizeEnabled;
-                    if (_wheelSizeEnabled) SetWheelSize(_wheelSizeMode == 0 ? 3 : _wheelSizeMode);
+                    if (_wheelSizeEnabled)
+                    {
+                        _individualWheelMode = false; // both-wheels takes over
+                        ApplyWheelSizeLevel(_wheelSizeLevel);
+                    }
                     else SetWheelSize(0);
                     RefreshAll();
                 }, out _wheelSizeTrack, out _wheelSizeKnob);
-                UIHelpers.ActionBtn(gwr.transform, "Tiny", () => { _wheelSizeMode = 1; if (_wheelSizeEnabled) { SetWheelSize(1); RefreshAll(); } }, 44);
-                UIHelpers.ActionBtn(gwr.transform, "Small", () => { _wheelSizeMode = 2; if (_wheelSizeEnabled) { SetWheelSize(2); RefreshAll(); } }, 50);
-                UIHelpers.ActionBtn(gwr.transform, "Default", () => { _wheelSizeMode = 0; if (_wheelSizeEnabled) { SetWheelSize(0); RefreshAll(); } }, 58);
-                UIHelpers.ActionBtn(gwr.transform, "Large", () => { _wheelSizeMode = 3; if (_wheelSizeEnabled) { SetWheelSize(3); RefreshAll(); } }, 50);
-                UIHelpers.ActionBtn(gwr.transform, "Huge", () => { _wheelSizeMode = 4; if (_wheelSizeEnabled) { SetWheelSize(4); RefreshAll(); } }, 48);
+                _wheelSizeMinus2 = UIHelpers.SmallBtn(gwr.transform, "◀", () =>
+                {
+                    if (_wheelSizeLevel > 1) { _wheelSizeLevel--; if (_wheelSizeEnabled) ApplyWheelSizeLevel(_wheelSizeLevel); RefreshAll(); }
+                });
+                _wheelSizeLvlVal = UIHelpers.Txt("WsL", gwr.transform, _wheelSizeLevel.ToString(), 13,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _wheelSizeLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
+                _wheelSizePlus2 = UIHelpers.SmallBtn(gwr.transform, "▶", () =>
+                {
+                    if (_wheelSizeLevel < 20) { _wheelSizeLevel++; if (_wheelSizeEnabled) ApplyWheelSizeLevel(_wheelSizeLevel); RefreshAll(); }
+                });
+
+                UIHelpers.InfoBox(pg8, "10 = default size. Enable the toggle first, then use ◀ ▶ to adjust. Or set front/rear individually below.");
+
+                // Front Wheel Size
+                _frontWheelRow = UIHelpers.StatRow("Front Wheel Size", pg8);
+                UIHelpers.SmallBtn(_frontWheelRow.transform, "◀", () =>
+                {
+                    if (_frontWheelLevel > 1)
+                    {
+                        _frontWheelLevel--;
+                        _individualWheelMode = true;
+                        if (_wheelSizeEnabled) { _wheelSizeEnabled = false; }
+                        ApplyIndividualWheelLevels();
+                        RefreshAll();
+                    }
+                });
+                _frontWheelLvlVal = UIHelpers.Txt("FwL", _frontWheelRow.transform, _frontWheelLevel.ToString(), 13,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _frontWheelLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
+                UIHelpers.SmallBtn(_frontWheelRow.transform, "▶", () =>
+                {
+                    if (_frontWheelLevel < 20)
+                    {
+                        _frontWheelLevel++;
+                        _individualWheelMode = true;
+                        if (_wheelSizeEnabled) { _wheelSizeEnabled = false; }
+                        ApplyIndividualWheelLevels();
+                        RefreshAll();
+                    }
+                });
+
+                // Rear Wheel Size
+                _rearWheelRow = UIHelpers.StatRow("Rear Wheel Size", pg8);
+                UIHelpers.SmallBtn(_rearWheelRow.transform, "◀", () =>
+                {
+                    if (_rearWheelLevel > 1)
+                    {
+                        _rearWheelLevel--;
+                        _individualWheelMode = true;
+                        if (_wheelSizeEnabled) { _wheelSizeEnabled = false; }
+                        ApplyIndividualWheelLevels();
+                        RefreshAll();
+                    }
+                });
+                _rearWheelLvlVal = UIHelpers.Txt("RwL", _rearWheelRow.transform, _rearWheelLevel.ToString(), 13,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _rearWheelLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
+                UIHelpers.SmallBtn(_rearWheelRow.transform, "▶", () =>
+                {
+                    if (_rearWheelLevel < 20)
+                    {
+                        _rearWheelLevel++;
+                        _individualWheelMode = true;
+                        if (_wheelSizeEnabled) { _wheelSizeEnabled = false; }
+                        ApplyIndividualWheelLevels();
+                        RefreshAll();
+                    }
+                });
 
                 // Wide Tyres
                 _wideTyresRow = UIHelpers.StatRow("Wide Tyres", pg8);
@@ -299,6 +413,150 @@ namespace DescendersModMenu.UI
                     "Enables the bike's headlight. If the game has no built-in light, " +
                     "a spotlight is added to the front of the bike.");
 
+                UIHelpers.Divider(pg8);
+
+                // ── TELEMETRY ─────────────────────────────────────────
+                UIHelpers.SectionHeader("TELEMETRY", pg8);
+
+                _shRow = UIHelpers.StatRow("Suspension HUD", pg8);
+                var shr = _shRow;
+                _shVal = UIHelpers.Txt("ShV", shr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _shVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(shr.transform, "ShT", () => { SuspensionHUD.Toggle(); RefreshAll(); }, out _shTrack, out _shKnob);
+
+                _bfRow = UIHelpers.StatRow("Brake Fade", pg8);
+                var bfr = _bfRow;
+                _bfVal = UIHelpers.Txt("BfV", bfr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _bfVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(bfr.transform, "BfT", () => { BrakeFade.Toggle(); RefreshAll(); }, out _bfTrack, out _bfKnob);
+                UIHelpers.InfoBox(pg8, "Your brake discs overheat from hard braking. Brakes weaken above 150°C and fail completely at 300°C. Let go to cool down — going fast cools them quicker. Watch the top-right HUD.");
+
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                Transform suspHdr = pg8.Find("SUSPENSIONH");
+                if ((object)suspHdr != null)
+                    FavouritesManager.RegisterStarButton("Suspension", UIHelpers.StarBtnAbs(suspHdr, "Suspension", () => FavouritesManager.Toggle("Suspension")));
+                FavouritesManager.RegisterStarButton("BikeSize", UIHelpers.StarBtn(szr.transform, "BikeSize", () => FavouritesManager.Toggle("BikeSize")));
+                FavouritesManager.RegisterStarButton("InvisibleBike", UIHelpers.StarBtn(_invisBikeRow.transform, "InvisibleBike", () => FavouritesManager.Toggle("InvisibleBike")));
+                FavouritesManager.RegisterStarButton("WheelSize", UIHelpers.StarBtn(_wheelSizeRow.transform, "WheelSize", () => FavouritesManager.Toggle("WheelSize")));
+                FavouritesManager.RegisterStarButton("FrontWheelSize", UIHelpers.StarBtn(_frontWheelRow.transform, "FrontWheelSize", () => FavouritesManager.Toggle("FrontWheelSize")));
+                FavouritesManager.RegisterStarButton("RearWheelSize", UIHelpers.StarBtn(_rearWheelRow.transform, "RearWheelSize", () => FavouritesManager.Toggle("RearWheelSize")));
+                FavouritesManager.RegisterStarButton("WideTyres", UIHelpers.StarBtn(_wideTyresRow.transform, "WideTyres", () => FavouritesManager.Toggle("WideTyres")));
+                FavouritesManager.RegisterStarButton("StickyTyres", UIHelpers.StarBtn(_stickyRow.transform, "StickyTyres", () => FavouritesManager.Toggle("StickyTyres")));
+                FavouritesManager.RegisterStarButton("ReverseSteering", UIHelpers.StarBtn(_revSteerRow.transform, "ReverseSteering", () => FavouritesManager.Toggle("ReverseSteering")));
+                FavouritesManager.RegisterStarButton("IceGrip", UIHelpers.StarBtn(_iceModeRow.transform, "IceGrip", () => FavouritesManager.Toggle("IceGrip")));
+                FavouritesManager.RegisterStarButton("CutBrakes", UIHelpers.StarBtn(_cutBrakesRow.transform, "CutBrakes", () => FavouritesManager.Toggle("CutBrakes")));
+                FavouritesManager.RegisterStarButton("BikeTorch", UIHelpers.StarBtn(_torchRow.transform, "BikeTorch", () => FavouritesManager.Toggle("BikeTorch")));
+                FavouritesManager.RegisterStarButton("SuspensionHUD", UIHelpers.StarBtn(_shRow.transform, "SuspensionHUD", () => FavouritesManager.Toggle("SuspensionHUD")));
+                FavouritesManager.RegisterStarButton("BrakeFade", UIHelpers.StarBtn(_bfRow.transform, "BrakeFade", () => FavouritesManager.Toggle("BrakeFade")));
+
+                // ── FACTORY REGISTRATIONS (Bike tab mods) ──────────────
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "Suspension", DisplayName = "Suspension", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildTripleSlider(p, "Suspension",
+                        "Travel", () => Suspension.TravelLevel, () => Suspension.TravelIncrease(), () => Suspension.TravelDecrease(),
+                        "Stiffness", () => Suspension.StiffnessLevel, () => Suspension.StiffnessIncrease(), () => Suspension.StiffnessDecrease(),
+                        "Damping", () => Suspension.DampingLevel, () => Suspension.DampingIncrease(), () => Suspension.DampingDecrease(),
+                        () => (Suspension.TravelLevel - 1) / 9f, () => (Suspension.StiffnessLevel - 1) / 9f, () => (Suspension.DampingLevel - 1) / 9f,
+                        () => RefreshAll(), 5),
+                    IsActive = () => Suspension.TravelLevel != 5 || Suspension.StiffnessLevel != 5 || Suspension.DampingLevel != 5
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "BikeSize", DisplayName = "Bike Size", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildStepper(p, "BikeSize", "Bike Size",
+                        () => _bikeSizeLevel,
+                        () => { if (_bikeSizeLevel > 1) { _bikeSizeLevel--; ApplyBikeSizeLevel(_bikeSizeLevel); } },
+                        () => { if (_bikeSizeLevel < 20) { _bikeSizeLevel++; ApplyBikeSizeLevel(_bikeSizeLevel); } },
+                        1, 20, () => RefreshAll(), 10),
+                    IsActive = () => _bikeSizeLevel != 10
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "InvisibleBike", DisplayName = "Invisible Bike", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "InvisibleBike", "Invisible Bike",
+                        () => _invisibleBike, () => { _invisibleBike = !_invisibleBike; ToggleInvisibleBike(_invisibleBike); }, () => RefreshAll()),
+                    IsActive = () => _invisibleBike
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "WheelSize", DisplayName = "Wheel Size", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleStepper(p, "WheelSize", "Wheel Size",
+                        () => _wheelSizeEnabled,
+                        () => { _wheelSizeEnabled = !_wheelSizeEnabled; if (_wheelSizeEnabled) { _individualWheelMode = false; ApplyWheelSizeLevel(_wheelSizeLevel); } else SetWheelSize(0); },
+                        () => _wheelSizeLevel,
+                        () => { if (_wheelSizeLevel > 1) { _wheelSizeLevel--; if (_wheelSizeEnabled) ApplyWheelSizeLevel(_wheelSizeLevel); } },
+                        () => { if (_wheelSizeLevel < 20) { _wheelSizeLevel++; if (_wheelSizeEnabled) ApplyWheelSizeLevel(_wheelSizeLevel); } },
+                        1, 20, () => RefreshAll(), 10),
+                    IsActive = () => _wheelSizeEnabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "FrontWheelSize", DisplayName = "Front Wheel Size", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildStepper(p, "FrontWheelSize", "Front Wheel Size",
+                        () => _frontWheelLevel,
+                        () => { if (_frontWheelLevel > 1) { _frontWheelLevel--; _individualWheelMode = true; if (_wheelSizeEnabled) _wheelSizeEnabled = false; ApplyIndividualWheelLevels(); } },
+                        () => { if (_frontWheelLevel < 20) { _frontWheelLevel++; _individualWheelMode = true; if (_wheelSizeEnabled) _wheelSizeEnabled = false; ApplyIndividualWheelLevels(); } },
+                        1, 20, () => RefreshAll(), 10),
+                    IsActive = () => _individualWheelMode && _frontWheelLevel != 10
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "RearWheelSize", DisplayName = "Rear Wheel Size", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildStepper(p, "RearWheelSize", "Rear Wheel Size",
+                        () => _rearWheelLevel,
+                        () => { if (_rearWheelLevel > 1) { _rearWheelLevel--; _individualWheelMode = true; if (_wheelSizeEnabled) _wheelSizeEnabled = false; ApplyIndividualWheelLevels(); } },
+                        () => { if (_rearWheelLevel < 20) { _rearWheelLevel++; _individualWheelMode = true; if (_wheelSizeEnabled) _wheelSizeEnabled = false; ApplyIndividualWheelLevels(); } },
+                        1, 20, () => RefreshAll(), 10),
+                    IsActive = () => _individualWheelMode && _rearWheelLevel != 10
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "WideTyres", DisplayName = "Wide Tyres", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "WideTyres", "Wide Tyres",
+                        () => WideTyres.Enabled, () => WideTyres.Toggle(),
+                        () => WideTyres.Level, () => WideTyres.Increase(), () => WideTyres.Decrease(),
+                        20, () => (WideTyres.Level - 1) / 19f, () => RefreshAll()),
+                    IsActive = () => WideTyres.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "StickyTyres", DisplayName = "Sticky Tyres", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "StickyTyres", "Sticky Tyres",
+                        () => StickyTyres.Enabled, () => StickyTyres.Toggle(), () => RefreshAll()),
+                    IsActive = () => StickyTyres.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "ReverseSteering", DisplayName = "Reverse Steering", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ReverseSteering", "Reverse Steering",
+                        () => ReverseSteering.Enabled, () => ReverseSteering.Toggle(), () => RefreshAll()),
+                    IsActive = () => ReverseSteering.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "IceGrip", DisplayName = "Ice Grip", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "IceGrip", "Ice Grip",
+                        () => IceMode.Enabled, () => IceMode.Toggle(), () => RefreshAll()),
+                    IsActive = () => IceMode.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "CutBrakes", DisplayName = "Cut Brakes", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "CutBrakes", "Cut Brakes",
+                        () => CutBrakes.Enabled, () => CutBrakes.Toggle(), () => RefreshAll()),
+                    IsActive = () => CutBrakes.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "BikeTorch", DisplayName = "Bike Torch", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleIntensityStepper(p, "BikeTorch", "Headlight",
+                        () => BikeTorch.Enabled, () => BikeTorch.Toggle(),
+                        () => BikeTorch.IntensityDisplay, () => BikeTorch.PrevIntensity(), () => BikeTorch.NextIntensity(),
+                        () => RefreshAll()),
+                    IsActive = () => BikeTorch.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "SuspensionHUD", DisplayName = "Suspension HUD", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "SuspensionHUD", "Suspension HUD",
+                        () => SuspensionHUD.Enabled, () => SuspensionHUD.Toggle(), () => RefreshAll()),
+                    IsActive = () => SuspensionHUD.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry {
+                    Id = "BrakeFade", DisplayName = "Brake Fade", TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "BrakeFade", "Brake Fade",
+                        () => BrakeFade.Enabled, () => BrakeFade.Toggle(), () => RefreshAll()),
+                    IsActive = () => BrakeFade.Enabled
+                });
+
                 RefreshAll();
                 UIHelpers.AddScrollForwarders(pg8);
             }
@@ -337,7 +595,165 @@ namespace DescendersModMenu.UI
         }
 
         // Called by reapply system to restore bike scale after scene change
-        public static void ApplyBikeScale(float scale) { SetBikeScale(scale); }
+        public static void ApplyBikeScale(float scale) { SetBikeScale(scale); } // kept for compat
+
+        public static void ApplyBikeSizeLevel(int level)
+        {
+            _bikeSizeLevel = Mathf.Clamp(level, 1, 20);
+            if (_bikeSizeLevel == 10) ResetBikeScaleToDefault();
+            else SetBikeScale(BikeScales[_bikeSizeLevel - 1]);
+        }
+
+        // Called by StatsManager on load — uses level if available, falls back to old mode
+        public static void ApplyWheelSizeFromSave(bool enabled, int level, int legacyMode)
+        {
+            _wheelSizeEnabled = enabled;
+            if (level != 10 && level >= 1 && level <= 20)
+                ApplyWheelSizeLevel(level);
+            else if (legacyMode != 0)
+                ApplyWheelSize(enabled, legacyMode);
+            else
+                SetWheelSize(0);
+        }
+
+        public static void ApplyWheelSizeLevel(int level)
+        {
+            _wheelSizeLevel = Mathf.Clamp(level, 1, 20);
+            if (_wheelSizeLevel == 10) SetWheelSize(0);
+            else ApplyWheelScaleDirectly(WheelScaleLevels[_wheelSizeLevel - 1]);
+        }
+
+        // Applies front and rear wheel scales independently
+        public static void ApplyIndividualWheelFromSave(int frontLevel, int rearLevel)
+        {
+            _frontWheelLevel = Mathf.Clamp(frontLevel, 1, 20);
+            _rearWheelLevel = Mathf.Clamp(rearLevel, 1, 20);
+            _individualWheelMode = true;
+            _wheelSizeEnabled = false;
+            ApplyIndividualWheelLevels();
+            MelonLogger.Msg("[Bike] IndividualWheelFromSave F=" + _frontWheelLevel + " R=" + _rearWheelLevel);
+        }
+
+        public static void ApplyIndividualWheelLevels()
+        {
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) return;
+
+                // Cache bone and radius refs if needed
+                Transform bikeModel = player.transform.Find("BikeModel");
+                if ((object)bikeModel != null)
+                {
+                    BikeAnimation bikeAnim = bikeModel.GetComponent<BikeAnimation>();
+                    if ((object)bikeAnim != null)
+                    {
+                        if ((object)_backBoneField == null)
+                            _backBoneField = typeof(BikeAnimation).GetField("YLzyVuM",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if ((object)_frontBoneField == null)
+                            _frontBoneField = typeof(BikeAnimation).GetField("RCNLpue",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if ((object)_frontBoneField != null)
+                        {
+                            Transform fb = _frontBoneField.GetValue(bikeAnim) as Transform;
+                            if ((object)fb != null)
+                            {
+                                float fs = WheelScaleLevels[_frontWheelLevel - 1];
+                                fb.localScale = new Vector3(fs, fs, fs);
+                                _cachedFrontBone = fb;
+                            }
+                        }
+                        if ((object)_backBoneField != null)
+                        {
+                            Transform bb = _backBoneField.GetValue(bikeAnim) as Transform;
+                            if ((object)bb != null)
+                            {
+                                float rs = WheelScaleLevels[_rearWheelLevel - 1];
+                                bb.localScale = new Vector3(rs, rs, rs);
+                                _cachedBackBone = bb;
+                            }
+                        }
+                    }
+                }
+                // Update wheel physics radius per wheel
+                Wheel[] wheels = player.GetComponentsInChildren<Wheel>();
+                if (wheels != null)
+                {
+                    for (int i = 0; i < wheels.Length; i++)
+                    {
+                        if ((object)_wheelRadiusField == null)
+                            _wheelRadiusField = wheels[i].GetType().GetField("HqsqNkJ",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if ((object)_wheelRadiusField == null) break;
+                        bool isFront = string.Equals(wheels[i].gameObject.name, "wheel_front",
+                            System.StringComparison.Ordinal);
+                        if (isFront && _defaultRadiusFront < 0f) _defaultRadiusFront = (float)_wheelRadiusField.GetValue(wheels[i]);
+                        if (!isFront && _defaultRadiusBack < 0f) _defaultRadiusBack = (float)_wheelRadiusField.GetValue(wheels[i]);
+                        float def = isFront ? _defaultRadiusFront : _defaultRadiusBack;
+                        float level = isFront ? _frontWheelLevel : _rearWheelLevel;
+                        float scale = WheelScaleLevels[(int)level - 1];
+                        if (def > 0f) _wheelRadiusField.SetValue(wheels[i], def * scale);
+                    }
+                }
+                MelonLogger.Msg("[Bike] IndividualWheel F=" + _frontWheelLevel + " R=" + _rearWheelLevel);
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[Bike] ApplyIndividualWheelLevels: " + ex.Message); }
+        }
+
+        // Applies a wheel scale float directly — bypasses the old 5-mode system
+        private static void ApplyWheelScaleDirectly(float scale)
+        {
+            try
+            {
+                GameObject player = GameObject.Find("Player_Human");
+                if ((object)player == null) return;
+
+                Transform bikeModel = player.transform.Find("BikeModel");
+                if ((object)bikeModel != null)
+                {
+                    BikeAnimation bikeAnim = bikeModel.GetComponent<BikeAnimation>();
+                    if ((object)bikeAnim != null)
+                    {
+                        if ((object)_backBoneField == null)
+                            _backBoneField = typeof(BikeAnimation).GetField("YLzyVuM",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if ((object)_frontBoneField == null)
+                            _frontBoneField = typeof(BikeAnimation).GetField("RCNLpue",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if ((object)_backBoneField != null)
+                        {
+                            Transform bb = _backBoneField.GetValue(bikeAnim) as Transform;
+                            if ((object)bb != null) { bb.localScale = new Vector3(scale, scale, scale); _cachedBackBone = bb; }
+                        }
+                        if ((object)_frontBoneField != null)
+                        {
+                            Transform fb = _frontBoneField.GetValue(bikeAnim) as Transform;
+                            if ((object)fb != null) { fb.localScale = new Vector3(scale, scale, scale); _cachedFrontBone = fb; }
+                        }
+                    }
+                }
+                // Update radius physics
+                Wheel[] wheels = player.GetComponentsInChildren<Wheel>();
+                if (wheels != null)
+                {
+                    for (int i = 0; i < wheels.Length; i++)
+                    {
+                        if ((object)_wheelRadiusField == null)
+                            _wheelRadiusField = wheels[i].GetType().GetField("HqsqNkJ",
+                                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                        if ((object)_wheelRadiusField == null) break;
+                        bool isFront = string.Equals(wheels[i].gameObject.name, "wheel_front", System.StringComparison.Ordinal);
+                        if (isFront && _defaultRadiusFront < 0f) _defaultRadiusFront = (float)_wheelRadiusField.GetValue(wheels[i]);
+                        else if (!isFront && _defaultRadiusBack < 0f) _defaultRadiusBack = (float)_wheelRadiusField.GetValue(wheels[i]);
+                        float def = isFront ? _defaultRadiusFront : _defaultRadiusBack;
+                        if (def > 0f) _wheelRadiusField.SetValue(wheels[i], def * scale);
+                    }
+                }
+                MelonLogger.Msg("[Bike] WheelSize level=" + _wheelSizeLevel + " scale=" + scale);
+            }
+            catch (System.Exception ex) { MelonLogger.Error("[Bike] ApplyWheelScaleDirectly: " + ex.Message); }
+        }
 
         // Called by reapply system to restore invisible bike
         public static void SetInvisibleBike(bool v) { if (v != _invisibleBike) { _invisibleBike = v; ToggleInvisibleBike(v); } }
@@ -385,12 +801,23 @@ namespace DescendersModMenu.UI
         // ── Wheel Size ────────────────────────────────────────────────
         public static void WheelSizeTick()
         {
-            if (_wheelSizeMode == 0) return;
             try
             {
-                float scale = WheelScales[_wheelSizeMode];
-                if ((object)_cachedFrontBone != null) _cachedFrontBone.localScale = new Vector3(scale, scale, scale);
-                if ((object)_cachedBackBone != null) _cachedBackBone.localScale = new Vector3(scale, scale, scale);
+                if (_individualWheelMode)
+                {
+                    // Front and rear driven independently
+                    float fs = WheelScaleLevels[_frontWheelLevel - 1];
+                    float rs = WheelScaleLevels[_rearWheelLevel - 1];
+                    if ((object)_cachedFrontBone != null) _cachedFrontBone.localScale = new Vector3(fs, fs, fs);
+                    if ((object)_cachedBackBone != null) _cachedBackBone.localScale = new Vector3(rs, rs, rs);
+                }
+                else if (_wheelSizeEnabled && _wheelSizeLevel != 10)
+                {
+                    // Both wheels driven together
+                    float scale = WheelScaleLevels[_wheelSizeLevel - 1];
+                    if ((object)_cachedFrontBone != null) _cachedFrontBone.localScale = new Vector3(scale, scale, scale);
+                    if ((object)_cachedBackBone != null) _cachedBackBone.localScale = new Vector3(scale, scale, scale);
+                }
             }
             catch { }
         }
@@ -399,8 +826,13 @@ namespace DescendersModMenu.UI
         {
             // Restore wheel radius physics and bone scales to 1.0 BEFORE clearing caches
             if (_wheelSizeMode != 0) try { SetWheelSize(0); } catch { }
+            if (_wheelSizeEnabled || _individualWheelMode) try { ApplyWheelScaleDirectly(1f); } catch { }
             _wheelSizeMode = 0;
+            _wheelSizeLevel = 10;
             _wheelSizeEnabled = false;
+            _frontWheelLevel = 10;
+            _rearWheelLevel = 10;
+            _individualWheelMode = false;
             _cachedFrontBone = null;
             _cachedBackBone = null;
             _backBoneField = null;
@@ -482,16 +914,12 @@ namespace DescendersModMenu.UI
             if (IceMode.Enabled) IceMode.Toggle();
             if (CutBrakes.Enabled) CutBrakes.Toggle();
             if (BikeTorch.Enabled) BikeTorch.Toggle();
-            try
-            {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player != null)
-                {
-                    Transform bikeModel = player.transform.Find("BikeModel");
-                    if ((object)bikeModel != null) bikeModel.localScale = Vector3.one;
-                }
-            }
-            catch { }
+            if (SuspensionHUD.Enabled) SuspensionHUD.Toggle();
+            if (BrakeFade.Enabled) BrakeFade.Toggle();
+            _bikeSizeLevel = 10;
+            ResetBikeScaleToDefault();
+            _wheelSizeLevel = 10;
+            ResetWheelSize();
         }
 
         // ── RefreshAll ────────────────────────────────────────────────
@@ -504,6 +932,23 @@ namespace DescendersModMenu.UI
             UIHelpers.SetBar(_travelBar, (Suspension.TravelLevel - 1) / 9f);
             UIHelpers.SetBar(_stiffBar, (Suspension.StiffnessLevel - 1) / 9f);
             UIHelpers.SetBar(_dampBar, (Suspension.DampingLevel - 1) / 9f);
+
+            // Bike Size level
+            if (_bikeSizeLvlVal) _bikeSizeLvlVal.text = _bikeSizeLevel.ToString();
+            if ((object)_bikeSizeMinus != null) _bikeSizeMinus.interactable = _bikeSizeLevel > 1;
+            if ((object)_bikeSizePlus != null) _bikeSizePlus.interactable = _bikeSizeLevel < 20;
+
+            // Wheel Size level — both-wheels disabled while individual mode is active
+            if (_wheelSizeLvlVal) _wheelSizeLvlVal.text = _wheelSizeLevel.ToString();
+            bool bothActive = _wheelSizeEnabled && !_individualWheelMode;
+            if ((object)_wheelSizeMinus2 != null) _wheelSizeMinus2.interactable = bothActive && _wheelSizeLevel > 1;
+            if ((object)_wheelSizePlus2 != null) _wheelSizePlus2.interactable = bothActive && _wheelSizeLevel < 20;
+
+            // Individual wheel levels
+            if (_frontWheelLvlVal) _frontWheelLvlVal.text = _frontWheelLevel.ToString();
+            if (_rearWheelLvlVal) _rearWheelLvlVal.text = _rearWheelLevel.ToString();
+            UIHelpers.SetRowActive(_frontWheelRow, _individualWheelMode && _frontWheelLevel != 10);
+            UIHelpers.SetRowActive(_rearWheelRow, _individualWheelMode && _rearWheelLevel != 10);
 
             // Invisible Bike
             if (_invisBikeVal) { _invisBikeVal.text = _invisibleBike ? "ON" : "OFF"; _invisBikeVal.color = _invisibleBike ? UIHelpers.OnColor : UIHelpers.OffColor; }
@@ -555,6 +1000,18 @@ namespace DescendersModMenu.UI
             UIHelpers.SetToggle(_torchTrack, _torchKnob, torch);
             UIHelpers.SetRowActive(_torchRow, torch);
             if (_torchIntLbl) _torchIntLbl.text = BikeTorch.IntensityDisplay;
+
+            // Suspension HUD
+            bool shOn = SuspensionHUD.Enabled;
+            if (_shVal) { _shVal.text = shOn ? "ON" : "OFF"; _shVal.color = shOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_shTrack, _shKnob, shOn);
+            UIHelpers.SetRowActive(_shRow, shOn);
+
+            // Brake Fade
+            bool bfOn = BrakeFade.Enabled;
+            if (_bfVal) { _bfVal.text = bfOn ? "ON" : "OFF"; _bfVal.color = bfOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_bfTrack, _bfKnob, bfOn);
+            UIHelpers.SetRowActive(_bfRow, bfOn);
         }
     }
 }

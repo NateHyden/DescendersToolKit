@@ -375,10 +375,15 @@ namespace DescendersModMenu.Mods
         // Restore sky to exactly what it was when the scene loaded
         public static void RestoreDefault()
         {
-            CaptureSceneDefaults(); // re-read live TOD_Sky in case it loaded late
             CurrentPreset = 0;
-            SetTODHour(_defaultsCaptured ? _defaultHour : 12f);
-            MelonLogger.Msg("[SkyColours] Restored default (hour=" + (_defaultsCaptured ? _defaultHour : 12f) + ")");
+            // Only capture if we haven't already — re-capturing after a preset
+            // would read the preset's hour, not the original scene hour
+            if (!_defaultsCaptured)
+                CaptureSceneDefaults();
+            if (_defaultsCaptured)
+                SetTODHour(_defaultHour);
+            _skyComp = null; // clear cache so next SetTODHour re-finds the component
+            MelonLogger.Msg("[SkyColours] Restored default (preset=0, hour=" + (_defaultsCaptured ? _defaultHour : -1f) + ")");
         }
 
         // Used by Save/Load — stores the preset index without touching the game world
@@ -526,6 +531,10 @@ namespace DescendersModMenu.Mods
         public static void ApplyPreset(int index)
         {
             if (index < 0 || index >= PresetNames.Length) return;
+            // Capture the original hour BEFORE we change it — this is the last safe moment
+            // (OnSceneWasInitialized may have been too early if TOD_Sky wasn't ready yet)
+            if (!_defaultsCaptured)
+                CaptureSceneDefaults();
             CurrentPreset = index;
             SetTODHour(TODHours[index]);
             MelonLogger.Msg("[SkyColours] Preset -> " + PresetNames[index]);

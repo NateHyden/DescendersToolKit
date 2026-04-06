@@ -52,6 +52,56 @@ namespace DescendersModMenu.UI
                 UIHelpers.ActionBtnOrange(mr.transform, "x20", () => ScoreManager.SetMultiplier(20f), 40);
 
                 UIHelpers.InfoBox(pg.transform, "Multiplier is locked until you press x1 to reset it.");
+
+                // ── STAR BUTTONS (Favourites) ──────────────────────────
+                FavouritesManager.RegisterStarButton("ScoreAdd", UIHelpers.StarBtn(r1.transform, "ScoreAdd", () => FavouritesManager.Toggle("ScoreAdd")));
+                FavouritesManager.RegisterStarButton("ScoreRemove", UIHelpers.StarBtn(r2.transform, "ScoreRemove", () => FavouritesManager.Toggle("ScoreRemove")));
+                FavouritesManager.RegisterStarButton("ScoreMultiplier", UIHelpers.StarBtn(mr.transform, "ScoreMultiplier", () => FavouritesManager.Toggle("ScoreMultiplier")));
+
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "ScoreAdd",
+                    DisplayName = "Add Rep",
+                    TabBadge = "SCORE",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Add", p);
+                        UIHelpers.ActionBtn(row.transform, "+100", () => ScoreManager.AddScore(100), 40);
+                        UIHelpers.ActionBtn(row.transform, "+500", () => ScoreManager.AddScore(500), 40);
+                        UIHelpers.ActionBtn(row.transform, "+1K", () => ScoreManager.AddScore(1000), 40);
+                        UIHelpers.ActionBtn(row.transform, "+5K", () => ScoreManager.AddScore(5000), 40);
+                        UIHelpers.ActionBtn(row.transform, "+10K", () => ScoreManager.AddScore(10000), 44);
+                    },
+                    IsActive = () => false
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "ScoreRemove",
+                    DisplayName = "Remove Rep",
+                    TabBadge = "SCORE",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Remove", p);
+                        UIHelpers.ActionBtnOrange(row.transform, "-100", () => ScoreManager.AddScore(-100), 40);
+                        UIHelpers.ActionBtnOrange(row.transform, "-500", () => ScoreManager.AddScore(-500), 40);
+                        UIHelpers.ActionBtnOrange(row.transform, "-1K", () => ScoreManager.AddScore(-1000), 40);
+                        UIHelpers.ActionBtnOrange(row.transform, "-5K", () => ScoreManager.AddScore(-5000), 40);
+                        UIHelpers.ActionBtnOrange(row.transform, "-10K", () => ScoreManager.AddScore(-10000), 44);
+                    },
+                    IsActive = () => false
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "ScoreMultiplier",
+                    DisplayName = "Trick Multiplier",
+                    TabBadge = "SCORE",
+                    BuildControls = (p) => {
+                        var row = UIHelpers.StatRow("Multiplier", p);
+                        UIHelpers.ActionBtn(row.transform, "x1", () => ScoreManager.ResetMultiplier(), 36);
+                        UIHelpers.ActionBtn(row.transform, "x2", () => ScoreManager.SetMultiplier(2f), 36);
+                        UIHelpers.ActionBtn(row.transform, "x5", () => ScoreManager.SetMultiplier(5f), 36);
+                        UIHelpers.ActionBtn(row.transform, "x10", () => ScoreManager.SetMultiplier(10f), 40);
+                    },
+                    IsActive = () => false
+                });
             }
             catch (System.Exception ex) { MelonLogger.Error("Page5UI.CreatePage: " + ex.Message); return null; }
             return pg;
