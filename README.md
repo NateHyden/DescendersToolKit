@@ -1,10 +1,10 @@
 # Descenders Mod Menu / Descenders Toolkit
 
-**v3.7.0** — The most complete mod menu for Descenders. 60+ mods, 6 game modes, ghost replay, map changer, outfit presets, mod chat and full scene persistence — all in one clean sidebar overlay.
+**v3.8.0** — The most complete mod menu for Descenders. 65+ mods, 6 game modes, ghost replay, map changer, outfit presets, favourites, mod chat and full scene persistence — all in one clean sidebar overlay.
 
 > Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded as Descenders Toolkit.
 
-Physics tweaks, bike tuning, world controls, score tools, session trackers, ghost replay, game modes, map changer, outfit presets, mod chat and plenty of chaos — all in one place. Works online and offline.
+Physics tweaks, bike tuning, world controls, score tools, session trackers, ghost replay, game modes, map changer, outfit presets, favourites, mod chat and plenty of chaos — all in one place. Works online and offline.
 
 **Download:** [Nexus Mods](https://www.nexusmods.com/descenders/mods/7) · [GitHub Releases](https://github.com/NateHyden/DescendersModMenu/releases) · [Discord](https://discord.gg/rHvCrBdqaR)
 
@@ -86,6 +86,21 @@ If you've installed to a custom folder, simply navigate there in File Explorer. 
 
 ## Tabs & Features
 
+### ★ Favourites — Quick Access
+
+Your personalised mod panel. Star any mod from any tab and it appears here with its full working controls.
+
+- Star button (★) on every mod row across all tabs — click to add or remove
+- Favourited mods appear with their real controls (toggles, sliders, steppers, action buttons) — not just shortcuts
+- Tab badge shows which tab each mod came from (GENERAL, BIKE, MOVE, etc.)
+- Remove individual favourites with the star button, or clear everything with Remove All Favourites
+- 65 mods across 10 tabs are favouritable — Modes, Graphics, Chat and Map Change are excluded
+- Favourites persist to `UserData/DescendersModMenu/Favourites.json` — survives game restarts
+- Scrollbar appears automatically when you have lots of favourites
+- Separated at the top of the sidebar above all other tabs
+
+---
+
 ### General — Bike Physics
 
 The main hub. Save / Load / Reset buttons are always visible in the header bar regardless of which tab you are on.
@@ -99,7 +114,7 @@ The main hub. Save / Load / Reset buttons are always visible in the header bar r
 - **Bike Switcher** — cycle between Enduro, Downhill, Hardtail and BRNZL Enduro
 - **FOV** — on/off toggle with level slider; restores the exact default on disable, works across all camera views
 - **Slow Motion** — toggle with speed slider (0.1× to 0.9×); also F2 at any time
-- **Slow Mo on Bail** — automatically triggers slow motion when you bail
+- **Slow Mo on Bail** — automatically triggers slow motion when you bail. Smoothly ramps back to normal speed over 1 second. Cancels immediately on respawn so you never start a fresh run in slow-mo
 - **No Speed Wobbles** — removes the high-speed steering wobble
 
 **Quick Actions**
@@ -151,6 +166,8 @@ Scrollable tab. All mods have active row highlighting when enabled.
 **Bike Parts**
 - **Invisible Bike** — hides the entire bike model
 - **Wheel Size** — toggle + 5 presets (Tiny / Small / Default / Large / Huge). Works alongside Wide Tyres
+- **Front Wheel Size** — independent front wheel scaling (1–20)
+- **Rear Wheel Size** — independent rear wheel scaling (1–20)
 - **Wide Tyres** — 20-level slider. Scales relative to the current wheel size so both mods combine properly
 - **Sticky Tyres** — grip any surface including slopes, walls and ceilings
 
@@ -161,6 +178,10 @@ Scrollable tab. All mods have active row highlighting when enabled.
 
 **Torch**
 - **Bike Headlight** — toggle with five brightness levels (Dim to Max)
+
+**Telemetry**
+- **Suspension HUD** — real-time front and rear compression bars in the bottom-left corner. Colour-coded lime/orange/red by compression. Hardtail detection greys out the rear bar. Resolution-scaled
+- **Brake Fade** — simulates disc brake heat. Front/rear tracked independently. Fade at 150°C, failure at 300°C. Speed-based cooling. Live temperature HUD in the top-right corner
 
 ---
 
@@ -208,6 +229,8 @@ Scrollable tab. All mods have active row highlighting when enabled.
 
 **Camera** — Camera Shake — adjustable intensity
 
+**Identity** — Set a custom player name visible in chat and other players' ESP
+
 ---
 
 ### Outfit — Presets
@@ -216,6 +239,7 @@ Scrollable tab. All mods have active row highlighting when enabled.
 - Load any preset instantly during a session
 - Rename slots by clicking the name, typing and pressing Enter
 - Delete individual presets
+- Quick Actions — Go to Shed / Leave Shed buttons
 
 ---
 
@@ -301,6 +325,8 @@ The mod menu can be repositioned, resized and made more or less transparent to s
 
 All settings persist to `UserData/DescendersModMenu/BikeStats.json`. Your last saved settings **auto-load when you first spawn in** — no need to press Load manually.
 
+Favourites are stored separately in `UserData/DescendersModMenu/Favourites.json` and are independent of the main save system — global reset does not clear your favourites.
+
 **Saved:** all levels, all toggle states, tyre settings, suspension, game modifiers, bike/player/wheel size, invisible states, torch state and intensity, camera shake, center of mass, fly mode speeds, menu layout and more.
 
 **Not saved (always reset per-map):** Graphics tab, Sky section (sky colour preset, storm, rain), Time of Day, Game Modes, Ghost Replay, ESP.
@@ -329,6 +355,21 @@ The toolkit checks for new versions on GitHub when the game launches. If a newer
 ---
 
 ## Changelog
+
+### v3.8.0
+- **Favourites tab** — star any mod from any tab and access it from a dedicated ★ Favourites panel at the top of the sidebar. Full working controls, JSON persistence, Remove All button, scrollbar, deferred rebuild for zero-lag starring
+- **Suspension HUD** — real-time front/rear compression bars, colour-coded, hardtail detection, resolution-scaled. Toggle in Bike → Telemetry
+- **Brake Fade** — disc brake heat simulation with independent front/rear temperatures, fade at 150°C, failure at 300°C, speed-based cooling, live HUD. Toggle in Bike → Telemetry
+- **Steam Players Online** — live Descenders player count from Steam Web API, shown in System tab
+- **Slow Mo on Bail improved** — cancels immediately on respawn; returns to normal speed with a smooth 1-second ease-out ramp instead of a hard snap
+- **Sky Colours Default fixed** — now correctly restores the original map lighting on all maps, including those where TOD_Sky loads late. Captures the scene hour before the first preset is applied
+- **TimeOfDay reset fixed** — same capture-before-change pattern for correct time restoration
+- **Front Wheel Size / Rear Wheel Size** — renamed for clarity, both favouritable
+- **Moon Mode cleaned up** — description text removed from compound row
+- **Sidebar separator** — visual divider between the Favourites tab and the main navigation groups
+- Version number now sourced from a single location (BuildInfo.Version)
+- Update checker persists correctly across scene changes
+- Telemetry section added to Bike tab containing Suspension HUD and Brake Fade toggles
 
 ### v3.7.0
 - **Update notifications** — the toolkit now checks GitHub for new releases on startup. If a newer version is available, a green notification appears in the menu header. Runs on a background thread with no impact on game performance
