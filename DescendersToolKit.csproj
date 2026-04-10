@@ -110,6 +110,7 @@
     <Compile Include="Mods\AssemblyScanner.cs" />
     <Compile Include="Mods\AutoBalance.cs" />
     <Compile Include="Mods\AvalancheMode.cs" />
+    <Compile Include="Mods\BikeDamage.cs" />
     <Compile Include="Mods\BikeSwitcher.cs" />
     <Compile Include="Mods\BikeTorch.cs" />
     <Compile Include="Mods\BoulderDodgeMode.cs" />
@@ -128,7 +129,9 @@
     <Compile Include="Mods\GhostReplay.cs" />
     <Compile Include="Mods\Graphics.cs" />
     <Compile Include="Mods\Gravity.cs" />
+    <Compile Include="Mods\HeadlightsOnly.cs" />
     <Compile Include="Mods\IceMode.cs" />
+    <Compile Include="Mods\InstantRespawn.cs" />
     <Compile Include="Mods\LandingImpact.cs" />
     <Compile Include="Mods\MapChanger.cs" />
     <Compile Include="Mods\MaxSpeedMultiplier.cs" />
@@ -147,6 +150,7 @@
     <Compile Include="Mods\ReverseSteering.cs" />
     <Compile Include="Mods\SceneDumper.cs" />
     <Compile Include="Mods\ScoreManager.cs" />
+    <Compile Include="Mods\ScreenshotMode.cs" />
     <Compile Include="Mods\SessionTrackers.cs" />
     <Compile Include="Mods\SkyColours.cs" />
     <Compile Include="Mods\SlowMoOnBail.cs" />
@@ -163,6 +167,9 @@
     <Compile Include="Mods\TimeOfDay.cs" />
     <Compile Include="Mods\TopSpeed.cs" />
     <Compile Include="Mods\TrickAttackMode.cs" />
+    <Compile Include="Mods\TrickSetSwap.cs" />
+    <Compile Include="Mods\TyrePressure.cs" />
+    <Compile Include="Mods\UIRemover.cs" />
     <Compile Include="Mods\UnlockAll.cs" />
     <Compile Include="Mods\UpdateChecker.cs" />
     <Compile Include="Mods\WheelieAngleLimit.cs" />
@@ -177,6 +184,7 @@
     <Compile Include="UI\Page13UI.cs" />
     <Compile Include="UI\Page14UI.cs" />
     <Compile Include="UI\Page15UI.cs" />
+    <Compile Include="UI\Page18UI.cs" />
     <Compile Include="UI\Page2UI.cs" />
     <Compile Include="UI\Page3UI.cs" />
     <Compile Include="UI\Page4UI.cs" />
@@ -196,6 +204,7 @@
     <Compile Include="UI\UIHelpers.cs" />
     <Compile Include="UI\MenuWindow.cs" />
     <Compile Include="UI\MenuUI.cs" />
+    <Compile Include="UI\WheelieHUD.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

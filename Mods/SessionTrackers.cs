@@ -143,7 +143,15 @@ namespace DescendersModMenu.Mods
             _lastBailTime = now;
             BailCount++;
             MelonLogger.Msg("[SessionTrackers] Bail #" + BailCount);
+
+            // Capture impact speed for BikeDamage before respawn resets velocity
+            float impactSpeed = 0f;
+            if ((object)_cachedRb != null)
+                impactSpeed = _cachedRb.velocity.magnitude;
+
             SlowMoOnBail.OnBail();
+            InstantRespawn.OnBail();
+            BikeDamage.OnBail(BailCount, impactSpeed);
         }
 
         // ── Longest Airtime ───────────────────────────────────────────────
@@ -164,6 +172,7 @@ namespace DescendersModMenu.Mods
         // Cached refs
         private static GameObject _cachedPlayer = null;
         private static Vehicle _cachedVehicle = null;
+        private static Rigidbody _cachedRb = null;  // cached — eliminates GetComponent every frame
 
         public static string AirtimeDisplay
         {
@@ -194,6 +203,7 @@ namespace DescendersModMenu.Mods
                 {
                     _cachedPlayer = GameObject.Find("Player_Human");
                     _cachedVehicle = null;
+                    _cachedRb = null;  // invalidate Rigidbody cache with player
                 }
                 if ((object)_cachedPlayer == null) return;
 
@@ -260,10 +270,11 @@ namespace DescendersModMenu.Mods
                 _wasOnGround = onGround;
 
                 // ── G-Force tracking ──────────────────────────────────────
-                Rigidbody rb = _cachedPlayer.GetComponent<Rigidbody>();
-                if ((object)rb != null)
+                if ((object)_cachedRb == null)
+                    _cachedRb = _cachedPlayer.GetComponentInChildren<Rigidbody>();
+                if ((object)_cachedRb != null)
                 {
-                    Vector3 currentVelocity = rb.velocity;
+                    Vector3 currentVelocity = _cachedRb.velocity;
                     if (_hasLastVelocity)
                     {
                         float dt = Time.fixedDeltaTime;
@@ -298,6 +309,7 @@ namespace DescendersModMenu.Mods
             _wasOnGround = true;
             _cachedPlayer = null;
             _cachedVehicle = null;
+            _cachedRb = null;
             _groundPropCached = false;
             _onGroundProp = null;
             CurrentGForce = 0f;

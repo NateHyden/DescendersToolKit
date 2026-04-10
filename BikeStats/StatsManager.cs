@@ -150,6 +150,26 @@ namespace DescendersModMenu.BikeStats
 
                     // Brake Fade
                     BrakeFadeEnabled = BrakeFade.Enabled,
+                    BrakeBalanceLevel = BrakeFade.BalanceLevel,
+
+                    // Tyre Pressure
+                    TyrePressureEnabled = TyrePressure.Enabled,
+                    TyrePressureLevel = TyrePressure.Level,
+
+                    // Instant Respawn
+                    InstantRespawnEnabled = InstantRespawn.Enabled,
+
+                    // Bike Damage
+                    BikeDamageEnabled = BikeDamage.Enabled,
+                    HeadlightsOnlyEnabled = HeadlightsOnly.Enabled,
+                    UIRemoverEnabled = UIRemover.Enabled,
+
+                    // Wheelie HUD
+                    WheelieHUDEnabled = WheelieHUD.Enabled,
+
+                    // Trick Set Swap
+                    TrickSetSwapEnabled = TrickSetSwap.Enabled,
+                    TrickSetSwapSourceName = TrickSetSwap.CurrentSourceName,
                 };
 
                 string json = JsonUtility.ToJson(data, true);
@@ -294,7 +314,28 @@ namespace DescendersModMenu.BikeStats
                 if (data.SuspensionHUDEnabled && !SuspensionHUD.Enabled) SuspensionHUD.Toggle();
 
                 // Brake Fade
+                BrakeFade.SetBalanceLevel(data.BrakeBalanceLevel);
                 if (data.BrakeFadeEnabled && !BrakeFade.Enabled) BrakeFade.Toggle();
+
+                // Tyre Pressure
+                TyrePressure.SetLevel(data.TyrePressureLevel);
+                if (data.TyrePressureEnabled && !TyrePressure.Enabled) TyrePressure.Toggle();
+
+                // Instant Respawn
+                if (data.InstantRespawnEnabled && !InstantRespawn.Enabled) InstantRespawn.Toggle();
+
+                // Bike Damage
+                if (data.BikeDamageEnabled && !BikeDamage.Enabled) BikeDamage.Toggle();
+                if (data.HeadlightsOnlyEnabled && !HeadlightsOnly.Enabled) HeadlightsOnly.Toggle();
+                if (data.UIRemoverEnabled && !UIRemover.Enabled) UIRemover.Toggle();
+
+                // Wheelie HUD
+                if (data.WheelieHUDEnabled && !WheelieHUD.Enabled) WheelieHUD.Toggle();
+
+                // Trick Set Swap (set source by name BEFORE toggling so the right gestures load)
+                if (!string.IsNullOrEmpty(data.TrickSetSwapSourceName))
+                    TrickSetSwap.SetSourceByName(data.TrickSetSwapSourceName);
+                if (data.TrickSetSwapEnabled && !TrickSetSwap.Enabled) TrickSetSwap.Toggle();
 
                 MelonLogger.Msg("[StatsManager] Loaded from: " + SaveFile);
             }
@@ -432,6 +473,15 @@ namespace DescendersModMenu.BikeStats
                 SessionHUD.Enabled = false;
                 if (SuspensionHUD.Enabled) SuspensionHUD.Toggle();
                 if (BrakeFade.Enabled) BrakeFade.Toggle();
+                BrakeFade.SetBalanceLevel(6);
+                if (TyrePressure.Enabled) TyrePressure.Toggle();
+                TyrePressure.SetLevel(5);
+                if (InstantRespawn.Enabled) InstantRespawn.Toggle();
+                if (BikeDamage.Enabled) BikeDamage.Toggle();
+                if (HeadlightsOnly.Enabled) HeadlightsOnly.Toggle();
+                if (UIRemover.Enabled) UIRemover.Toggle();
+                if (WheelieHUD.Enabled) WheelieHUD.Toggle();
+                if (TrickSetSwap.Enabled) TrickSetSwap.Disable();
 
                 // Modes — always reset (not saved)
                 if (AvalancheMode.Enabled) AvalancheMode.Reset();

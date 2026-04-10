@@ -13,11 +13,13 @@ namespace DescendersModMenu.UI
         private static Image _dofTrack; private static RectTransform _dofKnob; private static Text _dofVal;
         private static Image _cabTrack; private static RectTransform _cabKnob; private static Text _cabVal;
         private static Text _qualityVal;
+        private static Text _uiRemoverVal;
+        private static Image _uiRemoverTrack; private static RectTransform _uiRemoverKnob;
 
         public static bool IsAnyActive =>
             !GraphicsSettings.BloomEnabled || !GraphicsSettings.AmbientOccEnabled ||
             !GraphicsSettings.VignetteEnabled || GraphicsSettings.DepthOfFieldEnabled ||
-            !GraphicsSettings.ChromaticAbEnabled;
+            !GraphicsSettings.ChromaticAbEnabled || UIRemover.Enabled;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -79,6 +81,36 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.Divider(pg.transform);
 
+                // ── GAME HUD ──────────────────────────────────────────────
+                UIHelpers.SectionHeader("GAME HUD", pg.transform);
+
+                var uir = UIHelpers.StatRow("Hide Game HUD", pg.transform);
+                _uiRemoverVal = UIHelpers.Txt("UiRV", uir.transform, "OFF", 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _uiRemoverVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(uir.transform, "UiRT",
+                    () => { UIRemover.Toggle(); RefreshAll(); },
+                    out _uiRemoverTrack, out _uiRemoverKnob);
+                FavouritesManager.RegisterStarButton("UIRemover",
+                    UIHelpers.StarBtn(uir.transform, "UIRemover",
+                        () => FavouritesManager.Toggle("UIRemover")));
+
+                UIHelpers.InfoBox(pg.transform,
+                    "Hides all game HUD elements (trick feed, score, etc.).\n" +
+                    "The mod menu remains visible so you can toggle it back off.");
+
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "UIRemover",
+                    DisplayName = "Hide Game HUD",
+                    TabBadge = "GFX",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "UIRemover", "Hide Game HUD",
+                        () => UIRemover.Enabled, () => UIRemover.Toggle(), () => RefreshAll()),
+                    IsActive = () => UIRemover.Enabled
+                });
+
+                UIHelpers.Divider(pg.transform);
+
                 UIHelpers.InfoBox(pg.transform, "Post processing changes take effect immediately. Quality changes may cause a brief stutter.");
 
                 RefreshAll();
@@ -115,6 +147,10 @@ namespace DescendersModMenu.UI
                 string[] names = { "Low", "Medium", "High", "Ultra" };
                 _qualityVal.text = (q >= 0 && q < names.Length) ? names[q] : QualitySettings.names[q];
             }
+
+            bool uiRem = UIRemover.Enabled;
+            if (_uiRemoverVal) { _uiRemoverVal.text = uiRem ? "ON" : "OFF"; _uiRemoverVal.color = uiRem ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_uiRemoverTrack, _uiRemoverKnob, uiRem);
         }
     }
 }

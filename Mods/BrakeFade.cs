@@ -42,10 +42,34 @@ namespace DescendersModMenu.Mods
         private const float FadePivotMult = 0.80f;  // multiplier at pivot (20% reduction)
         private const float FadeUpperPower = 1.5f;   // curve steepness above pivot
 
-        // Front disc contributes 60% of braking, rear 40%
-        // Front fails alone: 40% braking remains from rear. Both fail: zero.
-        private const float FrontBrakeShare = 0.60f;
-        private const float RearBrakeShare = 0.40f;
+        // Front disc contributes 60% of braking, rear 40% — defaults, adjustable via BrakeBalance
+        // 0% front = all rear, 100% front = all front, default 60/40
+        private static float _frontBrakeShare = 0.60f;
+        private static float _rearBrakeShare = 0.40f;
+        public static float FrontBrakeShare => _frontBrakeShare;
+        public static float RearBrakeShare => _rearBrakeShare;
+
+        // BrakeBalance: level 1–11, level 6 = default 60/40
+        // Level 1  = 10/90 (all rear), Level 6 = 60/40 (default), Level 11 = 100/0 (all front)
+        private static int _balanceLevel = 6;
+        public static int BalanceLevel => _balanceLevel;
+
+        public static void SetBalanceLevel(int level)
+        {
+            _balanceLevel = Mathf.Clamp(level, 1, 11);
+            // Level maps: 1=10%, 2=20% ... 6=60% ... 11=100% front share
+            _frontBrakeShare = _balanceLevel * 0.10f;
+            _rearBrakeShare = 1f - _frontBrakeShare;
+            MelonLogger.Msg("[BrakeBalance] Level=" + _balanceLevel
+                + " Front=" + (_frontBrakeShare * 100f).ToString("F0") + "%"
+                + " Rear=" + (_rearBrakeShare * 100f).ToString("F0") + "%");
+        }
+
+        public static void IncreaseBalance() { if (_balanceLevel < 11) SetBalanceLevel(_balanceLevel + 1); }
+        public static void DecreaseBalance() { if (_balanceLevel > 1) SetBalanceLevel(_balanceLevel - 1); }
+
+        public static string BalanceDisplay =>
+            (_frontBrakeShare * 100f).ToString("F0") + "F / " + (_rearBrakeShare * 100f).ToString("F0") + "R";
 
         // Heat: ~9 seconds of hard braking at 60km/h to reach failure
         private const float FrontHeatRate = 0.65f;
@@ -143,6 +167,9 @@ namespace DescendersModMenu.Mods
         {
             if (Enabled) MelonLogger.Msg("[BrakeFade] Reset -> OFF");
             Enabled = false;
+            _balanceLevel = 6;
+            _frontBrakeShare = 0.60f;
+            _rearBrakeShare = 0.40f;
             ClearCache();
         }
 

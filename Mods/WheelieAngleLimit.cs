@@ -10,7 +10,7 @@ namespace DescendersModMenu.Mods
         public static bool Enabled { get; private set; } = false;
         public static int Level { get; private set; } = 5;
 
-        public static float AngleLimit { get { return Mathf.Lerp(20f, 65f, (Level - 1) / 9f); } }
+        public static float AngleLimit { get { return Mathf.Lerp(20f, 85f, (Level - 1) / 9f); } }
         public static string DisplayValue { get { return Mathf.RoundToInt(AngleLimit) + "\u00b0"; } }
 
         public static void Toggle()
@@ -39,7 +39,7 @@ namespace DescendersModMenu.Mods
             catch (System.Exception ex) { MelonLogger.Error("[WheelieAngleLimit] ApplyPatch: " + ex.Message); }
         }
 
-        public static void Reset() { Enabled = false; }
+        public static void Reset() { Enabled = false; WheelieAngleLimit_Patch.ResetGrace(); }
     }
 
     public static class WheelieAngleLimit_Patch
@@ -50,15 +50,35 @@ namespace DescendersModMenu.Mods
         private static Wheel _rearWheel = null;
         private static bool _cached = false;
 
+        // Grace period — keeps the limiter active for a short window after the rear
+        // wheel leaves the ground (e.g. hitting a bump mid-wheelie). Without this,
+        // the limiter disengages the instant rear lifts and accumulated rotational
+        // momentum spins the player off.
+        private static float _graceTimer = 0f;
+        private const float GraceDuration = 0.6f;
+
+        // Live pitch in degrees (positive = nose up). Published every FixedUpdate
+        // by the Postfix below — read by WheelieHUD regardless of limiter Enabled state.
+        public static float CurrentPitch = 0f;
+
+        public static void ResetGrace() { _graceTimer = 0f; }
+
         public static void Postfix(Vehicle __instance)
         {
-            if (!WheelieAngleLimit.Enabled) return;
             if ((object)__instance == null) return;
             if (!string.Equals(__instance.gameObject.name, "Player_Human",
                 System.StringComparison.Ordinal)) return;
 
             try
             {
+                // Always publish pitch so WheelieHUD can read it every frame,
+                // regardless of whether the angle-limiter itself is enabled.
+                CurrentPitch = Mathf.Asin(Mathf.Clamp(__instance.transform.forward.y, -1f, 1f))
+                               * Mathf.Rad2Deg;
+
+                // Limiter logic only runs when the toggle is on
+                if (!WheelieAngleLimit.Enabled) return;
+
                 if (!_cached) CacheRefs(__instance);
 
                 Rigidbody rb = null;
@@ -70,13 +90,20 @@ namespace DescendersModMenu.Mods
                 bool frontGrounded = IsGrounded(_frontWheel);
                 bool rearGrounded = IsGrounded(_rearWheel);
 
-                // Wheelie: rear down, front up
-                if (!rearGrounded || frontGrounded) return;
+                // Wheelie state: rear down, front up
+                bool inWheelieState = rearGrounded && !frontGrounded;
 
-                float pitch = Mathf.Asin(Mathf.Clamp(__instance.transform.forward.y, -1f, 1f))
-                              * Mathf.Rad2Deg;
+                // Refresh grace timer while actively wheelie-ing; otherwise tick down
+                if (inWheelieState)
+                    _graceTimer = GraceDuration;
+                else if (_graceTimer > 0f)
+                    _graceTimer -= Time.fixedDeltaTime;
 
-                if (pitch > WheelieAngleLimit.AngleLimit)
+                // Limiter remains active during the grace window so a bump-launch
+                // mid-wheelie doesn't drop the clamp and let the bike over-rotate
+                if (!inWheelieState && _graceTimer <= 0f) return;
+
+                if (CurrentPitch > WheelieAngleLimit.AngleLimit)
                 {
                     // In Unity, rotating around +right with NEGATIVE angular velocity = nose goes UP
                     // (right-hand rule: +right rotation pushes nose DOWN)

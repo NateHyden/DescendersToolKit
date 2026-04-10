@@ -50,11 +50,17 @@ namespace DescendersModMenu.UI
         private static Image _explodeTrack; private static RectTransform _explodeKnob;
         private static Text _explodeVal;
 
+        // Headlights Only
+        private static GameObject _hlRow;
+        private static Text _hlVal;
+        private static Image _hlTrack;
+        private static RectTransform _hlKnob;
+
         public static bool IsAnyActive =>
             SkyColours.CurrentPreset != 0 || SkyColours.StormEnabled ||
             Gravity.Level != 5 ||
             !TreesEnabled || !MusicEnabled || !FogEnabled ||
-            _turboWind || _explodingProps;
+            _turboWind || _explodingProps || HeadlightsOnly.Enabled;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -183,6 +189,17 @@ namespace DescendersModMenu.UI
                     RefreshAll();
                 }, out _fogTrack, out _fogKnob);
 
+                _hlRow = UIHelpers.StatRow("Headlights Only", pg7);
+                _hlVal = UIHelpers.Txt("HlV", _hlRow.transform, "OFF", 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _hlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(_hlRow.transform, "HlT", () =>
+                {
+                    HeadlightsOnly.Toggle();
+                    RefreshAll();
+                }, out _hlTrack, out _hlKnob);
+                UIHelpers.InfoBox(pg7, "Kills all ambient and directional lighting. Only your headlight illuminates the trail. BikeTorch is auto-enabled at max intensity.");
+
                 var wr = UIHelpers.StatRow("Turbo Wind", pg7);
                 _windVal = UIHelpers.Txt("WnV", wr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _windVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
@@ -234,63 +251,100 @@ namespace DescendersModMenu.UI
                 FavouritesManager.RegisterStarButton("Trees", UIHelpers.StarBtn(ter.transform, "Trees", () => FavouritesManager.Toggle("Trees")));
                 FavouritesManager.RegisterStarButton("Music", UIHelpers.StarBtn(mur.transform, "Music", () => FavouritesManager.Toggle("Music")));
                 FavouritesManager.RegisterStarButton("Fog", UIHelpers.StarBtn(fogr.transform, "Fog", () => FavouritesManager.Toggle("Fog")));
+                FavouritesManager.RegisterStarButton("HeadlightsOnly", UIHelpers.StarBtn(_hlRow.transform, "HeadlightsOnly", () => FavouritesManager.Toggle("HeadlightsOnly")));
                 FavouritesManager.RegisterStarButton("SkyColour", UIHelpers.StarBtn(skpr.transform, "SkyColour", () => FavouritesManager.Toggle("SkyColour")));
 
                 // ── FACTORY REGISTRATIONS (World tab mods) ─────────────
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Gravity", DisplayName = "Gravity", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Gravity",
+                    DisplayName = "Gravity",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "Gravity", "Gravity",
                         () => Gravity.Level, () => Gravity.Increase(), () => Gravity.Decrease(),
                         () => (Gravity.Level - 1) / 9f, () => RefreshAll(),
                         () => Gravity.DisplayValue, () => Gravity.Level != 5),
                     IsActive = () => Gravity.Level != 5
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "TimeOfDay", DisplayName = "Time of Day", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "TimeOfDay",
+                    DisplayName = "Time of Day",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "TimeOfDay", "Time of Day",
                         () => TimeOfDay.Level, () => TimeOfDay.Increase(), () => TimeOfDay.Decrease(),
                         () => (TimeOfDay.Level - 1) / 9f, () => RefreshAll(),
                         () => TimeOfDay.DisplayValue, null),
                     IsActive = () => false
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "ExplodingProps", DisplayName = "Exploding Props", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "ExplodingProps",
+                    DisplayName = "Exploding Props",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ExplodingProps", "Exploding Props",
                         () => ExplodingProps.Enabled, () => { ExplodingProps.Toggle(); _explodingProps = ExplodingProps.Enabled; }, () => RefreshAll()),
                     IsActive = () => ExplodingProps.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "TurboWind", DisplayName = "Turbo Wind", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "TurboWind",
+                    DisplayName = "Turbo Wind",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "TurboWind", "Turbo Wind",
                         () => _turboWind, () => { _turboWind = !_turboWind; ToggleTurboWind(_turboWind); }, () => RefreshAll()),
                     IsActive = () => _turboWind
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Storm", DisplayName = "Storm", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Storm",
+                    DisplayName = "Storm",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Storm", "Storm",
                         () => SkyColours.StormEnabled, () => SkyColours.ToggleStorm(), () => RefreshAll()),
                     IsActive = () => SkyColours.StormEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Trees", DisplayName = "Trees & Foliage", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Trees",
+                    DisplayName = "Trees & Foliage",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Trees", "Trees & Foliage",
                         () => !TreesEnabled, () => { TreesEnabled = !TreesEnabled; ToggleTrees(TreesEnabled); }, () => RefreshAll()),
                     IsActive = () => !TreesEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Music", DisplayName = "Music", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Music",
+                    DisplayName = "Music",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Music", "Music",
                         () => !MusicEnabled, () => { MusicEnabled = !MusicEnabled; ToggleMusic(MusicEnabled); }, () => RefreshAll()),
                     IsActive = () => !MusicEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Fog", DisplayName = "Fog", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Fog",
+                    DisplayName = "Fog",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Fog", "Fog",
                         () => !FogEnabled, () => { FogEnabled = !FogEnabled; ToggleFog(FogEnabled); }, () => RefreshAll()),
                     IsActive = () => !FogEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "SkyColour", DisplayName = "Sky Colour", TabBadge = "WORLD",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "HeadlightsOnly",
+                    DisplayName = "Headlights Only",
+                    TabBadge = "WORLD",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "HeadlightsOnly", "Headlights Only",
+                        () => HeadlightsOnly.Enabled, () => HeadlightsOnly.Toggle(), () => RefreshAll()),
+                    IsActive = () => HeadlightsOnly.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "SkyColour",
+                    DisplayName = "Sky Colour",
+                    TabBadge = "WORLD",
                     BuildControls = (p) => {
                         var row = UIHelpers.StatRow("Colour", p);
                         UIHelpers.ActionBtn(row.transform, "Default", () => { SkyColours.RestoreDefault(); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 50);
@@ -459,6 +513,7 @@ namespace DescendersModMenu.UI
             if (!TreesEnabled) { TreesEnabled = true; ToggleTrees(true); }
             if (!MusicEnabled) { MusicEnabled = true; ToggleMusic(true); }
             if (!FogEnabled) { FogEnabled = true; ToggleFog(true); }
+            if (HeadlightsOnly.Enabled) HeadlightsOnly.Toggle();
         }
 
         public static void RefreshAll()
@@ -476,6 +531,10 @@ namespace DescendersModMenu.UI
 
             if (_fogVal) { _fogVal.text = FogEnabled ? "ON" : "OFF"; _fogVal.color = FogEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_fogTrack, _fogKnob, FogEnabled);
+
+            bool hlOn = HeadlightsOnly.Enabled;
+            if (_hlVal) { _hlVal.text = hlOn ? "ON" : "OFF"; _hlVal.color = hlOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_hlTrack, _hlKnob, hlOn);
 
             if (_windVal) { _windVal.text = _turboWind ? "ON" : "OFF"; _windVal.color = _turboWind ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_windTrack, _windKnob, _turboWind);

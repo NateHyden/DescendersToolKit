@@ -32,6 +32,12 @@ namespace DescendersModMenu.UI
         private static Image autoBalTrack; private static RectTransform autoBalKnob;
         // Bike
         private static Text bikeVal;
+
+        // ── Trick Set Swap ────────────────────────────────────────────
+        private static Text tssSrcVal;        // shows current source bike name
+        private static Text tssTogVal;        // ON / OFF text
+        private static Image tssTrack;
+        private static RectTransform tssKnob;
         // FOV
         private static Text fovVal, fovTogVal;
         private static Image fovBar, fovTrack;
@@ -53,17 +59,17 @@ namespace DescendersModMenu.UI
         // No Speed Cap
         private static Image capBg, capBdr; private static Text capTxt;
         // ── Pages ─────────────────────────────────────────────────────
-        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15, pg16, pg17;
+        private static GameObject pg1, pg2, pg3, pg4, pg5, pg6, pg7, pg8, pg9, pg10, pg11, pg12, pg13, pg14, pg15, pg16, pg17, pg18;
         private static int cur = 1;
 
-        private static readonly int[] PageOrder = { 17, 1, 16, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 3 };
-        private static readonly string[] NavLabels = { "\u2605 Favourites", "General", "Session", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Info/Customise" };
-        private static readonly string[] GroupLabels = { null, "SEP", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null };
+        private static readonly int[] PageOrder = { 17, 1, 16, 6, 8, 10, 7, 9, 11, 12, 13, 14, 15, 2, 5, 4, 18, 3 };
+        private static readonly string[] NavLabels = { "\u2605 Favourites", "General", "Session", "Move", "Bike", "Graphics", "World", "Fun", "Outfit", "Chat", "Modes", "GhostReplay", "MapChange", "ESP", "Score", "Unlock", "Screenshot", "Info/Customise" };
+        private static readonly string[] GroupLabels = { null, "SEP", null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null };
 
-        private static Image[] _navBars = new Image[17];
-        private static Text[] _navTxts = new Text[17];
-        private static Image[] _navBgs = new Image[17];
-        private static Image[] _activeDots = new Image[17];
+        private static Image[] _navBars = new Image[18];
+        private static Text[] _navTxts = new Text[18];
+        private static Image[] _navBgs = new Image[18];
+        private static Image[] _activeDots = new Image[18];
         private static UnityEngine.UI.Image _infoTabDot;
 
         public static CanvasGroup RootCanvasGroup { get; private set; }
@@ -216,7 +222,7 @@ namespace DescendersModMenu.UI
                 sVlg.childAlignment = TextAnchor.UpperCenter;
                 sVlg.childForceExpandWidth = true; sVlg.childForceExpandHeight = false;
 
-                for (int i = 0; i < 17; i++)
+                for (int i = 0; i < 18; i++)
                 {
                     // ── Group separator ────────────────────────────────
                     if (GroupLabels[i] != null)
@@ -314,6 +320,7 @@ namespace DescendersModMenu.UI
                 pg16 = UIHelpers.Obj("P16", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg16)); PageSessionUI.CreatePage(pg16.transform);
 
                 pg17 = UIHelpers.Obj("P17", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg17)); PageFavsUI.CreatePage(pg17.transform);
+                pg18 = UIHelpers.Obj("P18", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg18)); Page18UI.CreatePage(pg18.transform);
 
                 RefreshAll(); RefreshTabs();
                 Mods.MenuCustomiser.LoadFromFile();
@@ -448,6 +455,20 @@ namespace DescendersModMenu.UI
             bikeVal = UIHelpers.Txt("BV", br.transform, "Enduro", 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
             bikeVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
             UIHelpers.SmallBtn(br.transform, "\u25B6", () => { BikeSwitcher.NextBike(); RefreshAll(); });
+
+            // ── Trick Set Swap ────────────────────────────────────────
+            // Source bike picker (◀ name ▶)
+            var tssSrc = UIHelpers.StatRow("Trick Source", pg);
+            UIHelpers.SmallBtn(tssSrc.transform, "\u25C0", () => { TrickSetSwap.PrevSource(); RefreshAll(); });
+            tssSrcVal = UIHelpers.Txt("TSV", tssSrc.transform, TrickSetSwap.CurrentSourceName, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+            tssSrcVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
+            UIHelpers.SmallBtn(tssSrc.transform, "\u25B6", () => { TrickSetSwap.NextSource(); RefreshAll(); });
+
+            // Toggle row
+            var tssR = UIHelpers.StatRow("Trick Set Swap", pg);
+            tssTogVal = UIHelpers.Txt("TSTV", tssR.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+            tssTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+            UIHelpers.Toggle(tssR.transform, "TST", () => { TrickSetSwap.Toggle(); RefreshAll(); }, out tssTrack, out tssKnob);
 
             // ── FOV (now with toggle) ─────────────────────────────────
             var fr = UIHelpers.StatRow("FOV", pg);
@@ -665,19 +686,41 @@ namespace DescendersModMenu.UI
             FavouritesManager.Register(new ModFavEntry
             {
                 Id = "BikeSwitcher",
-                DisplayName = "Bike Switcher",
+                DisplayName = "Bike",
                 TabBadge = "GENERAL",
                 BuildControls = (fp) => {
+                    // ── Bike picker row ──
                     var row = UIHelpers.StatRow("Bike", fp);
                     UIHelpers.SmallBtn(row.transform, "\u25C0", () => { Mods.BikeSwitcher.PreviousBike(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
                     var bv = UIHelpers.Txt("FBV", row.transform, "Enduro", 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                     bv.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
                     UIHelpers.SmallBtn(row.transform, "\u25B6", () => { Mods.BikeSwitcher.NextBike(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+
+                    // ── Trick Source picker row ──
+                    var tsRow = UIHelpers.StatRow("Trick Source", fp);
+                    UIHelpers.SmallBtn(tsRow.transform, "\u25C0", () => { Mods.TrickSetSwap.PrevSource(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    var tsv = UIHelpers.Txt("FTSV", tsRow.transform, Mods.TrickSetSwap.CurrentSourceName, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                    tsv.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
+                    UIHelpers.SmallBtn(tsRow.transform, "\u25B6", () => { Mods.TrickSetSwap.NextSource(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+
+                    // ── Trick Set Swap toggle row ──
+                    var tssRow = UIHelpers.StatRow("Trick Set Swap", fp);
+                    var tssVal = UIHelpers.Txt("FTSSV", tssRow.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                    tssVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                    Image fTssTrack; RectTransform fTssKnob;
+                    UIHelpers.Toggle(tssRow.transform, "FTg_TrickSetSwap",
+                        () => { Mods.TrickSetSwap.Toggle(); RefreshAll(); PageFavsUI.RefreshFavourites(); },
+                        out fTssTrack, out fTssKnob);
+
                     FavouritesManager.RegisterRefresh("BikeSwitcher", () => {
                         if (bv) { switch (Mods.BikeSwitcher.CurrentBikeIndex) { case 0: bv.text = "Enduro"; break; case 1: bv.text = "Downhill"; break; case 2: bv.text = "Hardtail"; break; case 3: bv.text = "BRNZL Enduro"; break; default: bv.text = "Unknown"; break; } }
+                        if (tsv) tsv.text = Mods.TrickSetSwap.CurrentSourceName;
+                        bool tssOn = Mods.TrickSetSwap.Enabled;
+                        if (tssVal) { tssVal.text = tssOn ? "ON" : "OFF"; tssVal.color = tssOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+                        UIHelpers.SetToggle(fTssTrack, fTssKnob, tssOn);
                     });
                 },
-                IsActive = () => false
+                IsActive = () => Mods.TrickSetSwap.Enabled
             });
             FavouritesManager.Register(new ModFavEntry
             {
@@ -761,6 +804,7 @@ namespace DescendersModMenu.UI
                     case 14: return Mods.GhostReplay.Enabled;
                     case 16: return PageSessionUI.IsAnyActive;
                     case 17: return PageFavsUI.IsAnyActive;
+                    case 18: return Page18UI.IsAnyActive;
                     default: return false;
                 }
             }
@@ -784,8 +828,9 @@ namespace DescendersModMenu.UI
             if (pg16) pg16.SetActive(cur == 16);
             if (pg17) pg17.SetActive(cur == 17);
             if (cur == 17) PageFavsUI.CheckDirty();
+            if (pg18) pg18.SetActive(cur == 18);
 
-            for (int i = 0; i < 17; i++)
+            for (int i = 0; i < 18; i++)
             {
                 bool on = PageOrder[i] == cur;
                 bool active = IsPageActive(PageOrder[i]);
@@ -868,6 +913,12 @@ namespace DescendersModMenu.UI
                 }
             }
 
+            // ── Trick Set Swap ────────────────────────────────────────
+            if (tssSrcVal) tssSrcVal.text = TrickSetSwap.CurrentSourceName;
+            bool tssOn = TrickSetSwap.Enabled;
+            if (tssTogVal) { tssTogVal.text = tssOn ? "ON" : "OFF"; tssTogVal.color = tssOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(tssTrack, tssKnob, tssOn);
+
             // ── FOV ───────────────────────────────────────────────────
             bool fovOn = FOV.Enabled;
             if (fovTogVal) { fovTogVal.text = fovOn ? "ON" : "OFF"; fovTogVal.color = fovOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
@@ -913,7 +964,9 @@ namespace DescendersModMenu.UI
 
         public static void TickLive()
         {
-            PageSessionUI.TickLive();
+            // Only update session tab text when menu is visible — eliminates
+            // ~720 string allocations/sec that were happening every frame regardless
+            if (MenuUI.IsOpen) PageSessionUI.TickLive();
 
             // Update status — reapplied every tick so it survives menu rebuilds after scene changes
             if ((object)_updateStatusText != null)

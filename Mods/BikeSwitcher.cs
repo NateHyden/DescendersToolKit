@@ -29,6 +29,12 @@ namespace DescendersModMenu.Mods
         {
             try
             {
+                // If TrickSetSwap is on, restore the current bike's original gestures
+                // BEFORE switching — otherwise the modified array would stay applied to
+                // the bike type we're leaving and re-appear next time we switch back to it.
+                try { if (TrickSetSwap.Enabled) TrickSetSwap.Disable(); }
+                catch (Exception tssEx) { MelonLogger.Warning("BikeSwitcher: TrickSetSwap.Disable failed: " + tssEx.Message); }
+
                 GameData gameData = UnityEngine.Object.FindObjectOfType<GameData>();
                 if (object.ReferenceEquals(gameData, null))
                 {

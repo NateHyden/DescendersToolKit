@@ -13,7 +13,7 @@ namespace DescendersModMenu
         public const string Description = "A modding toolkit for Descenders";
         public const string Author = "NateHyden";
         public const string Company = null;
-        public const string Version = "3.8.0";
+        public const string Version = "3.9.0";
         public const string DownloadLink = null;
     }
 
@@ -73,12 +73,16 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("CutBrakes.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("CutBrakes", false, ex.Message); }
             try { BrakeFade.ApplyPatch(harmony); DiagnosticsManager.Report("BrakeFade", true); }
             catch (System.Exception ex) { MelonLogger.Error("BrakeFade.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("BrakeFade", false, ex.Message); }
+            try { BikeDamage.ApplyPatch(harmony); DiagnosticsManager.Report("BikeDamage", true); }
+            catch (System.Exception ex) { MelonLogger.Error("BikeDamage.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("BikeDamage", false, ex.Message); }
             try { ReverseSteering.ApplyPatch(harmony); DiagnosticsManager.Report("ReverseSteering", true); }
             catch (System.Exception ex) { MelonLogger.Error("ReverseSteering.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("ReverseSteering", false, ex.Message); }
             try { AutoBalance.ApplyPatch(harmony); DiagnosticsManager.Report("AutoBalance", true); }
             catch (System.Exception ex) { MelonLogger.Error("AutoBalance.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("AutoBalance", false, ex.Message); }
             try { IceMode.ApplyPatch(harmony); DiagnosticsManager.Report("IceMode", true); }
             catch (System.Exception ex) { MelonLogger.Error("IceMode.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("IceMode", false, ex.Message); }
+            try { TyrePressure.ApplyPatch(harmony); DiagnosticsManager.Report("TyrePressure", true); }
+            catch (System.Exception ex) { MelonLogger.Error("TyrePressure.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("TyrePressure", false, ex.Message); }
             try { SkyColours.ApplyPatch(harmony); }
             catch (System.Exception ex) { MelonLogger.Error("SkyColours.ApplyPatch: " + ex.Message); }
             try { DrunkMode.ApplyPatch(harmony); DiagnosticsManager.Report("DrunkMode", true); }
@@ -93,6 +97,8 @@ namespace DescendersModMenu
             catch (System.Exception ex) { MelonLogger.Error("NoSpeedWobbles patch: " + ex.Message); DiagnosticsManager.Report("NoSpeedWobbles", false, ex.Message); }
             try { WheelieAngleLimit.ApplyPatch(harmony); DiagnosticsManager.Report("WheelieAngleLimit", true); }
             catch (System.Exception ex) { MelonLogger.Error("WheelieAngleLimit patch: " + ex.Message); DiagnosticsManager.Report("WheelieAngleLimit", false, ex.Message); }
+            try { TrickSetSwap.ApplyPatch(harmony); DiagnosticsManager.Report("TrickSetSwap", true); }
+            catch (System.Exception ex) { MelonLogger.Error("TrickSetSwap patch: " + ex.Message); DiagnosticsManager.Report("TrickSetSwap", false, ex.Message); }
             try { MapChanger.ApplyPatch(harmony); DiagnosticsManager.Report("MapChanger", true); }
             catch (System.Exception ex) { MelonLogger.Warning("MapChanger.ApplyPatch: " + ex.Message); DiagnosticsManager.Report("MapChanger", false, ex.Message); }
             try { NoBail.ApplyPatch(harmony); }
@@ -194,6 +200,12 @@ namespace DescendersModMenu
             bool wasNoSpeedWobbles = GameModifierMods.NoSpeedWobblesEnabled;
             bool wasSlowMoOnBail = SlowMoOnBail.Enabled;
             bool wasIceMode = IceMode.Enabled;
+            bool wasTyrePressure = TyrePressure.Enabled;
+            int tyrePressureLv = TyrePressure.Level;
+            bool wasBikeDamage = BikeDamage.Enabled;
+            bool wasHeadlightsOnly = HeadlightsOnly.Enabled;
+            bool wasUIRemover = UIRemover.Enabled;
+            bool wasInstantRespawn = InstantRespawn.Enabled;
             bool wasStickyTyres = StickyTyres.Enabled;
             bool wasAirControl = AirControl.Enabled;
             bool wasNoBail = NoBail.Enabled;
@@ -241,6 +253,7 @@ namespace DescendersModMenu
             int rearWheelLv = Page8UI.CurrentRearWheelLevel;
             bool wasSuspHUD = SuspensionHUD.Enabled;
             bool wasBrakeFade = BrakeFade.Enabled;
+            int brakeBalanceLv = BrakeFade.BalanceLevel;
 
             // Log
             MelonLogger.Msg("[Reapply] === SNAPSHOT (" + sceneName + ") ===");
@@ -253,6 +266,8 @@ namespace DescendersModMenu
             if (wasNoSpeedWobbles) MelonLogger.Msg("[Reapply]   NoSpeedWobbles");
             if (wasSlowMoOnBail) MelonLogger.Msg("[Reapply]   SlowMoOnBail");
             if (wasIceMode) MelonLogger.Msg("[Reapply]   IceMode");
+            if (wasTyrePressure) MelonLogger.Msg("[Reapply]   TyrePressure lv=" + tyrePressureLv);
+            if (wasInstantRespawn) MelonLogger.Msg("[Reapply]   InstantRespawn");
             if (wasStickyTyres) MelonLogger.Msg("[Reapply]   StickyTyres");
             if (wasAirControl) MelonLogger.Msg("[Reapply]   AirControl");
             if (wasNoBail) MelonLogger.Msg("[Reapply]   NoBail");
@@ -284,12 +299,12 @@ namespace DescendersModMenu
             if (wasWheelSize) MelonLogger.Msg("[Reapply]   WheelSize level=" + wheelSizeLevel + " mode=" + wheelSizeMode);
             if (wasIndividualWheel) MelonLogger.Msg("[Reapply]   IndividualWheel F=" + frontWheelLv + " R=" + rearWheelLv);
             if (wasSuspHUD) MelonLogger.Msg("[Reapply]   SuspensionHUD");
-            if (wasBrakeFade) MelonLogger.Msg("[Reapply]   BrakeFade");
+            if (wasBrakeFade) MelonLogger.Msg("[Reapply]   BrakeFade balance=" + brakeBalanceLv);
 
             // == RESET everything ==
             SlowMotion.Reset(); QuickBrake.Reset(); QuickBrake_Patch.ClearCache();
             CutBrakes.Reset(); ReverseSteering.Reset(); AutoBalance.Reset();
-            WideTyres.Reset(); IceMode.Reset(); SpeedrunTimer.Reset();
+            WideTyres.Reset(); IceMode.Reset(); TyrePressure.Reset(); InstantRespawn.Reset(); BikeDamage.Reset(); HeadlightsOnly.Reset(); UIRemover.Reset(); ScreenshotMode.Reset(); SpeedrunTimer.Reset();
             GameModifierMods.NoSpeedWobblesReset();
             MirrorMode.Reset(); FlyMode.Reset(); DrunkMode.Reset();
             OutfitPresets.Reset(); ModChat.Reset(); SlowMoOnBail.Reset();
@@ -310,6 +325,9 @@ namespace DescendersModMenu
             SessionTrackers.Reset(); ExplodingProps.Reset();
             SuspensionHUD.ClearCache();
             BrakeFade.ClearCache(); BrakeFade_Patch.ClearCache();
+            BikeDamage.ClearBoneCache();
+            HeadlightsOnly.ClearCache();
+            UIRemover.ClearCache();
             if (ESP.Enabled) ESP.Toggle();
 
             // == RESTORE IMMEDIATE (Harmony patches) ==
@@ -322,6 +340,11 @@ namespace DescendersModMenu
             if (wasNoSpeedWobbles) { GameModifierMods.NoSpeedWobblesToggle(); MelonLogger.Msg("[Reapply] IMM NoSpeedWobbles -> " + GameModifierMods.NoSpeedWobblesEnabled); }
             if (wasSlowMoOnBail) { SlowMoOnBail.Toggle(); MelonLogger.Msg("[Reapply] IMM SlowMoOnBail -> " + SlowMoOnBail.Enabled); }
             if (wasIceMode) { IceMode.Toggle(); MelonLogger.Msg("[Reapply] IMM IceMode -> " + IceMode.Enabled); }
+            if (wasTyrePressure) { TyrePressure.SetLevel(tyrePressureLv); TyrePressure.Toggle(); MelonLogger.Msg("[Reapply] IMM TyrePressure -> " + TyrePressure.Enabled + " lv=" + tyrePressureLv); }
+            if (wasBikeDamage) { BikeDamage.Toggle(); MelonLogger.Msg("[Reapply] IMM BikeDamage -> " + BikeDamage.Enabled); }
+            if (wasHeadlightsOnly) { HeadlightsOnly.Toggle(); MelonLogger.Msg("[Reapply] IMM HeadlightsOnly -> " + HeadlightsOnly.Enabled); }
+            if (wasUIRemover) { UIRemover.Toggle(); MelonLogger.Msg("[Reapply] IMM UIRemover -> " + UIRemover.Enabled); }
+            if (wasInstantRespawn) { InstantRespawn.Toggle(); MelonLogger.Msg("[Reapply] IMM InstantRespawn -> " + InstantRespawn.Enabled); }
             if (wasStickyTyres) { StickyTyres.Toggle(); MelonLogger.Msg("[Reapply] IMM StickyTyres -> " + StickyTyres.Enabled); }
             if (wasAirControl) { AirControl.Toggle(); MelonLogger.Msg("[Reapply] IMM AirControl -> " + AirControl.Enabled); }
             if (wasNoSpeedCap) { NoSpeedCap.Toggle(); MelonLogger.Msg("[Reapply] IMM NoSpeedCap -> " + NoSpeedCap.Enabled); }
@@ -352,7 +375,7 @@ namespace DescendersModMenu
             _reapplyIndividualWheel = wasIndividualWheel; _reapplyFrontWheelLevel = frontWheelLv; _reapplyRearWheelLevel = rearWheelLv;
             _reapplyBrakeFade = wasBrakeFade;
 
-            if (_reapplyBrakeFade) { _reapplyBrakeFade = false; BrakeFade.Toggle(); MelonLogger.Msg("[Reapply] IMM BrakeFade -> " + BrakeFade.Enabled); }
+            if (_reapplyBrakeFade) { _reapplyBrakeFade = false; BrakeFade.SetBalanceLevel(brakeBalanceLv); BrakeFade.Toggle(); MelonLogger.Msg("[Reapply] IMM BrakeFade -> " + BrakeFade.Enabled); }
 
             _pendingReapply = wasFlyMode || wasDrunkMode || wasMirrorMode || wasWideTyres ||
                 wasFov || wasSpeedrunTimer || wasAcceleration || wasMaxSpeed ||
@@ -465,6 +488,7 @@ namespace DescendersModMenu
             try { SceneDumper.CheckHotkey(); } catch (System.Exception ex) { MelonLogger.Error("SceneDumper: " + ex.Message); }
             try { SpeedWatcher.CheckHotkey(); } catch (System.Exception ex) { MelonLogger.Error("SpeedWatcher: " + ex.Message); }
             try { TopSpeed.Tick(); } catch (System.Exception ex) { MelonLogger.Error("TopSpeed.Tick: " + ex.Message); }
+            try { ScreenshotMode.Tick(); } catch { }
             try { SessionTrackers.Tick(); } catch (System.Exception ex) { MelonLogger.Error("SessionTrackers.Tick: " + ex.Message); }
             try { MenuWindow.TickLive(); } catch { }
             try { MirrorMode.Tick(); } catch { }
@@ -502,6 +526,7 @@ namespace DescendersModMenu
             try { AirControl.FixedTick(); } catch { }
             try { CenterOfMass.FixedTick(); } catch { }
             try { BoulderDodgeMode.FixedTick(); } catch { }
+            try { BikeDamage.FixedTick(); } catch { }
             // BrakeFade heat model runs inside BrakeFade_Patch.Postfix (no separate tick needed)
         }
 
@@ -512,6 +537,7 @@ namespace DescendersModMenu
             try { DrunkMode.LateTick(); } catch { }
             try { Page8UI.WheelSizeTick(); } catch { }
             try { WideTyres.Tick(); } catch { }
+            try { BikeDamage.Tick(); } catch { }
         }
 
         public override void OnGUI()
@@ -524,6 +550,7 @@ namespace DescendersModMenu
             try { SessionHUD.Draw(); } catch { }
             try { SuspensionHUD.OnGUI(); } catch { }
             try { BrakeFade.OnGUI(); } catch { }
+            try { WheelieHUD.OnGUI(); } catch { }
         }
 
         public override void OnApplicationQuit()

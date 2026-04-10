@@ -144,5 +144,31 @@ namespace DescendersModMenu.BikeStats
 
         // ── Brake Fade ─────────────────────────────────────────────────
         public bool BrakeFadeEnabled = false;
+        public int BrakeBalanceLevel = 6;  // 1=10F/90R … 6=60F/40R (default) … 11=100F/0R
+
+        // ── Wheelie HUD ────────────────────────────────────────────────
+        public bool WheelieHUDEnabled = false;
+
+        // ── Trick Set Swap ─────────────────────────────────────────────
+        // Saved by source bike NAME (not index) so save files survive any
+        // future change to the bike-type discovery order.
+        public bool TrickSetSwapEnabled = false;
+        public string TrickSetSwapSourceName = "";
+
+        // ── Tyre Pressure ──────────────────────────────────────────────
+        public bool TyrePressureEnabled = false;
+        public int TyrePressureLevel = 5;  // 1=Flat … 5=Stock … 10=Hard
+
+        // ── Instant Respawn ────────────────────────────────────────────
+        public bool InstantRespawnEnabled = false;
+
+        // ── Bike Damage ────────────────────────────────────────────────
+        public bool BikeDamageEnabled = false;
+
+        // ── Headlights Only ────────────────────────────────────────────
+        public bool HeadlightsOnlyEnabled = false;
+
+        // ── UI Remover ─────────────────────────────────────────────────
+        public bool UIRemoverEnabled = false;
     }
 }

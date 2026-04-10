@@ -70,6 +70,20 @@ namespace DescendersModMenu.UI
         private static Image _stickyTrack; private static RectTransform _stickyKnob;
         private static Text _stickyVal;
 
+        // ── Tyre Pressure ─────────────────────────────────────────────
+        private static Image _tyrePressureTrack; private static RectTransform _tyrePressureKnob;
+        private static Text _tyrePressureVal;
+        private static Text _tyrePressureLvlVal;
+        private static Text _tyrePressureLabelVal;
+        private static UnityEngine.UI.Button _tyrePressureMinus, _tyrePressurePlus;
+        private static GameObject _tyrePressureRow, _tyrePressureLvlRow;
+
+        // ── Bike Damage ───────────────────────────────────────────────
+        private static GameObject _bikeDamageRow;
+        private static Text _bikeDamageVal;
+        private static Image _bikeDamageTrack;
+        private static RectTransform _bikeDamageKnob;
+
         // ── Reverse Steering ──────────────────────────────────────────
         private static Image _revSteerTrack; private static RectTransform _revSteerKnob;
         private static Text _revSteerVal;
@@ -100,6 +114,10 @@ namespace DescendersModMenu.UI
         private static GameObject _bfRow;
         private static Text _bfVal;
         private static Image _bfTrack; private static RectTransform _bfKnob;
+        // ── Brake Balance ─────────────────────────────────────────────
+        private static Text _bbLabelVal;
+        private static UnityEngine.UI.Button _bbMinus, _bbPlus;
+        private static GameObject _bbRow;
 
         // ── Wheel Size internals ──────────────────────────────────────
         private static readonly float[] WheelScales = { 1.0f, 0.25f, 0.5f, 1.5f, 3.0f };
@@ -134,7 +152,8 @@ namespace DescendersModMenu.UI
             _wheelSizeEnabled || _invisibleBike ||
             WideTyres.Enabled || StickyTyres.Enabled ||
             ReverseSteering.Enabled || IceMode.Enabled || CutBrakes.Enabled ||
-            BikeTorch.Enabled || SuspensionHUD.Enabled || BrakeFade.Enabled;
+            BikeTorch.Enabled || SuspensionHUD.Enabled || BrakeFade.Enabled ||
+            TyrePressure.Enabled || BikeDamage.Enabled;
 
         public static void GlobalReset()
         {
@@ -361,6 +380,43 @@ namespace DescendersModMenu.UI
                 _stickyVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(str2.transform, "StT", () => { StickyTyres.Toggle(); RefreshAll(); }, out _stickyTrack, out _stickyKnob);
 
+                // Tyre Pressure
+                _tyrePressureRow = UIHelpers.StatRow("Tyre Pressure", pg8);
+                var tpr = _tyrePressureRow;
+                _tyrePressureVal = UIHelpers.Txt("TpV", tpr.transform, "OFF", 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _tyrePressureVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(tpr.transform, "TpT", () => { TyrePressure.Toggle(); RefreshAll(); },
+                    out _tyrePressureTrack, out _tyrePressureKnob);
+
+                _tyrePressureLvlRow = UIHelpers.StatRow("Pressure", pg8);
+                var tplr = _tyrePressureLvlRow;
+                _tyrePressureMinus = UIHelpers.SmallBtn(tplr.transform, "\u25C0", () =>
+                {
+                    TyrePressure.Decrease(); RefreshAll();
+                });
+                _tyrePressureLvlVal = UIHelpers.Txt("TpLv", tplr.transform,
+                    TyrePressure.Level.ToString(), 12,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _tyrePressureLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 22;
+                _tyrePressureLabelVal = UIHelpers.Txt("TpLbl", tplr.transform,
+                    TyrePressure.PressureLabel, 11,
+                    FontStyle.Normal, TextAnchor.MiddleLeft, UIHelpers.TextMid);
+                _tyrePressureLabelVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 40;
+                _tyrePressurePlus = UIHelpers.SmallBtn(tplr.transform, "\u25B6", () =>
+                {
+                    TyrePressure.Increase(); RefreshAll();
+                });
+
+                _bikeDamageRow = UIHelpers.StatRow("Bike Damage", pg8);
+                var bdr = _bikeDamageRow;
+                _bikeDamageVal = UIHelpers.Txt("BdV", bdr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _bikeDamageVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                UIHelpers.Toggle(bdr.transform, "BdT", () => { BikeDamage.Toggle(); RefreshAll(); }, out _bikeDamageTrack, out _bikeDamageKnob);
+                var resetBtn = UIHelpers.SmallBtn(bdr.transform, "RESET", () => { BikeDamage.ManualReset(); });
+                resetBtn.gameObject.AddComponent<LayoutElement>().preferredWidth = 48;
+                UIHelpers.InfoBox(pg8, "Crashes make the bike drift left/right — counter-steer to correct. Hard impacts (>43km/h) remove the rear wheel so the back drags on the floor. Press RESET to fix mid-session.");
+
                 UIHelpers.Divider(pg8);
 
                 // ── CONTROLS ──────────────────────────────────────────
@@ -429,6 +485,15 @@ namespace DescendersModMenu.UI
                 _bfVal = UIHelpers.Txt("BfV", bfr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
                 _bfVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(bfr.transform, "BfT", () => { BrakeFade.Toggle(); RefreshAll(); }, out _bfTrack, out _bfKnob);
+
+                _bbRow = UIHelpers.StatRow("Brake Balance", pg8);
+                var bbr = _bbRow;
+                _bbMinus = UIHelpers.SmallBtn(bbr.transform, "\u25C0", () => { BrakeFade.DecreaseBalance(); RefreshAll(); });
+                _bbLabelVal = UIHelpers.Txt("BbLV", bbr.transform,
+                    BrakeFade.BalanceDisplay, 11,
+                    FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
+                _bbLabelVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 64;
+                _bbPlus = UIHelpers.SmallBtn(bbr.transform, "\u25B6", () => { BrakeFade.IncreaseBalance(); RefreshAll(); });
                 UIHelpers.InfoBox(pg8, "Your brake discs overheat from hard braking. Brakes weaken above 150°C and fail completely at 300°C. Let go to cool down — going fast cools them quicker. Watch the top-right HUD.");
 
                 // ── STAR BUTTONS (Favourites) ──────────────────────────
@@ -442,16 +507,22 @@ namespace DescendersModMenu.UI
                 FavouritesManager.RegisterStarButton("RearWheelSize", UIHelpers.StarBtn(_rearWheelRow.transform, "RearWheelSize", () => FavouritesManager.Toggle("RearWheelSize")));
                 FavouritesManager.RegisterStarButton("WideTyres", UIHelpers.StarBtn(_wideTyresRow.transform, "WideTyres", () => FavouritesManager.Toggle("WideTyres")));
                 FavouritesManager.RegisterStarButton("StickyTyres", UIHelpers.StarBtn(_stickyRow.transform, "StickyTyres", () => FavouritesManager.Toggle("StickyTyres")));
+                FavouritesManager.RegisterStarButton("TyrePressure", UIHelpers.StarBtn(_tyrePressureRow.transform, "TyrePressure", () => FavouritesManager.Toggle("TyrePressure")));
+                FavouritesManager.RegisterStarButton("BikeDamage", UIHelpers.StarBtn(_bikeDamageRow.transform, "BikeDamage", () => FavouritesManager.Toggle("BikeDamage")));
                 FavouritesManager.RegisterStarButton("ReverseSteering", UIHelpers.StarBtn(_revSteerRow.transform, "ReverseSteering", () => FavouritesManager.Toggle("ReverseSteering")));
                 FavouritesManager.RegisterStarButton("IceGrip", UIHelpers.StarBtn(_iceModeRow.transform, "IceGrip", () => FavouritesManager.Toggle("IceGrip")));
                 FavouritesManager.RegisterStarButton("CutBrakes", UIHelpers.StarBtn(_cutBrakesRow.transform, "CutBrakes", () => FavouritesManager.Toggle("CutBrakes")));
                 FavouritesManager.RegisterStarButton("BikeTorch", UIHelpers.StarBtn(_torchRow.transform, "BikeTorch", () => FavouritesManager.Toggle("BikeTorch")));
                 FavouritesManager.RegisterStarButton("SuspensionHUD", UIHelpers.StarBtn(_shRow.transform, "SuspensionHUD", () => FavouritesManager.Toggle("SuspensionHUD")));
                 FavouritesManager.RegisterStarButton("BrakeFade", UIHelpers.StarBtn(_bfRow.transform, "BrakeFade", () => FavouritesManager.Toggle("BrakeFade")));
+                FavouritesManager.RegisterStarButton("BrakeBalance", UIHelpers.StarBtn(_bbRow.transform, "BrakeBalance", () => FavouritesManager.Toggle("BrakeBalance")));
 
                 // ── FACTORY REGISTRATIONS (Bike tab mods) ──────────────
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Suspension", DisplayName = "Suspension", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Suspension",
+                    DisplayName = "Suspension",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildTripleSlider(p, "Suspension",
                         "Travel", () => Suspension.TravelLevel, () => Suspension.TravelIncrease(), () => Suspension.TravelDecrease(),
                         "Stiffness", () => Suspension.StiffnessLevel, () => Suspension.StiffnessIncrease(), () => Suspension.StiffnessDecrease(),
@@ -460,8 +531,11 @@ namespace DescendersModMenu.UI
                         () => RefreshAll(), 5),
                     IsActive = () => Suspension.TravelLevel != 5 || Suspension.StiffnessLevel != 5 || Suspension.DampingLevel != 5
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "BikeSize", DisplayName = "Bike Size", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "BikeSize",
+                    DisplayName = "Bike Size",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildStepper(p, "BikeSize", "Bike Size",
                         () => _bikeSizeLevel,
                         () => { if (_bikeSizeLevel > 1) { _bikeSizeLevel--; ApplyBikeSizeLevel(_bikeSizeLevel); } },
@@ -469,14 +543,20 @@ namespace DescendersModMenu.UI
                         1, 20, () => RefreshAll(), 10),
                     IsActive = () => _bikeSizeLevel != 10
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "InvisibleBike", DisplayName = "Invisible Bike", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "InvisibleBike",
+                    DisplayName = "Invisible Bike",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "InvisibleBike", "Invisible Bike",
                         () => _invisibleBike, () => { _invisibleBike = !_invisibleBike; ToggleInvisibleBike(_invisibleBike); }, () => RefreshAll()),
                     IsActive = () => _invisibleBike
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "WheelSize", DisplayName = "Wheel Size", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "WheelSize",
+                    DisplayName = "Wheel Size",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildToggleStepper(p, "WheelSize", "Wheel Size",
                         () => _wheelSizeEnabled,
                         () => { _wheelSizeEnabled = !_wheelSizeEnabled; if (_wheelSizeEnabled) { _individualWheelMode = false; ApplyWheelSizeLevel(_wheelSizeLevel); } else SetWheelSize(0); },
@@ -486,8 +566,11 @@ namespace DescendersModMenu.UI
                         1, 20, () => RefreshAll(), 10),
                     IsActive = () => _wheelSizeEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "FrontWheelSize", DisplayName = "Front Wheel Size", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "FrontWheelSize",
+                    DisplayName = "Front Wheel Size",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildStepper(p, "FrontWheelSize", "Front Wheel Size",
                         () => _frontWheelLevel,
                         () => { if (_frontWheelLevel > 1) { _frontWheelLevel--; _individualWheelMode = true; if (_wheelSizeEnabled) _wheelSizeEnabled = false; ApplyIndividualWheelLevels(); } },
@@ -495,8 +578,11 @@ namespace DescendersModMenu.UI
                         1, 20, () => RefreshAll(), 10),
                     IsActive = () => _individualWheelMode && _frontWheelLevel != 10
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "RearWheelSize", DisplayName = "Rear Wheel Size", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "RearWheelSize",
+                    DisplayName = "Rear Wheel Size",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildStepper(p, "RearWheelSize", "Rear Wheel Size",
                         () => _rearWheelLevel,
                         () => { if (_rearWheelLevel > 1) { _rearWheelLevel--; _individualWheelMode = true; if (_wheelSizeEnabled) _wheelSizeEnabled = false; ApplyIndividualWheelLevels(); } },
@@ -504,57 +590,116 @@ namespace DescendersModMenu.UI
                         1, 20, () => RefreshAll(), 10),
                     IsActive = () => _individualWheelMode && _rearWheelLevel != 10
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "WideTyres", DisplayName = "Wide Tyres", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "WideTyres",
+                    DisplayName = "Wide Tyres",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "WideTyres", "Wide Tyres",
                         () => WideTyres.Enabled, () => WideTyres.Toggle(),
                         () => WideTyres.Level, () => WideTyres.Increase(), () => WideTyres.Decrease(),
                         20, () => (WideTyres.Level - 1) / 19f, () => RefreshAll()),
                     IsActive = () => WideTyres.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "StickyTyres", DisplayName = "Sticky Tyres", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "StickyTyres",
+                    DisplayName = "Sticky Tyres",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "StickyTyres", "Sticky Tyres",
                         () => StickyTyres.Enabled, () => StickyTyres.Toggle(), () => RefreshAll()),
                     IsActive = () => StickyTyres.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "ReverseSteering", DisplayName = "Reverse Steering", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "TyrePressure",
+                    DisplayName = "Tyre Pressure",
+                    TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildToggleStepper(p, "TyrePressure", "Tyre Pressure",
+                        () => TyrePressure.Enabled,
+                        () => TyrePressure.Toggle(),
+                        () => TyrePressure.Level,
+                        () => TyrePressure.Decrease(),
+                        () => TyrePressure.Increase(),
+                        1, 10, () => RefreshAll(), 5),
+                    IsActive = () => TyrePressure.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "BikeDamage",
+                    DisplayName = "Bike Damage",
+                    TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "BikeDamage", "Bike Damage",
+                        () => BikeDamage.Enabled, () => BikeDamage.Toggle(), () => RefreshAll()),
+                    IsActive = () => BikeDamage.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "ReverseSteering",
+                    DisplayName = "Reverse Steering",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ReverseSteering", "Reverse Steering",
                         () => ReverseSteering.Enabled, () => ReverseSteering.Toggle(), () => RefreshAll()),
                     IsActive = () => ReverseSteering.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "IceGrip", DisplayName = "Ice Grip", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "IceGrip",
+                    DisplayName = "Ice Grip",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "IceGrip", "Ice Grip",
                         () => IceMode.Enabled, () => IceMode.Toggle(), () => RefreshAll()),
                     IsActive = () => IceMode.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "CutBrakes", DisplayName = "Cut Brakes", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "CutBrakes",
+                    DisplayName = "Cut Brakes",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "CutBrakes", "Cut Brakes",
                         () => CutBrakes.Enabled, () => CutBrakes.Toggle(), () => RefreshAll()),
                     IsActive = () => CutBrakes.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "BikeTorch", DisplayName = "Bike Torch", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "BikeTorch",
+                    DisplayName = "Bike Torch",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildToggleIntensityStepper(p, "BikeTorch", "Headlight",
                         () => BikeTorch.Enabled, () => BikeTorch.Toggle(),
                         () => BikeTorch.IntensityDisplay, () => BikeTorch.PrevIntensity(), () => BikeTorch.NextIntensity(),
                         () => RefreshAll()),
                     IsActive = () => BikeTorch.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "SuspensionHUD", DisplayName = "Suspension HUD", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "SuspensionHUD",
+                    DisplayName = "Suspension HUD",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "SuspensionHUD", "Suspension HUD",
                         () => SuspensionHUD.Enabled, () => SuspensionHUD.Toggle(), () => RefreshAll()),
                     IsActive = () => SuspensionHUD.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "BrakeFade", DisplayName = "Brake Fade", TabBadge = "BIKE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "BrakeFade",
+                    DisplayName = "Brake Fade",
+                    TabBadge = "BIKE",
                     BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "BrakeFade", "Brake Fade",
                         () => BrakeFade.Enabled, () => BrakeFade.Toggle(), () => RefreshAll()),
                     IsActive = () => BrakeFade.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "BrakeBalance",
+                    DisplayName = "Brake Balance",
+                    TabBadge = "BIKE",
+                    BuildControls = (p) => PageFavsUI.BuildStepper(p, "BrakeBalance", "Brake Balance",
+                        () => BrakeFade.BalanceLevel,
+                        () => BrakeFade.DecreaseBalance(),
+                        () => BrakeFade.IncreaseBalance(),
+                        1, 11, () => RefreshAll(), 6),
+                    IsActive = () => BrakeFade.BalanceLevel != 6
                 });
 
                 RefreshAll();
@@ -910,12 +1055,16 @@ namespace DescendersModMenu.UI
             if (WideTyres.Enabled) WideTyres.Toggle();
             WideTyres.SetLevel(5);
             if (StickyTyres.Enabled) StickyTyres.Toggle();
+            if (TyrePressure.Enabled) TyrePressure.Toggle();
+            TyrePressure.SetLevel(5);
+            if (BikeDamage.Enabled) BikeDamage.Toggle();
             if (ReverseSteering.Enabled) ReverseSteering.Toggle();
             if (IceMode.Enabled) IceMode.Toggle();
             if (CutBrakes.Enabled) CutBrakes.Toggle();
             if (BikeTorch.Enabled) BikeTorch.Toggle();
             if (SuspensionHUD.Enabled) SuspensionHUD.Toggle();
             if (BrakeFade.Enabled) BrakeFade.Toggle();
+            BrakeFade.SetBalanceLevel(6);
             _bikeSizeLevel = 10;
             ResetBikeScaleToDefault();
             _wheelSizeLevel = 10;
@@ -976,6 +1125,22 @@ namespace DescendersModMenu.UI
             UIHelpers.SetToggle(_stickyTrack, _stickyKnob, stOn);
             UIHelpers.SetRowActive(_stickyRow, stOn);
 
+            // Tyre Pressure
+            bool tpOn = TyrePressure.Enabled;
+            if (_tyrePressureVal) { _tyrePressureVal.text = tpOn ? "ON" : "OFF"; _tyrePressureVal.color = tpOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_tyrePressureTrack, _tyrePressureKnob, tpOn);
+            UIHelpers.SetRowActive(_tyrePressureRow, tpOn);
+            UIHelpers.SetRowActive(_tyrePressureLvlRow, tpOn);
+            if (_tyrePressureLvlVal) _tyrePressureLvlVal.text = TyrePressure.Level.ToString();
+            if (_tyrePressureLabelVal) _tyrePressureLabelVal.text = TyrePressure.PressureLabel;
+            if ((object)_tyrePressureMinus != null) _tyrePressureMinus.interactable = tpOn && TyrePressure.Level > 1;
+            if ((object)_tyrePressurePlus != null) _tyrePressurePlus.interactable = tpOn && TyrePressure.Level < 10;
+
+            // Bike Damage
+            bool bdOn = BikeDamage.Enabled;
+            if (_bikeDamageVal) { _bikeDamageVal.text = bdOn ? "ON" : "OFF"; _bikeDamageVal.color = bdOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_bikeDamageTrack, _bikeDamageKnob, bdOn);
+
             // Reverse Steering
             bool revOn = ReverseSteering.Enabled;
             if (_revSteerVal) { _revSteerVal.text = revOn ? "ON" : "OFF"; _revSteerVal.color = revOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
@@ -1012,6 +1177,12 @@ namespace DescendersModMenu.UI
             if (_bfVal) { _bfVal.text = bfOn ? "ON" : "OFF"; _bfVal.color = bfOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_bfTrack, _bfKnob, bfOn);
             UIHelpers.SetRowActive(_bfRow, bfOn);
+
+            // Brake Balance
+            UIHelpers.SetRowActive(_bbRow, true);
+            if (_bbLabelVal) _bbLabelVal.text = BrakeFade.BalanceDisplay;
+            if ((object)_bbMinus != null) _bbMinus.interactable = BrakeFade.BalanceLevel > 1;
+            if ((object)_bbPlus != null) _bbPlus.interactable = BrakeFade.BalanceLevel < 11;
         }
     }
 }

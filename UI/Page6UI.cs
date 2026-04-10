@@ -21,6 +21,12 @@ namespace DescendersModMenu.UI
         private static Image _wbTrack, _iacTrack;
         private static RectTransform _wbKnob, _iacKnob;
 
+        // ── Wheelie HUD row fields ────────────────────────────────────
+        private static GameObject _whRow;
+        private static Text _whTogVal;
+        private static Image _whTrack;
+        private static RectTransform _whKnob;
+
         // ── Near Miss Sensitivity ─────────────────────────────────────
         private static Text _nmVal, _nmTogVal;
         private static Image _nmBar, _nmTrack;
@@ -33,7 +39,8 @@ namespace DescendersModMenu.UI
         public static bool IsAnyActive =>
             Movement.SpinEnabled || Movement.HopEnabled ||
             Movement.WheelieEnabled || Movement.LeanEnabled ||
-            WheelieAngleLimit.Enabled || AirControl.Enabled;
+            WheelieAngleLimit.Enabled || AirControl.Enabled ||
+            WheelieHUD.Enabled;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -146,6 +153,16 @@ namespace DescendersModMenu.UI
                 _wbTrack = wbTrack; _wbKnob = wbKnob;
                 UIHelpers.InfoBox(pg6, "Caps pitch angle in a wheelie. Lower = tighter cap.");
 
+                // Wheelie HUD (toggle-only — shows live pitch + arc gauge top-right)
+                var whr = UIHelpers.StatRow("Wheelie HUD", pg6);
+                _whRow = whr;
+                _whTogVal = UIHelpers.Txt("WhV", whr.transform, "OFF", 11, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.OffColor);
+                _whTogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
+                Image whTrack; RectTransform whKnob;
+                UIHelpers.Toggle(whr.transform, "WhT", () => { WheelieHUD.Toggle(); RefreshAll(); }, out whTrack, out whKnob);
+                _whTrack = whTrack; _whKnob = whKnob;
+                UIHelpers.InfoBox(pg6, "Top-right HUD showing a live bike pitch gauge — green to red as you approach your wheelie limit. Stacks below Brake Fade if both are on.");
+
                 // Air Control
                 var iacr = UIHelpers.StatRow("Air Control", pg6);
                 iacBar = UIHelpers.MakeBar("IaB", iacr.transform, (AirControl.Level - 1) / 9f);
@@ -225,6 +242,7 @@ namespace DescendersModMenu.UI
                 FavouritesManager.RegisterStarButton("Wheelie", UIHelpers.StarBtn(wr.transform, "Wheelie", () => FavouritesManager.Toggle("Wheelie")));
                 FavouritesManager.RegisterStarButton("Lean", UIHelpers.StarBtn(lr.transform, "Lean", () => FavouritesManager.Toggle("Lean")));
                 FavouritesManager.RegisterStarButton("WheelieAngle", UIHelpers.StarBtn(wbr.transform, "WheelieAngle", () => FavouritesManager.Toggle("WheelieAngle")));
+                FavouritesManager.RegisterStarButton("WheelieHUD", UIHelpers.StarBtn(whr.transform, "WheelieHUD", () => FavouritesManager.Toggle("WheelieHUD")));
                 FavouritesManager.RegisterStarButton("AirControl", UIHelpers.StarBtn(iacr.transform, "AirControl", () => FavouritesManager.Toggle("AirControl")));
                 FavouritesManager.RegisterStarButton("PumpStrength", UIHelpers.StarBtn(fbr.transform, "PumpStrength", () => FavouritesManager.Toggle("PumpStrength")));
                 FavouritesManager.RegisterStarButton("NearMiss", UIHelpers.StarBtn(nmr.transform, "NearMiss", () => FavouritesManager.Toggle("NearMiss")));
@@ -233,40 +251,55 @@ namespace DescendersModMenu.UI
                     FavouritesManager.RegisterStarButton("CenterOfMass", UIHelpers.StarBtnAbs(comHdr, "CenterOfMass", () => FavouritesManager.Toggle("CenterOfMass")));
 
                 // ── FACTORY REGISTRATIONS (Move tab mods) ──────────────
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Spin", DisplayName = "Rotation Speed", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Spin",
+                    DisplayName = "Rotation Speed",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Spin", "Rotation Speed",
                         () => Movement.SpinEnabled, () => Movement.ToggleSpin(),
                         () => Movement.SpinLevel, () => Movement.SpinIncrease(), () => Movement.SpinDecrease(),
                         10, () => (Movement.SpinLevel - 1) / 9f, () => RefreshAll()),
                     IsActive = () => Movement.SpinEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Hop", DisplayName = "Hop Force", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Hop",
+                    DisplayName = "Hop Force",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Hop", "Hop Force",
                         () => Movement.HopEnabled, () => Movement.ToggleHop(),
                         () => Movement.HopLevel, () => Movement.HopIncrease(), () => Movement.HopDecrease(),
                         10, () => (Movement.HopLevel - 1) / 9f, () => RefreshAll()),
                     IsActive = () => Movement.HopEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Wheelie", DisplayName = "Wheelie Force", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Wheelie",
+                    DisplayName = "Wheelie Force",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Wheelie", "Wheelie Force",
                         () => Movement.WheelieEnabled, () => Movement.ToggleWheelie(),
                         () => Movement.WheelieLevel, () => Movement.WheelieIncrease(), () => Movement.WheelieDecrease(),
                         10, () => (Movement.WheelieLevel - 1) / 9f, () => RefreshAll()),
                     IsActive = () => Movement.WheelieEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "Lean", DisplayName = "Lean Strength", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "Lean",
+                    DisplayName = "Lean Strength",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Lean", "Lean Strength",
                         () => Movement.LeanEnabled, () => Movement.ToggleLean(),
                         () => Movement.LeanLevel, () => Movement.LeanIncrease(), () => Movement.LeanDecrease(),
                         10, () => (Movement.LeanLevel - 1) / 9f, () => RefreshAll()),
                     IsActive = () => Movement.LeanEnabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "WheelieAngle", DisplayName = "Wheelie Angle Limit", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "WheelieAngle",
+                    DisplayName = "Wheelie Angle Limit",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "WheelieAngle", "Wheelie Angle Limit",
                         () => WheelieAngleLimit.Enabled, () => WheelieAngleLimit.Toggle(),
                         () => WheelieAngleLimit.Level, () => WheelieAngleLimit.Increase(), () => WheelieAngleLimit.Decrease(),
@@ -274,8 +307,20 @@ namespace DescendersModMenu.UI
                         () => WheelieAngleLimit.DisplayValue),
                     IsActive = () => WheelieAngleLimit.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "AirControl", DisplayName = "Air Control", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "WheelieHUD",
+                    DisplayName = "Wheelie HUD",
+                    TabBadge = "MOVE",
+                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "WheelieHUD", "Wheelie HUD",
+                        () => WheelieHUD.Enabled, () => WheelieHUD.Toggle(), () => RefreshAll()),
+                    IsActive = () => WheelieHUD.Enabled
+                });
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "AirControl",
+                    DisplayName = "Air Control",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "AirControl", "Air Control",
                         () => AirControl.Enabled, () => AirControl.Toggle(),
                         () => AirControl.Level, () => AirControl.Increase(), () => AirControl.Decrease(),
@@ -283,16 +328,22 @@ namespace DescendersModMenu.UI
                         () => AirControl.DisplayValue),
                     IsActive = () => AirControl.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "PumpStrength", DisplayName = "Pump Strength", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "PumpStrength",
+                    DisplayName = "Pump Strength",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "PumpStrength", "Pump Strength",
                         () => GameModifierMods.PumpStrengthLevel, () => GameModifierMods.PumpStrengthIncrease(), () => GameModifierMods.PumpStrengthDecrease(),
                         () => (GameModifierMods.PumpStrengthLevel - 1) / 9f, () => RefreshAll(),
                         null, () => GameModifierMods.PumpStrengthLevel != 5),
                     IsActive = () => GameModifierMods.PumpStrengthLevel != 5
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "NearMiss", DisplayName = "Near Miss Sensitivity", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "NearMiss",
+                    DisplayName = "Near Miss Sensitivity",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "NearMiss", "Near Miss Sensitivity",
                         () => NearMissSensitivity.Enabled, () => NearMissSensitivity.Toggle(),
                         () => NearMissSensitivity.Level, () => NearMissSensitivity.Increase(), () => NearMissSensitivity.Decrease(),
@@ -300,8 +351,11 @@ namespace DescendersModMenu.UI
                         () => NearMissSensitivity.DisplayValue),
                     IsActive = () => NearMissSensitivity.Enabled
                 });
-                FavouritesManager.Register(new ModFavEntry {
-                    Id = "CenterOfMass", DisplayName = "Center of Mass", TabBadge = "MOVE",
+                FavouritesManager.Register(new ModFavEntry
+                {
+                    Id = "CenterOfMass",
+                    DisplayName = "Center of Mass",
+                    TabBadge = "MOVE",
                     BuildControls = (p) => {
                         var r1 = UIHelpers.StatRow("Left / Right", p);
                         var b1 = UIHelpers.MakeBar("CLr", r1.transform, CenterOfMass.BarLR);
@@ -349,6 +403,7 @@ namespace DescendersModMenu.UI
             Movement.SetWheelieLevel(1); Movement.SetLeanLevel(1);
             if (WheelieAngleLimit.Enabled) WheelieAngleLimit.Toggle();
             WheelieAngleLimit.SetLevel(5);
+            if (WheelieHUD.Enabled) WheelieHUD.Toggle();
             if (AirControl.Enabled) AirControl.Toggle();
             AirControl.SetLevel(5);
             GameModifierMods.SetPumpStrengthLevel(5);
@@ -392,6 +447,10 @@ namespace DescendersModMenu.UI
             if (_wbTogVal) { _wbTogVal.text = WheelieAngleLimit.Enabled ? "ON" : "OFF"; _wbTogVal.color = WheelieAngleLimit.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_wbTrack, _wbKnob, WheelieAngleLimit.Enabled);
             UIHelpers.SetBar(wbBar, (WheelieAngleLimit.Level - 1) / 9f);
+
+            // ── Wheelie HUD ───────────────────────────────────────────
+            if (_whTogVal) { _whTogVal.text = WheelieHUD.Enabled ? "ON" : "OFF"; _whTogVal.color = WheelieHUD.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_whTrack, _whKnob, WheelieHUD.Enabled);
 
             // ── Air Control ───────────────────────────────────────────
             if (iacVal) iacVal.text = AirControl.DisplayValue;
