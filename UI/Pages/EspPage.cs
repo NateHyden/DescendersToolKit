@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page2UI
+    public static class EspPage
     {
         private static Text espVal, distVal, tracVal;
         private static Image espTrk, distTrk, tracTrk;
@@ -128,19 +128,19 @@ namespace DescendersModMenu.UI
 
                 FavouritesManager.Register(new ModFavEntry {
                     Id = "ESP", DisplayName = "ESP", TabBadge = "SYSTEM",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ESP", "ESP",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "ESP", "ESP",
                         () => ESP.Enabled, () => ESP.Toggle(), () => RefreshTexts()),
                     IsActive = () => ESP.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry {
                     Id = "ESPDistance", DisplayName = "ESP Distance", TabBadge = "SYSTEM",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ESPDistance", "ESP Distance",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "ESPDistance", "ESP Distance",
                         () => ESP.ShowDistance, () => ESP.ToggleDistance(), () => RefreshTexts()),
                     IsActive = () => !ESP.ShowDistance
                 });
                 FavouritesManager.Register(new ModFavEntry {
                     Id = "ESPTracers", DisplayName = "ESP Tracers", TabBadge = "SYSTEM",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ESPTracers", "ESP Tracers",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "ESPTracers", "ESP Tracers",
                         () => ESP.ShowTracers, () => ESP.ToggleTracers(), () => RefreshTexts()),
                     IsActive = () => !ESP.ShowTracers
                 });
@@ -148,7 +148,7 @@ namespace DescendersModMenu.UI
                 RefreshTexts();
 
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page2UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("EspPage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 

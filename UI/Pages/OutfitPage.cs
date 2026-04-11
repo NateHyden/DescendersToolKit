@@ -5,7 +5,7 @@ using DescendersModMenu.Mods;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page11UI
+    public static class OutfitPage
     {
         private static Text[] _nameTexts = new Text[OutfitPresets.SlotCount];
         private static Text[] _statusTexts = new Text[OutfitPresets.SlotCount];
@@ -180,7 +180,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.AddScrollForwarders(c);
                 RefreshAll();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page11UI: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("OutfitPage: " + ex.Message); }
         }
 
         private static void GoToShed()

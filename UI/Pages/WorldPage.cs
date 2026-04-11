@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page7UI
+    public static class WorldPage
     {
         // ── Sky Colours ───────────────────────────────────────────────────
         private static Image _stormTrack; private static RectTransform _stormKnob;
@@ -25,28 +25,15 @@ namespace DescendersModMenu.UI
         private static Image _fogTrack;
         private static RectTransform _fogKnob;
 
-        public static bool TreesEnabled = true;
-        public static bool MusicEnabled = true;
-        public static bool FogEnabled = true;
 
-        // Cached terrain type to avoid repeated reflection
-        private static System.Type _terrainType = null;
-        private static System.Reflection.PropertyInfo _dtfProp = null;
-        private static float _savedMusicVolume = 1f;
-        private static float _savedFogDensity = -1f;
-        private static bool _savedFogState = true;
 
-        // Turbo Wind
-        private static bool _turboWind = false;
-        private static float _savedWindMain = -1f;
+
+
+        // Turbo Wind UI refs
         private static Image _windTrack; private static RectTransform _windKnob;
         private static Text _windVal;
-        private static System.Type _windZoneType = null;
-        private static System.Reflection.PropertyInfo _windMainProp = null;
-        private static System.Reflection.PropertyInfo _windTurbProp = null;
 
-        // No Mistakes (Exploding Props)
-        private static bool _explodingProps = false;
+        // Exploding Props UI refs
         private static Image _explodeTrack; private static RectTransform _explodeKnob;
         private static Text _explodeVal;
 
@@ -59,8 +46,8 @@ namespace DescendersModMenu.UI
         public static bool IsAnyActive =>
             SkyColours.CurrentPreset != 0 || SkyColours.StormEnabled ||
             Gravity.Level != 5 ||
-            !TreesEnabled || !MusicEnabled || !FogEnabled ||
-            _turboWind || _explodingProps || HeadlightsOnly.Enabled;
+            Trees.Enabled || Music.Enabled || Fog.Enabled ||
+            TurboWind.Enabled || ExplodingProps.Enabled || HeadlightsOnly.Enabled;
 
         public static GameObject CreatePage(Transform parent)
         {
@@ -70,7 +57,7 @@ namespace DescendersModMenu.UI
                 pg = UIHelpers.Obj("P7R", parent);
                 UIHelpers.Fill(UIHelpers.RT(pg));
 
-                // ScrollRect wrapper — same pattern as Page9UI
+                // ScrollRect wrapper — same pattern as FunPage
                 var scrollObj = UIHelpers.Obj("Scroll", pg.transform);
                 UIHelpers.Fill(UIHelpers.RT(scrollObj));
                 var scrollRect = scrollObj.AddComponent<ScrollRect>();
@@ -162,8 +149,7 @@ namespace DescendersModMenu.UI
                 _treesVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(ter.transform, "TrT", () =>
                 {
-                    TreesEnabled = !TreesEnabled;
-                    ToggleTrees(TreesEnabled);
+                    Trees.Toggle();
                     RefreshAll();
                 }, out _treesTrack, out _treesKnob);
 
@@ -173,8 +159,7 @@ namespace DescendersModMenu.UI
                 _musicVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(mur.transform, "MuT", () =>
                 {
-                    MusicEnabled = !MusicEnabled;
-                    ToggleMusic(MusicEnabled);
+                    Music.Toggle();
                     RefreshAll();
                 }, out _musicTrack, out _musicKnob);
 
@@ -184,8 +169,7 @@ namespace DescendersModMenu.UI
                 _fogVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(fogr.transform, "FgT", () =>
                 {
-                    FogEnabled = !FogEnabled;
-                    ToggleFog(FogEnabled);
+                    Fog.Toggle();
                     RefreshAll();
                 }, out _fogTrack, out _fogKnob);
 
@@ -205,8 +189,7 @@ namespace DescendersModMenu.UI
                 _windVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(wr.transform, "WnT", () =>
                 {
-                    _turboWind = !_turboWind;
-                    ToggleTurboWind(_turboWind);
+                    TurboWind.Toggle();
                     RefreshAll();
                 }, out _windTrack, out _windKnob);
 
@@ -218,7 +201,6 @@ namespace DescendersModMenu.UI
                 UIHelpers.Toggle(er.transform, "ExT", () =>
                 {
                     ExplodingProps.Toggle();
-                    _explodingProps = ExplodingProps.Enabled;
                     RefreshAll();
                 }, out _explodeTrack, out _explodeKnob);
 
@@ -260,7 +242,7 @@ namespace DescendersModMenu.UI
                     Id = "Gravity",
                     DisplayName = "Gravity",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "Gravity", "Gravity",
+                    BuildControls = (p) => FavsPage.BuildSliderOnly(p, "Gravity", "Gravity",
                         () => Gravity.Level, () => Gravity.Increase(), () => Gravity.Decrease(),
                         () => (Gravity.Level - 1) / 9f, () => RefreshAll(),
                         () => Gravity.DisplayValue, () => Gravity.Level != 5),
@@ -271,7 +253,7 @@ namespace DescendersModMenu.UI
                     Id = "TimeOfDay",
                     DisplayName = "Time of Day",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "TimeOfDay", "Time of Day",
+                    BuildControls = (p) => FavsPage.BuildSliderOnly(p, "TimeOfDay", "Time of Day",
                         () => TimeOfDay.Level, () => TimeOfDay.Increase(), () => TimeOfDay.Decrease(),
                         () => (TimeOfDay.Level - 1) / 9f, () => RefreshAll(),
                         () => TimeOfDay.DisplayValue, null),
@@ -282,8 +264,8 @@ namespace DescendersModMenu.UI
                     Id = "ExplodingProps",
                     DisplayName = "Exploding Props",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ExplodingProps", "Exploding Props",
-                        () => ExplodingProps.Enabled, () => { ExplodingProps.Toggle(); _explodingProps = ExplodingProps.Enabled; }, () => RefreshAll()),
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "ExplodingProps", "Exploding Props",
+                        () => ExplodingProps.Enabled, () => { ExplodingProps.Toggle(); }, () => RefreshAll()),
                     IsActive = () => ExplodingProps.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry
@@ -291,16 +273,16 @@ namespace DescendersModMenu.UI
                     Id = "TurboWind",
                     DisplayName = "Turbo Wind",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "TurboWind", "Turbo Wind",
-                        () => _turboWind, () => { _turboWind = !_turboWind; ToggleTurboWind(_turboWind); }, () => RefreshAll()),
-                    IsActive = () => _turboWind
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "TurboWind", "Turbo Wind",
+                        () => TurboWind.Enabled, () => { TurboWind.Toggle(); }, () => RefreshAll()),
+                    IsActive = () => TurboWind.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
                     Id = "Storm",
                     DisplayName = "Storm",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Storm", "Storm",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "Storm", "Storm",
                         () => SkyColours.StormEnabled, () => SkyColours.ToggleStorm(), () => RefreshAll()),
                     IsActive = () => SkyColours.StormEnabled
                 });
@@ -309,34 +291,34 @@ namespace DescendersModMenu.UI
                     Id = "Trees",
                     DisplayName = "Trees & Foliage",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Trees", "Trees & Foliage",
-                        () => !TreesEnabled, () => { TreesEnabled = !TreesEnabled; ToggleTrees(TreesEnabled); }, () => RefreshAll()),
-                    IsActive = () => !TreesEnabled
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "Trees", "Trees & Foliage",
+                        () => Trees.Enabled, () => { Trees.Toggle(); }, () => RefreshAll()),
+                    IsActive = () => Trees.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
                     Id = "Music",
                     DisplayName = "Music",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Music", "Music",
-                        () => !MusicEnabled, () => { MusicEnabled = !MusicEnabled; ToggleMusic(MusicEnabled); }, () => RefreshAll()),
-                    IsActive = () => !MusicEnabled
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "Music", "Music",
+                        () => Music.Enabled, () => { Music.Toggle(); }, () => RefreshAll()),
+                    IsActive = () => Music.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
                     Id = "Fog",
                     DisplayName = "Fog",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "Fog", "Fog",
-                        () => !FogEnabled, () => { FogEnabled = !FogEnabled; ToggleFog(FogEnabled); }, () => RefreshAll()),
-                    IsActive = () => !FogEnabled
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "Fog", "Fog",
+                        () => Fog.Enabled, () => { Fog.Toggle(); }, () => RefreshAll()),
+                    IsActive = () => Fog.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
                     Id = "HeadlightsOnly",
                     DisplayName = "Headlights Only",
                     TabBadge = "WORLD",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "HeadlightsOnly", "Headlights Only",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "HeadlightsOnly", "Headlights Only",
                         () => HeadlightsOnly.Enabled, () => HeadlightsOnly.Toggle(), () => RefreshAll()),
                     IsActive = () => HeadlightsOnly.Enabled
                 });
@@ -347,12 +329,12 @@ namespace DescendersModMenu.UI
                     TabBadge = "WORLD",
                     BuildControls = (p) => {
                         var row = UIHelpers.StatRow("Colour", p);
-                        UIHelpers.ActionBtn(row.transform, "Default", () => { SkyColours.RestoreDefault(); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 50);
-                        UIHelpers.ActionBtn(row.transform, "Blood Red", () => { SkyColours.ApplyPreset(1); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 58);
-                        UIHelpers.ActionBtn(row.transform, "Alien", () => { SkyColours.ApplyPreset(2); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 40);
-                        UIHelpers.ActionBtn(row.transform, "Synthwave", () => { SkyColours.ApplyPreset(3); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 60);
-                        UIHelpers.ActionBtn(row.transform, "Midnight", () => { SkyColours.ApplyPreset(4); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 55);
-                        UIHelpers.ActionBtn(row.transform, "Toxic", () => { SkyColours.ApplyPreset(5); RefreshAll(); PageFavsUI.RefreshFavourites(); }, 40);
+                        UIHelpers.ActionBtn(row.transform, "Default", () => { SkyColours.RestoreDefault(); RefreshAll(); FavsPage.RefreshFavourites(); }, 50);
+                        UIHelpers.ActionBtn(row.transform, "Blood Red", () => { SkyColours.ApplyPreset(1); RefreshAll(); FavsPage.RefreshFavourites(); }, 58);
+                        UIHelpers.ActionBtn(row.transform, "Alien", () => { SkyColours.ApplyPreset(2); RefreshAll(); FavsPage.RefreshFavourites(); }, 40);
+                        UIHelpers.ActionBtn(row.transform, "Synthwave", () => { SkyColours.ApplyPreset(3); RefreshAll(); FavsPage.RefreshFavourites(); }, 60);
+                        UIHelpers.ActionBtn(row.transform, "Midnight", () => { SkyColours.ApplyPreset(4); RefreshAll(); FavsPage.RefreshFavourites(); }, 55);
+                        UIHelpers.ActionBtn(row.transform, "Toxic", () => { SkyColours.ApplyPreset(5); RefreshAll(); FavsPage.RefreshFavourites(); }, 40);
                     },
                     IsActive = () => SkyColours.CurrentPreset != 0
                 });
@@ -360,142 +342,13 @@ namespace DescendersModMenu.UI
                 RefreshAll();
                 UIHelpers.AddScrollForwarders(pg7);
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page7UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("WorldPage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 
-        private static void ToggleTrees(bool enabled)
-        {
-            try
-            {
-                // Cache terrain type
-                if ((object)_terrainType == null)
-                {
-                    System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-                    for (int a = 0; a < assemblies.Length; a++)
-                    {
-                        _terrainType = assemblies[a].GetType("UnityEngine.Terrain");
-                        if ((object)_terrainType != null) break;
-                    }
-                }
-                if ((object)_terrainType == null) { MelonLogger.Warning("[Trees] Terrain type not found."); return; }
 
-                if ((object)_dtfProp == null)
-                    _dtfProp = _terrainType.GetProperty("drawTreesAndFoliage");
-                if ((object)_dtfProp == null) { MelonLogger.Warning("[Trees] drawTreesAndFoliage not found."); return; }
 
-                UnityEngine.Object[] terrains = UnityEngine.Object.FindObjectsOfType(_terrainType);
-                for (int i = 0; i < terrains.Length; i++)
-                    _dtfProp.SetValue(terrains[i], enabled, null);
 
-                MelonLogger.Msg("[Trees] Trees & Foliage -> " + (enabled ? "ON" : "OFF"));
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Trees] ToggleTrees: " + ex.Message); }
-        }
-
-        private static void ToggleMusic(bool enabled)
-        {
-            try
-            {
-                AudioManager mgr = UnityEngine.Object.FindObjectOfType<AudioManager>();
-                if ((object)mgr == null) { MelonLogger.Warning("[Music] AudioManager not found."); return; }
-
-                System.Reflection.MethodInfo setMethod = mgr.GetType().GetMethod(
-                    "SetCategoryVolume",
-                    System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if ((object)setMethod == null) { MelonLogger.Warning("[Music] SetCategoryVolume not found."); return; }
-
-                System.Reflection.ParameterInfo[] parms = setMethod.GetParameters();
-                if (parms.Length < 2) { MelonLogger.Warning("[Music] wrong param count: " + parms.Length); return; }
-
-                System.Type enumType = parms[0].ParameterType;
-                // Enum: Master=0, Music=1, Sfx=2, Ambient=3, Voices=4
-                object musicEnum = System.Enum.ToObject(enumType, 1);
-
-                if (!enabled)
-                {
-                    // Cache current volume before muting
-                    System.Reflection.MethodInfo getMethod = mgr.GetType().GetMethod(
-                        "GetCategoryVolume",
-                        System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                    if ((object)getMethod != null)
-                    {
-                        object vol = getMethod.Invoke(mgr, new object[] { musicEnum });
-                        if (vol is float) _savedMusicVolume = (float)vol;
-                    }
-                    setMethod.Invoke(mgr, new object[] { musicEnum, 0f });
-                    MelonLogger.Msg("[Music] Muted. Saved volume: " + _savedMusicVolume);
-                }
-                else
-                {
-                    // Restore saved volume
-                    setMethod.Invoke(mgr, new object[] { musicEnum, _savedMusicVolume });
-                    MelonLogger.Msg("[Music] Restored volume: " + _savedMusicVolume);
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Music] ToggleMusic: " + ex.Message); }
-        }
-
-        private static void ToggleTurboWind(bool enabled)
-        {
-            try
-            {
-                if ((object)_windZoneType == null)
-                {
-                    System.Reflection.Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-                    for (int a = 0; a < assemblies.Length; a++)
-                    {
-                        _windZoneType = assemblies[a].GetType("UnityEngine.WindZone");
-                        if ((object)_windZoneType != null) break;
-                    }
-                }
-                if ((object)_windZoneType == null) return;
-                UnityEngine.Object wz = GameObject.FindObjectOfType(_windZoneType);
-                if ((object)wz == null) return;
-                if ((object)_windMainProp == null)
-                    _windMainProp = _windZoneType.GetProperty("windMain", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if ((object)_windTurbProp == null)
-                    _windTurbProp = _windZoneType.GetProperty("windTurbulence", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if (enabled)
-                {
-                    if (_savedWindMain < 0f && (object)_windMainProp != null)
-                        _savedWindMain = (float)_windMainProp.GetValue(wz, null);
-                    if ((object)_windMainProp != null) _windMainProp.SetValue(wz, 50f, null);
-                    if ((object)_windTurbProp != null) _windTurbProp.SetValue(wz, 1f, null);
-                }
-                else
-                {
-                    if ((object)_windMainProp != null) _windMainProp.SetValue(wz, _savedWindMain >= 0f ? _savedWindMain : 1f, null);
-                    if ((object)_windTurbProp != null) _windTurbProp.SetValue(wz, 0.5f, null);
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[World] ToggleTurboWind: " + ex.Message); }
-        }
-
-        private static void ToggleFog(bool enabled)
-        {
-            try
-            {
-                if (!enabled)
-                {
-                    if (_savedFogDensity < 0f)
-                    {
-                        _savedFogDensity = RenderSettings.fogDensity;
-                        _savedFogState = RenderSettings.fog;
-                    }
-                    RenderSettings.fog = false;
-                    RenderSettings.fogDensity = 0f;
-                    MelonLogger.Msg("[Fog] Disabled");
-                }
-                else
-                {
-                    RenderSettings.fog = _savedFogState;
-                    RenderSettings.fogDensity = _savedFogDensity >= 0f ? _savedFogDensity : 0.01f;
-                    MelonLogger.Msg("[Fog] Restored density: " + RenderSettings.fogDensity);
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Fog] ToggleFog: " + ex.Message); }
-        }
 
         private static void ResetWorldTab()
         {
@@ -509,10 +362,10 @@ namespace DescendersModMenu.UI
 
         public static void GlobalReset()
         {
-            if (_turboWind) { ToggleTurboWind(false); _turboWind = false; }
-            if (!TreesEnabled) { TreesEnabled = true; ToggleTrees(true); }
-            if (!MusicEnabled) { MusicEnabled = true; ToggleMusic(true); }
-            if (!FogEnabled) { FogEnabled = true; ToggleFog(true); }
+            TurboWind.Reset();
+            Trees.Reset();
+            Music.Reset();
+            Fog.Reset();
             if (HeadlightsOnly.Enabled) HeadlightsOnly.Toggle();
         }
 
@@ -523,25 +376,24 @@ namespace DescendersModMenu.UI
             if (_todVal) _todVal.text = TimeOfDay.DisplayValue;
             UIHelpers.SetBar(_todBar, (TimeOfDay.Level - 1) / 9f);
 
-            if (_treesVal) { _treesVal.text = TreesEnabled ? "ON" : "OFF"; _treesVal.color = TreesEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_treesTrack, _treesKnob, TreesEnabled);
+            if (_treesVal) { _treesVal.text = !Trees.Enabled ? "ON" : "OFF"; _treesVal.color = !Trees.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_treesTrack, _treesKnob, !Trees.Enabled);
 
-            if (_musicVal) { _musicVal.text = MusicEnabled ? "ON" : "OFF"; _musicVal.color = MusicEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_musicTrack, _musicKnob, MusicEnabled);
+            if (_musicVal) { _musicVal.text = !Music.Enabled ? "ON" : "OFF"; _musicVal.color = !Music.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_musicTrack, _musicKnob, !Music.Enabled);
 
-            if (_fogVal) { _fogVal.text = FogEnabled ? "ON" : "OFF"; _fogVal.color = FogEnabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_fogTrack, _fogKnob, FogEnabled);
+            if (_fogVal) { _fogVal.text = !Fog.Enabled ? "ON" : "OFF"; _fogVal.color = !Fog.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_fogTrack, _fogKnob, !Fog.Enabled);
 
             bool hlOn = HeadlightsOnly.Enabled;
             if (_hlVal) { _hlVal.text = hlOn ? "ON" : "OFF"; _hlVal.color = hlOn ? UIHelpers.OnColor : UIHelpers.OffColor; }
             UIHelpers.SetToggle(_hlTrack, _hlKnob, hlOn);
 
-            if (_windVal) { _windVal.text = _turboWind ? "ON" : "OFF"; _windVal.color = _turboWind ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_windTrack, _windKnob, _turboWind);
+            if (_windVal) { _windVal.text = TurboWind.Enabled ? "ON" : "OFF"; _windVal.color = TurboWind.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_windTrack, _windKnob, TurboWind.Enabled);
 
-            _explodingProps = ExplodingProps.Enabled;
-            if (_explodeVal) { _explodeVal.text = _explodingProps ? "ON" : "OFF"; _explodeVal.color = _explodingProps ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_explodeTrack, _explodeKnob, _explodingProps);
+            if (_explodeVal) { _explodeVal.text = ExplodingProps.Enabled ? "ON" : "OFF"; _explodeVal.color = ExplodingProps.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_explodeTrack, _explodeKnob, ExplodingProps.Enabled);
 
             if (_skyPresetVal) _skyPresetVal.text = SkyColours.PresetNames[SkyColours.CurrentPreset];
             bool storm = SkyColours.StormEnabled;

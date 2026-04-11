@@ -483,7 +483,7 @@ namespace DescendersModMenu.Mods
             if (HasBikeParks) return; // already scanned — no need to repeat
             MelonLogger.Msg("[MapChanger] Freeride screen opened — scanning bike parks...");
             BuildMapList();
-            try { Page15UI.RebuildList(); } catch { }
+            try { MapPage.RebuildList(); } catch { }
         }
 
         // ── Generic helpers ───────────────────────────────────────────

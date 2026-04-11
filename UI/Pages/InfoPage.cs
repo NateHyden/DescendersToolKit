@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page3UI
+    public static class InfoPage
     {
         // ── Sub-tab state ─────────────────────────────────────────────
         private static int _activeTab = 0; // 0=System 1=Mod Status 2=Hotkeys 3=Credits 4=Customise 5=Dev Tools
@@ -148,7 +148,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("Page3UI.CreatePage: " + ex.Message);
+                MelonLogger.Error("InfoPage.CreatePage: " + ex.Message);
                 return null;
             }
             return pg;
@@ -733,7 +733,7 @@ namespace DescendersModMenu.UI
                 // Only rebuild rows if status tab is visible
                 if (_activeTab == 1) RebuildStatusRows();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page3UI.Refresh: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("InfoPage.Refresh: " + ex.Message); }
         }
 
         private static void RebuildStatusRows()
@@ -787,7 +787,7 @@ namespace DescendersModMenu.UI
 
                 LayoutRebuilder.ForceRebuildLayoutImmediate(_contentRT);
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page3UI.RebuildStatusRows: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("InfoPage.RebuildStatusRows: " + ex.Message); }
         }
     }
 }

@@ -143,7 +143,7 @@ namespace DescendersModMenu.UI
             }
             SaveToFile();
             RefreshAllStars();
-            PageFavsUI.MarkDirty();
+            FavsPage.MarkDirty();
         }
 
         // ── Clear All ─────────────────────────────────────────────────
@@ -154,7 +154,7 @@ namespace DescendersModMenu.UI
             MelonLogger.Msg("[Favs] Cleared all favourites.");
             SaveToFile();
             RefreshAllStars();
-            PageFavsUI.MarkDirty();
+            FavsPage.MarkDirty();
         }
 
         // ── Load / Save ───────────────────────────────────────────────

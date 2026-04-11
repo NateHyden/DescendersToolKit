@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page6UI
+    public static class MovePage
     {
         // ── Movement row fields ───────────────────────────────────────
         private static Text spinVal, hopVal, wheelieVal, leanVal;
@@ -256,7 +256,7 @@ namespace DescendersModMenu.UI
                     Id = "Spin",
                     DisplayName = "Rotation Speed",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Spin", "Rotation Speed",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "Spin", "Rotation Speed",
                         () => Movement.SpinEnabled, () => Movement.ToggleSpin(),
                         () => Movement.SpinLevel, () => Movement.SpinIncrease(), () => Movement.SpinDecrease(),
                         10, () => (Movement.SpinLevel - 1) / 9f, () => RefreshAll()),
@@ -267,7 +267,7 @@ namespace DescendersModMenu.UI
                     Id = "Hop",
                     DisplayName = "Hop Force",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Hop", "Hop Force",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "Hop", "Hop Force",
                         () => Movement.HopEnabled, () => Movement.ToggleHop(),
                         () => Movement.HopLevel, () => Movement.HopIncrease(), () => Movement.HopDecrease(),
                         10, () => (Movement.HopLevel - 1) / 9f, () => RefreshAll()),
@@ -278,7 +278,7 @@ namespace DescendersModMenu.UI
                     Id = "Wheelie",
                     DisplayName = "Wheelie Force",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Wheelie", "Wheelie Force",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "Wheelie", "Wheelie Force",
                         () => Movement.WheelieEnabled, () => Movement.ToggleWheelie(),
                         () => Movement.WheelieLevel, () => Movement.WheelieIncrease(), () => Movement.WheelieDecrease(),
                         10, () => (Movement.WheelieLevel - 1) / 9f, () => RefreshAll()),
@@ -289,7 +289,7 @@ namespace DescendersModMenu.UI
                     Id = "Lean",
                     DisplayName = "Lean Strength",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "Lean", "Lean Strength",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "Lean", "Lean Strength",
                         () => Movement.LeanEnabled, () => Movement.ToggleLean(),
                         () => Movement.LeanLevel, () => Movement.LeanIncrease(), () => Movement.LeanDecrease(),
                         10, () => (Movement.LeanLevel - 1) / 9f, () => RefreshAll()),
@@ -300,7 +300,7 @@ namespace DescendersModMenu.UI
                     Id = "WheelieAngle",
                     DisplayName = "Wheelie Angle Limit",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "WheelieAngle", "Wheelie Angle Limit",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "WheelieAngle", "Wheelie Angle Limit",
                         () => WheelieAngleLimit.Enabled, () => WheelieAngleLimit.Toggle(),
                         () => WheelieAngleLimit.Level, () => WheelieAngleLimit.Increase(), () => WheelieAngleLimit.Decrease(),
                         10, () => (WheelieAngleLimit.Level - 1) / 9f, () => RefreshAll(),
@@ -312,7 +312,7 @@ namespace DescendersModMenu.UI
                     Id = "WheelieHUD",
                     DisplayName = "Wheelie HUD",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "WheelieHUD", "Wheelie HUD",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "WheelieHUD", "Wheelie HUD",
                         () => WheelieHUD.Enabled, () => WheelieHUD.Toggle(), () => RefreshAll()),
                     IsActive = () => WheelieHUD.Enabled
                 });
@@ -321,7 +321,7 @@ namespace DescendersModMenu.UI
                     Id = "AirControl",
                     DisplayName = "Air Control",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "AirControl", "Air Control",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "AirControl", "Air Control",
                         () => AirControl.Enabled, () => AirControl.Toggle(),
                         () => AirControl.Level, () => AirControl.Increase(), () => AirControl.Decrease(),
                         10, () => (AirControl.Level - 1) / 9f, () => RefreshAll(),
@@ -333,7 +333,7 @@ namespace DescendersModMenu.UI
                     Id = "PumpStrength",
                     DisplayName = "Pump Strength",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildSliderOnly(p, "PumpStrength", "Pump Strength",
+                    BuildControls = (p) => FavsPage.BuildSliderOnly(p, "PumpStrength", "Pump Strength",
                         () => GameModifierMods.PumpStrengthLevel, () => GameModifierMods.PumpStrengthIncrease(), () => GameModifierMods.PumpStrengthDecrease(),
                         () => (GameModifierMods.PumpStrengthLevel - 1) / 9f, () => RefreshAll(),
                         null, () => GameModifierMods.PumpStrengthLevel != 5),
@@ -344,7 +344,7 @@ namespace DescendersModMenu.UI
                     Id = "NearMiss",
                     DisplayName = "Near Miss Sensitivity",
                     TabBadge = "MOVE",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "NearMiss", "Near Miss Sensitivity",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "NearMiss", "Near Miss Sensitivity",
                         () => NearMissSensitivity.Enabled, () => NearMissSensitivity.Toggle(),
                         () => NearMissSensitivity.Level, () => NearMissSensitivity.Increase(), () => NearMissSensitivity.Decrease(),
                         10, () => (NearMissSensitivity.Level - 1) / 9f, () => RefreshAll(),
@@ -361,23 +361,23 @@ namespace DescendersModMenu.UI
                         var b1 = UIHelpers.MakeBar("CLr", r1.transform, CenterOfMass.BarLR);
                         var v1 = UIHelpers.Txt("CLrV", r1.transform, CenterOfMass.DisplayLR, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                         v1.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
-                        UIHelpers.ActionBtn(r1.transform, "0", () => { CenterOfMass.ResetLR(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); }, 22);
-                        UIHelpers.SmallBtn(r1.transform, "-", () => { CenterOfMass.DecreaseLR(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
-                        UIHelpers.SmallBtn(r1.transform, "+", () => { CenterOfMass.IncreaseLR(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        UIHelpers.ActionBtn(r1.transform, "0", () => { CenterOfMass.ResetLR(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); }, 22);
+                        UIHelpers.SmallBtn(r1.transform, "-", () => { CenterOfMass.DecreaseLR(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); });
+                        UIHelpers.SmallBtn(r1.transform, "+", () => { CenterOfMass.IncreaseLR(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); });
                         var r2 = UIHelpers.StatRow("Forward / Back", p);
                         var b2 = UIHelpers.MakeBar("CFb", r2.transform, CenterOfMass.BarFB);
                         var v2 = UIHelpers.Txt("CFbV", r2.transform, CenterOfMass.DisplayFB, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                         v2.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
-                        UIHelpers.ActionBtn(r2.transform, "0", () => { CenterOfMass.ResetFB(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); }, 22);
-                        UIHelpers.SmallBtn(r2.transform, "-", () => { CenterOfMass.DecreaseFB(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
-                        UIHelpers.SmallBtn(r2.transform, "+", () => { CenterOfMass.IncreaseFB(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        UIHelpers.ActionBtn(r2.transform, "0", () => { CenterOfMass.ResetFB(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); }, 22);
+                        UIHelpers.SmallBtn(r2.transform, "-", () => { CenterOfMass.DecreaseFB(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); });
+                        UIHelpers.SmallBtn(r2.transform, "+", () => { CenterOfMass.IncreaseFB(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); });
                         var r3 = UIHelpers.StatRow("Up / Down", p);
                         var b3 = UIHelpers.MakeBar("CUd", r3.transform, CenterOfMass.BarUD);
                         var v3 = UIHelpers.Txt("CUdV", r3.transform, CenterOfMass.DisplayUD, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                         v3.gameObject.AddComponent<LayoutElement>().preferredWidth = 36;
-                        UIHelpers.ActionBtn(r3.transform, "0", () => { CenterOfMass.ResetUD(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); }, 22);
-                        UIHelpers.SmallBtn(r3.transform, "-", () => { CenterOfMass.DecreaseUD(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
-                        UIHelpers.SmallBtn(r3.transform, "+", () => { CenterOfMass.IncreaseUD(); Page6UI.RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                        UIHelpers.ActionBtn(r3.transform, "0", () => { CenterOfMass.ResetUD(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); }, 22);
+                        UIHelpers.SmallBtn(r3.transform, "-", () => { CenterOfMass.DecreaseUD(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); });
+                        UIHelpers.SmallBtn(r3.transform, "+", () => { CenterOfMass.IncreaseUD(); MovePage.RefreshAll(); FavsPage.RefreshFavourites(); });
                         FavouritesManager.RegisterRefresh("CenterOfMass", () => {
                             UIHelpers.SetBar(b1, CenterOfMass.BarLR); if (v1) v1.text = CenterOfMass.DisplayLR;
                             UIHelpers.SetBar(b2, CenterOfMass.BarFB); if (v2) v2.text = CenterOfMass.DisplayFB;
@@ -389,7 +389,7 @@ namespace DescendersModMenu.UI
 
                 UIHelpers.AddScrollForwarders(pg6);
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page6UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("MovePage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 

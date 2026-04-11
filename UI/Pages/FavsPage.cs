@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class PageFavsUI
+    public static class FavsPage
     {
         private static Transform _contentRoot;
         private static ScrollRect _scrollRect;
@@ -77,7 +77,7 @@ namespace DescendersModMenu.UI
 
                 Rebuild();
             }
-            catch (Exception ex) { MelonLogger.Error("[PageFavsUI] CreatePage: " + ex); }
+            catch (Exception ex) { MelonLogger.Error("[FavsPage] CreatePage: " + ex); }
             return pg;
         }
 

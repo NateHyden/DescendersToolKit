@@ -6,7 +6,7 @@ using DescendersModMenu.Mods;
 
 namespace DescendersModMenu.UI
 {
-    public static class PageModesUI
+    public static class ModesPage
     {
         private static int _activeTab = 0;
         private static readonly List<GameObject> _tabPages = new List<GameObject>();
@@ -69,7 +69,7 @@ namespace DescendersModMenu.UI
 
                 // ── Sub-tabs ──────────────────────────────────────────
                 AddSubTab(tabBar.transform, contentArea.transform, "Avalanche",
-                    t => Page13UI.CreatePage(t));
+                    t => AvalanchePage.CreatePage(t));
                 AddSubTab(tabBar.transform, contentArea.transform, "Earthquake",
                     t => BuildEarthquakePage(t));
                 AddSubTab(tabBar.transform, contentArea.transform, "Police Chase",
@@ -102,7 +102,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("PageModesUI.CreatePage: " + ex.Message);
+                MelonLogger.Error("ModesPage.CreatePage: " + ex.Message);
             }
         }
 
@@ -229,7 +229,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("PageModesUI.BuildEarthquakePage: " + ex.Message);
+                MelonLogger.Error("ModesPage.BuildEarthquakePage: " + ex.Message);
             }
         }
 
@@ -342,7 +342,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("PageModesUI.BuildPoliceChasePage: " + ex.Message);
+                MelonLogger.Error("ModesPage.BuildPoliceChasePage: " + ex.Message);
             }
         }
 
@@ -403,7 +403,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.Divider(c);
                 UIHelpers.SectionHeader("SETUP", c);
 
-                // ── Score target input — exact Page15UI seed input pattern ──
+                // ── Score target input — exact MapPage seed input pattern ──
                 var inputRow = UIHelpers.Obj("TaInputRow", c);
                 inputRow.AddComponent<Image>().color = UIHelpers.RowBg;
                 var irLE = inputRow.AddComponent<LayoutElement>();
@@ -477,7 +477,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("PageModesUI.BuildTrickAttackPage: " + ex.Message);
+                MelonLogger.Error("ModesPage.BuildTrickAttackPage: " + ex.Message);
             }
         }
 
@@ -625,7 +625,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.AddScrollForwarders(c);
                 RefreshBoulderDodge();
             }
-            catch (System.Exception ex) { MelonLogger.Error("PageModesUI.BuildBoulderDodgePage: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("ModesPage.BuildBoulderDodgePage: " + ex.Message); }
         }
 
         private static void RefreshBoulderDodge()
@@ -718,7 +718,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.AddScrollForwarders(c);
                 RefreshSurvival();
             }
-            catch (System.Exception ex) { MelonLogger.Error("PageModesUI.BuildSurvivalPage: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("ModesPage.BuildSurvivalPage: " + ex.Message); }
         }
 
         private static void RefreshSurvival()
@@ -788,7 +788,7 @@ namespace DescendersModMenu.UI
 
         public static void Tick()
         {
-            if (_activeTab == 0) Page13UI.Tick();
+            if (_activeTab == 0) AvalanchePage.Tick();
             if (_activeTab == 2) TickPoliceChasePage();
             if (_activeTab == 3) TickTrickAttackInput();
             if (_activeTab == 4) TickBoulderDodgePage();
@@ -849,7 +849,7 @@ namespace DescendersModMenu.UI
 
         public static void RefreshAll()
         {
-            if (_activeTab == 0) Page13UI.RefreshAll();
+            if (_activeTab == 0) AvalanchePage.RefreshAll();
             RefreshEarthquake();
             RefreshPoliceChase();
         }

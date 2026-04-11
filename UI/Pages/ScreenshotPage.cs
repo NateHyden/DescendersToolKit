@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page18UI
+    public static class ScreenshotPage
     {
         private static Text _toggleVal;
         private static Image _toggleTrack;
@@ -138,14 +138,14 @@ namespace DescendersModMenu.UI
                     Id = "ScreenshotMode",
                     DisplayName = "Screenshot Mode",
                     TabBadge = "TOOLS",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ScreenshotMode", "Screenshot Mode",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "ScreenshotMode", "Screenshot Mode",
                         () => ScreenshotMode.Enabled, () => ScreenshotMode.Toggle(), () => RefreshAll()),
                     IsActive = () => ScreenshotMode.Enabled
                 });
 
                 RefreshAll();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page18UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("ScreenshotPage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 

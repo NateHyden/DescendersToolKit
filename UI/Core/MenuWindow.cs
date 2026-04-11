@@ -302,25 +302,25 @@ namespace DescendersModMenu.UI
                 crt.offsetMin = new Vector2(UIHelpers.SidebarW, 0); crt.offsetMax = Vector2.zero;
 
                 pg1 = UIHelpers.Obj("P1", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg1)); BuildPage1(pg1.transform);
-                pg2 = UIHelpers.Obj("P2", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg2)); Page2UI.CreatePage(pg2.transform);
-                pg3 = UIHelpers.Obj("P3", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg3)); Page3UI.CreatePage(pg3.transform);
-                pg4 = UIHelpers.Obj("P4", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg4)); Page4UI.CreatePage(pg4.transform);
-                pg5 = UIHelpers.Obj("P5", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg5)); Page5UI.CreatePage(pg5.transform);
-                pg6 = UIHelpers.Obj("P6", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg6)); Page6UI.CreatePage(pg6.transform);
-                pg7 = UIHelpers.Obj("P7", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg7)); Page7UI.CreatePage(pg7.transform);
-                pg8 = UIHelpers.Obj("P8", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg8)); Page8UI.CreatePage(pg8.transform);
-                pg9 = UIHelpers.Obj("P9", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg9)); Page9UI.CreatePage(pg9.transform);
-                pg10 = UIHelpers.Obj("P10", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg10)); Page10UI.CreatePage(pg10.transform);
-                pg11 = UIHelpers.Obj("P11", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg11)); Page11UI.CreatePage(pg11.transform);
-                pg12 = UIHelpers.Obj("P12", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg12)); Page12UI.CreatePage(pg12.transform);
-                pg13 = UIHelpers.Obj("P13", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg13)); PageModesUI.CreatePage(pg13.transform);
-                pg14 = UIHelpers.Obj("P14", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg14)); Page14UI.CreatePage(pg14.transform);
-                pg15 = UIHelpers.Obj("P15", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg15)); Page15UI.CreatePage(pg15.transform);
+                pg2 = UIHelpers.Obj("P2", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg2)); EspPage.CreatePage(pg2.transform);
+                pg3 = UIHelpers.Obj("P3", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg3)); InfoPage.CreatePage(pg3.transform);
+                pg4 = UIHelpers.Obj("P4", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg4)); UnlockPage.CreatePage(pg4.transform);
+                pg5 = UIHelpers.Obj("P5", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg5)); ScorePage.CreatePage(pg5.transform);
+                pg6 = UIHelpers.Obj("P6", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg6)); MovePage.CreatePage(pg6.transform);
+                pg7 = UIHelpers.Obj("P7", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg7)); WorldPage.CreatePage(pg7.transform);
+                pg8 = UIHelpers.Obj("P8", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg8)); BikePage.CreatePage(pg8.transform);
+                pg9 = UIHelpers.Obj("P9", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg9)); FunPage.CreatePage(pg9.transform);
+                pg10 = UIHelpers.Obj("P10", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg10)); GraphicsPage.CreatePage(pg10.transform);
+                pg11 = UIHelpers.Obj("P11", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg11)); OutfitPage.CreatePage(pg11.transform);
+                pg12 = UIHelpers.Obj("P12", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg12)); ChatPage.CreatePage(pg12.transform);
+                pg13 = UIHelpers.Obj("P13", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg13)); ModesPage.CreatePage(pg13.transform);
+                pg14 = UIHelpers.Obj("P14", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg14)); GhostPage.CreatePage(pg14.transform);
+                pg15 = UIHelpers.Obj("P15", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg15)); MapPage.CreatePage(pg15.transform);
 
-                pg16 = UIHelpers.Obj("P16", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg16)); PageSessionUI.CreatePage(pg16.transform);
+                pg16 = UIHelpers.Obj("P16", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg16)); SessionPage.CreatePage(pg16.transform);
 
-                pg17 = UIHelpers.Obj("P17", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg17)); PageFavsUI.CreatePage(pg17.transform);
-                pg18 = UIHelpers.Obj("P18", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg18)); Page18UI.CreatePage(pg18.transform);
+                pg17 = UIHelpers.Obj("P17", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg17)); FavsPage.CreatePage(pg17.transform);
+                pg18 = UIHelpers.Obj("P18", cont.transform); UIHelpers.Fill(UIHelpers.RT(pg18)); ScreenshotPage.CreatePage(pg18.transform);
 
                 RefreshAll(); RefreshTabs();
                 Mods.MenuCustomiser.LoadFromFile();
@@ -572,7 +572,7 @@ namespace DescendersModMenu.UI
                 Id = "Acceleration",
                 DisplayName = "Acceleration",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "Acceleration", "Acceleration",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "Acceleration", "Acceleration",
                     () => Mods.Acceleration.Enabled, () => Mods.Acceleration.Toggle(),
                     () => Mods.Acceleration.Level, () => Mods.Acceleration.Increase(), () => Mods.Acceleration.Decrease(),
                     10, () => (Mods.Acceleration.Level - 1) / 9f, () => RefreshAll()),
@@ -583,7 +583,7 @@ namespace DescendersModMenu.UI
                 Id = "MaxSpeed",
                 DisplayName = "Max Speed",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "MaxSpeed", "Max Speed",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "MaxSpeed", "Max Speed",
                     () => Mods.MaxSpeedMultiplier.Enabled, () => Mods.MaxSpeedMultiplier.Toggle(),
                     () => Mods.MaxSpeedMultiplier.Level, () => Mods.MaxSpeedMultiplier.Increase(), () => Mods.MaxSpeedMultiplier.Decrease(),
                     10, () => (Mods.MaxSpeedMultiplier.Level - 1) / 9f, () => RefreshAll()),
@@ -594,7 +594,7 @@ namespace DescendersModMenu.UI
                 Id = "NoSpeedCap",
                 DisplayName = "No Speed Cap",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "NoSpeedCap", "No Speed Cap",
+                BuildControls = (fp) => FavsPage.BuildSimpleToggle(fp, "NoSpeedCap", "No Speed Cap",
                     () => Mods.NoSpeedCap.Enabled, () => Mods.NoSpeedCap.Toggle(), () => RefreshAll()),
                 IsActive = () => Mods.NoSpeedCap.Enabled
             });
@@ -603,7 +603,7 @@ namespace DescendersModMenu.UI
                 Id = "LandingImpact",
                 DisplayName = "Landing Impact",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "LandingImpact", "Landing Impact",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "LandingImpact", "Landing Impact",
                     () => Mods.LandingImpact.Enabled, () => Mods.LandingImpact.Toggle(),
                     () => Mods.LandingImpact.Level, () => Mods.LandingImpact.Increase(), () => Mods.LandingImpact.Decrease(),
                     10, () => (Mods.LandingImpact.Level - 1) / 9f, () => RefreshAll(),
@@ -615,7 +615,7 @@ namespace DescendersModMenu.UI
                 Id = "NoBail",
                 DisplayName = "No Bail",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "NoBail", "No Bail",
+                BuildControls = (fp) => FavsPage.BuildSimpleToggle(fp, "NoBail", "No Bail",
                     () => Mods.NoBail.Enabled, () => Mods.NoBail.Toggle(), () => RefreshAll()),
                 IsActive = () => Mods.NoBail.Enabled
             });
@@ -624,7 +624,7 @@ namespace DescendersModMenu.UI
                 Id = "AutoBalance",
                 DisplayName = "Auto Balance",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "AutoBalance", "Auto Balance",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "AutoBalance", "Auto Balance",
                     () => Mods.AutoBalance.Enabled, () => Mods.AutoBalance.Toggle(),
                     () => Mods.AutoBalance.StrengthLevel, () => Mods.AutoBalance.StrengthIncrease(), () => Mods.AutoBalance.StrengthDecrease(),
                     10, () => (Mods.AutoBalance.StrengthLevel - 1) / 9f, () => RefreshAll()),
@@ -635,7 +635,7 @@ namespace DescendersModMenu.UI
                 Id = "FOV",
                 DisplayName = "FOV",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "FOV", "FOV",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "FOV", "FOV",
                     () => Mods.FOV.Enabled, () => Mods.FOV.Toggle(),
                     () => Mods.FOV.Level, () => Mods.FOV.Increase(), () => Mods.FOV.Decrease(),
                     10, () => (Mods.FOV.Level - 1) / 9f, () => RefreshAll(),
@@ -647,7 +647,7 @@ namespace DescendersModMenu.UI
                 Id = "SlowMotion",
                 DisplayName = "Slow Motion",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "SlowMotion", "Slow Motion",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "SlowMotion", "Slow Motion",
                     () => Mods.SlowMotion.Enabled, () => Mods.SlowMotion.Toggle(),
                     () => Mods.SlowMotion.Level, () => Mods.SlowMotion.Increase(), () => Mods.SlowMotion.Decrease(),
                     9, () => (Mods.SlowMotion.Level - 1) / 8f, () => RefreshAll(),
@@ -659,7 +659,7 @@ namespace DescendersModMenu.UI
                 Id = "SlowMoOnBail",
                 DisplayName = "Slow Mo On Bail",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "SlowMoOnBail", "Slow Mo On Bail",
+                BuildControls = (fp) => FavsPage.BuildSimpleToggle(fp, "SlowMoOnBail", "Slow Mo On Bail",
                     () => Mods.SlowMoOnBail.Enabled, () => Mods.SlowMoOnBail.Toggle(), () => RefreshAll()),
                 IsActive = () => Mods.SlowMoOnBail.Enabled
             });
@@ -668,7 +668,7 @@ namespace DescendersModMenu.UI
                 Id = "NoSpeedWobbles",
                 DisplayName = "No Speed Wobbles",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildSimpleToggle(fp, "NoSpeedWobbles", "No Speed Wobbles",
+                BuildControls = (fp) => FavsPage.BuildSimpleToggle(fp, "NoSpeedWobbles", "No Speed Wobbles",
                     () => Mods.GameModifierMods.NoSpeedWobblesEnabled, () => Mods.GameModifierMods.NoSpeedWobblesToggle(), () => RefreshAll()),
                 IsActive = () => Mods.GameModifierMods.NoSpeedWobblesEnabled
             });
@@ -677,7 +677,7 @@ namespace DescendersModMenu.UI
                 Id = "QuickBrake",
                 DisplayName = "Quick Brake",
                 TabBadge = "GENERAL",
-                BuildControls = (fp) => PageFavsUI.BuildToggleSlider(fp, "QuickBrake", "Quick Brake",
+                BuildControls = (fp) => FavsPage.BuildToggleSlider(fp, "QuickBrake", "Quick Brake",
                     () => Mods.QuickBrake.Enabled, () => Mods.QuickBrake.Toggle(),
                     () => Mods.QuickBrake.Level, () => Mods.QuickBrake.Increase(), () => Mods.QuickBrake.Decrease(),
                     10, () => (Mods.QuickBrake.Level - 1) / 9f, () => RefreshAll()),
@@ -691,17 +691,17 @@ namespace DescendersModMenu.UI
                 BuildControls = (fp) => {
                     // ── Bike picker row ──
                     var row = UIHelpers.StatRow("Bike", fp);
-                    UIHelpers.SmallBtn(row.transform, "\u25C0", () => { Mods.BikeSwitcher.PreviousBike(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    UIHelpers.SmallBtn(row.transform, "\u25C0", () => { Mods.BikeSwitcher.PreviousBike(); RefreshAll(); FavsPage.RefreshFavourites(); });
                     var bv = UIHelpers.Txt("FBV", row.transform, "Enduro", 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                     bv.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
-                    UIHelpers.SmallBtn(row.transform, "\u25B6", () => { Mods.BikeSwitcher.NextBike(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    UIHelpers.SmallBtn(row.transform, "\u25B6", () => { Mods.BikeSwitcher.NextBike(); RefreshAll(); FavsPage.RefreshFavourites(); });
 
                     // ── Trick Source picker row ──
                     var tsRow = UIHelpers.StatRow("Trick Source", fp);
-                    UIHelpers.SmallBtn(tsRow.transform, "\u25C0", () => { Mods.TrickSetSwap.PrevSource(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    UIHelpers.SmallBtn(tsRow.transform, "\u25C0", () => { Mods.TrickSetSwap.PrevSource(); RefreshAll(); FavsPage.RefreshFavourites(); });
                     var tsv = UIHelpers.Txt("FTSV", tsRow.transform, Mods.TrickSetSwap.CurrentSourceName, 12, FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                     tsv.gameObject.AddComponent<LayoutElement>().preferredWidth = 80;
-                    UIHelpers.SmallBtn(tsRow.transform, "\u25B6", () => { Mods.TrickSetSwap.NextSource(); RefreshAll(); PageFavsUI.RefreshFavourites(); });
+                    UIHelpers.SmallBtn(tsRow.transform, "\u25B6", () => { Mods.TrickSetSwap.NextSource(); RefreshAll(); FavsPage.RefreshFavourites(); });
 
                     // ── Trick Set Swap toggle row ──
                     var tssRow = UIHelpers.StatRow("Trick Set Swap", fp);
@@ -709,7 +709,7 @@ namespace DescendersModMenu.UI
                     tssVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                     Image fTssTrack; RectTransform fTssKnob;
                     UIHelpers.Toggle(tssRow.transform, "FTg_TrickSetSwap",
-                        () => { Mods.TrickSetSwap.Toggle(); RefreshAll(); PageFavsUI.RefreshFavourites(); },
+                        () => { Mods.TrickSetSwap.Toggle(); RefreshAll(); FavsPage.RefreshFavourites(); },
                         out fTssTrack, out fTssKnob);
 
                     FavouritesManager.RegisterRefresh("BikeSwitcher", () => {
@@ -795,16 +795,16 @@ namespace DescendersModMenu.UI
                                     Mods.AutoBalance.Enabled || Mods.FOV.Enabled ||
                                     Mods.SlowMotion.Enabled || Mods.SlowMoOnBail.Enabled ||
                                     Mods.GameModifierMods.NoSpeedWobblesEnabled;
-                    case 6: return Page6UI.IsAnyActive;
-                    case 7: return Page7UI.IsAnyActive;
-                    case 8: return Page8UI.IsAnyActive;
-                    case 9: return Page9UI.IsAnyActive;
-                    case 10: return Page10UI.IsAnyActive;
-                    case 13: return PageModesUI.IsAnyActive;
+                    case 6: return MovePage.IsAnyActive;
+                    case 7: return WorldPage.IsAnyActive;
+                    case 8: return BikePage.IsAnyActive;
+                    case 9: return FunPage.IsAnyActive;
+                    case 10: return GraphicsPage.IsAnyActive;
+                    case 13: return ModesPage.IsAnyActive;
                     case 14: return Mods.GhostReplay.Enabled;
-                    case 16: return PageSessionUI.IsAnyActive;
-                    case 17: return PageFavsUI.IsAnyActive;
-                    case 18: return Page18UI.IsAnyActive;
+                    case 16: return SessionPage.IsAnyActive;
+                    case 17: return FavsPage.IsAnyActive;
+                    case 18: return ScreenshotPage.IsAnyActive;
                     default: return false;
                 }
             }
@@ -822,12 +822,12 @@ namespace DescendersModMenu.UI
             if (pg9) pg9.SetActive(cur == 9); if (pg10) pg10.SetActive(cur == 10);
             if (pg11) pg11.SetActive(cur == 11);
             // Cancel outfit rename when navigating away from outfit page
-            if (cur != 11) Page11UI.CancelRename(); if (pg12) pg12.SetActive(cur == 12);
+            if (cur != 11) OutfitPage.CancelRename(); if (pg12) pg12.SetActive(cur == 12);
             if (pg13) pg13.SetActive(cur == 13); if (pg14) pg14.SetActive(cur == 14);
             if (pg15) pg15.SetActive(cur == 15);
             if (pg16) pg16.SetActive(cur == 16);
             if (pg17) pg17.SetActive(cur == 17);
-            if (cur == 17) PageFavsUI.CheckDirty();
+            if (cur == 17) FavsPage.CheckDirty();
             if (pg18) pg18.SetActive(cur == 18);
 
             for (int i = 0; i < 18; i++)
@@ -846,8 +846,8 @@ namespace DescendersModMenu.UI
                     if ((object)glow != null) glow.GetComponent<Image>().enabled = on;
                 }
             }
-            if (cur == 2) Page2UI.RefreshTexts();
-            if (cur == 3) Page3UI.Refresh();
+            if (cur == 2) EspPage.RefreshTexts();
+            if (cur == 3) InfoPage.Refresh();
             if (_infoTabDot) _infoTabDot.color = DiagnosticsManager.FailCount > 0 ? UIHelpers.OffColor : UIHelpers.OnColor;
         }
 
@@ -945,10 +945,10 @@ namespace DescendersModMenu.UI
 
             // ── Speedrun Timer ────────────────────────────────────────
             // ── Session live values ───────────────────────────────────
-            PageSessionUI.RefreshAll();
+            SessionPage.RefreshAll();
 
             // ── Favourites sync ───────────────────────────────────────
-            PageFavsUI.RefreshFavourites();
+            FavsPage.RefreshFavourites();
             FavouritesManager.RefreshAllStars();
         }
 
@@ -966,7 +966,7 @@ namespace DescendersModMenu.UI
         {
             // Only update session tab text when menu is visible — eliminates
             // ~720 string allocations/sec that were happening every frame regardless
-            if (MenuUI.IsOpen) PageSessionUI.TickLive();
+            if (MenuUI.IsOpen) SessionPage.TickLive();
 
             // Update status — reapplied every tick so it survives menu rebuilds after scene changes
             if ((object)_updateStatusText != null)

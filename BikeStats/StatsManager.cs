@@ -132,18 +132,18 @@ namespace DescendersModMenu.BikeStats
                     NearMissLevel = NearMissSensitivity.Level,
 
                     // Bike / Player Scale
-                    BikeScale = Page8UI.CurrentBikeScale,
-                    PlayerScale = Page9UI.CurrentPlayerScale,
-                    BikeSizeLevel = Page8UI.CurrentBikeSizeLevel,
-                    PlayerSizeLevel = Page9UI.CurrentPlayerSizeLevel,
-                    InvisibleBikeEnabled = Page8UI.IsInvisibleBike,
-                    InvisiblePlayerEnabled = Page9UI.IsInvisiblePlayer,
-                    WheelSizeEnabled = Page8UI.IsWheelSizeEnabled,
-                    WheelSizeMode = Page8UI.CurrentWheelSizeMode,
-                    WheelSizeLevel = Page8UI.CurrentWheelSizeLevel,
-                    FrontWheelSizeLevel = Page8UI.CurrentFrontWheelLevel,
-                    RearWheelSizeLevel = Page8UI.CurrentRearWheelLevel,
-                    IndividualWheelMode = Page8UI.IsIndividualWheelMode,
+                    BikeScale = BikeSize.CurrentScale,
+                    PlayerScale = PlayerSize.CurrentScale,
+                    BikeSizeLevel = BikeSize.Level,
+                    PlayerSizeLevel = PlayerSize.Level,
+                    InvisibleBikeEnabled = InvisibleBike.Enabled,
+                    InvisiblePlayerEnabled = InvisiblePlayer.Enabled,
+                    WheelSizeEnabled = WheelSize.IsEnabled,
+                    WheelSizeMode = WheelSize.Mode,
+                    WheelSizeLevel = WheelSize.Level,
+                    FrontWheelSizeLevel = WheelSize.FrontLevel,
+                    RearWheelSizeLevel = WheelSize.RearLevel,
+                    IndividualWheelMode = WheelSize.IsIndividualMode,
 
                     // Suspension HUD
                     SuspensionHUDEnabled = SuspensionHUD.Enabled,
@@ -291,23 +291,23 @@ namespace DescendersModMenu.BikeStats
                 if (data.NearMissEnabled && !NearMissSensitivity.Enabled) NearMissSensitivity.Toggle();
 
                 // Bike / Player Scale (deferred — may not have player yet)
-                Page8UI.CurrentBikeScale = data.BikeScale;
-                Page9UI.CurrentPlayerScale = data.PlayerScale;
+                BikeSize.CurrentScale = data.BikeScale;
+                PlayerSize.CurrentScale = data.PlayerScale;
                 // These will be applied by the scene reapply system when Player_Human exists
                 // Direct apply attempted here in case player already exists:
-                if (data.BikeSizeLevel != 10) try { Page8UI.ApplyBikeSizeLevel(data.BikeSizeLevel); } catch { }
-                else if (data.BikeScale != 1f) try { Page8UI.ApplyBikeScale(data.BikeScale); } catch { } // legacy
-                if (data.PlayerSizeLevel != 10) try { Page9UI.ApplyPlayerSizeLevel(data.PlayerSizeLevel); } catch { }
-                else if (data.PlayerScale != 1f) try { Page9UI.ApplyPlayerScale(data.PlayerScale); } catch { } // legacy
-                if (data.InvisibleBikeEnabled) try { Page8UI.SetInvisibleBike(true); } catch { }
-                if (data.InvisiblePlayerEnabled) try { Page9UI.SetInvisiblePlayer(true); } catch { }
+                if (data.BikeSizeLevel != 10) try { BikeSize.ApplyLevel(data.BikeSizeLevel); } catch { }
+                else if (data.BikeScale != 1f) try { BikeSize.Apply(data.BikeScale); } catch { } // legacy
+                if (data.PlayerSizeLevel != 10) try { PlayerSize.ApplyLevel(data.PlayerSizeLevel); } catch { }
+                else if (data.PlayerScale != 1f) try { PlayerSize.Apply(data.PlayerScale); } catch { } // legacy
+                if (data.InvisibleBikeEnabled) try { InvisibleBike.SetEnabled(true); } catch { }
+                if (data.InvisiblePlayerEnabled) try { InvisiblePlayer.SetEnabled(true); } catch { }
                 if (data.IndividualWheelMode)
                 {
-                    try { Page8UI.ApplyIndividualWheelFromSave(data.FrontWheelSizeLevel, data.RearWheelSizeLevel); } catch { }
+                    try { WheelSize.ApplyIndividualFromSave(data.FrontWheelSizeLevel, data.RearWheelSizeLevel); } catch { }
                 }
                 else if (data.WheelSizeEnabled)
                 {
-                    try { Page8UI.ApplyWheelSizeFromSave(true, data.WheelSizeLevel, data.WheelSizeMode); } catch { }
+                    try { WheelSize.ApplyFromSave(true, data.WheelSizeLevel, data.WheelSizeMode); } catch { }
                 }
 
                 // Suspension HUD
@@ -342,15 +342,15 @@ namespace DescendersModMenu.BikeStats
             catch (Exception ex) { MelonLogger.Error("[StatsManager] LoadStats: " + ex.Message); }
 
             // Refresh all pages
-            try { Page6UI.RefreshAll(); } catch { }
-            try { Page7UI.RefreshAll(); } catch { }
-            try { Page8UI.RefreshAll(); } catch { }
-            try { Page9UI.RefreshAll(); } catch { }
-            try { Page10UI.RefreshAll(); } catch { }
-            try { PageModesUI.RefreshAll(); } catch { }
-            try { PageSessionUI.RefreshAll(); } catch { }
-            try { Page3UI.Refresh(); } catch { }
-            try { Page14UI.RefreshAll(); } catch { }
+            try { MovePage.RefreshAll(); } catch { }
+            try { WorldPage.RefreshAll(); } catch { }
+            try { BikePage.RefreshAll(); } catch { }
+            try { FunPage.RefreshAll(); } catch { }
+            try { GraphicsPage.RefreshAll(); } catch { }
+            try { ModesPage.RefreshAll(); } catch { }
+            try { SessionPage.RefreshAll(); } catch { }
+            try { InfoPage.Refresh(); } catch { }
+            try { GhostPage.RefreshAll(); } catch { }
         }
 
         // ══════════════════════════════════════════════════════════════
@@ -361,9 +361,9 @@ namespace DescendersModMenu.BikeStats
         {
             try
             {
-                Page7UI.GlobalReset();
-                Page8UI.GlobalReset();
-                Page9UI.GlobalReset();
+                WorldPage.GlobalReset();
+                BikePage.GlobalReset();
+                FunPage.GlobalReset();
 
                 Acceleration.SetLevel(1);
                 MaxSpeedMultiplier.SetLevel(1);
@@ -445,13 +445,13 @@ namespace DescendersModMenu.BikeStats
                 NearMissSensitivity.SetLevel(5);
 
                 // Bike / Player Scale
-                Page8UI.CurrentBikeScale = 1f;
-                Page9UI.CurrentPlayerScale = 1f;
-                try { Page8UI.ApplyBikeSizeLevel(10); } catch { }
-                try { Page9UI.ApplyPlayerSizeLevel(10); } catch { }
-                if (Page8UI.IsInvisibleBike) try { Page8UI.SetInvisibleBike(false); } catch { }
-                if (Page9UI.IsInvisiblePlayer) try { Page9UI.SetInvisiblePlayer(false); } catch { }
-                try { Page8UI.ResetWheelSize(); } catch { }
+                BikeSize.CurrentScale = 1f;
+                PlayerSize.CurrentScale = 1f;
+                try { BikeSize.ApplyLevel(10); } catch { }
+                try { PlayerSize.ApplyLevel(10); } catch { }
+                if (InvisibleBike.Enabled) try { InvisibleBike.SetEnabled(false); } catch { }
+                if (InvisiblePlayer.Enabled) try { InvisiblePlayer.SetEnabled(false); } catch { }
+                try { WheelSize.Reset(); } catch { }
 
                 // Graphics — always reset to defaults (not saved)
                 if (!GraphicsSettings.BloomEnabled) GraphicsSettings.ToggleBloom();
@@ -495,15 +495,15 @@ namespace DescendersModMenu.BikeStats
             }
             catch (Exception ex) { MelonLogger.Error("[StatsManager] ResetStats: " + ex.Message); }
 
-            try { Page6UI.RefreshAll(); } catch { }
-            try { Page7UI.RefreshAll(); } catch { }
-            try { Page8UI.RefreshAll(); } catch { }
-            try { Page9UI.RefreshAll(); } catch { }
-            try { Page10UI.RefreshAll(); } catch { }
-            try { PageModesUI.RefreshAll(); } catch { }
-            try { PageSessionUI.RefreshAll(); } catch { }
-            try { Page3UI.Refresh(); } catch { }
-            try { Page14UI.RefreshAll(); } catch { }
+            try { MovePage.RefreshAll(); } catch { }
+            try { WorldPage.RefreshAll(); } catch { }
+            try { BikePage.RefreshAll(); } catch { }
+            try { FunPage.RefreshAll(); } catch { }
+            try { GraphicsPage.RefreshAll(); } catch { }
+            try { ModesPage.RefreshAll(); } catch { }
+            try { SessionPage.RefreshAll(); } catch { }
+            try { InfoPage.Refresh(); } catch { }
+            try { GhostPage.RefreshAll(); } catch { }
         }
 
         private static void EnsureSaveFolder()

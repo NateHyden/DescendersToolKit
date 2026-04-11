@@ -154,7 +154,7 @@ namespace DescendersModMenu.Mods
                     LastPath = _pending;
                     _previewPolls = 0;
                     _state = 4; _wait = 6;
-                    try { UI.Page18UI.RefreshAll(); } catch { }
+                    try { UI.ScreenshotPage.RefreshAll(); } catch { }
                     break;
 
                 case 4:
@@ -165,7 +165,7 @@ namespace DescendersModMenu.Mods
                         MelonLogger.Msg("[ScreenshotMode] Preview ready after " + _previewPolls + " poll(s).");
                         LoadPreview(PreviewPath);
                         _state = 0;
-                        try { UI.Page18UI.RefreshAll(); } catch { }
+                        try { UI.ScreenshotPage.RefreshAll(); } catch { }
                     }
                     else if (_previewPolls >= 30)
                     {

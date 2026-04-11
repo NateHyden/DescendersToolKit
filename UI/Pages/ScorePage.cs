@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page5UI
+    public static class ScorePage
     {
         public static GameObject CreatePage(Transform parent)
         {
@@ -103,7 +103,7 @@ namespace DescendersModMenu.UI
                     IsActive = () => false
                 });
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page5UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("ScorePage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
     }

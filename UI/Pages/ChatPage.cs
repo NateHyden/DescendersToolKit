@@ -5,7 +5,7 @@ using DescendersModMenu.Mods;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page12UI
+    public static class ChatPage
     {
         private static ScrollRect _chatScroll = null;
         private static Transform _chatContent = null;
@@ -179,7 +179,7 @@ namespace DescendersModMenu.UI
 
                 RebuildMessages();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page12UI: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("ChatPage: " + ex.Message); }
         }
 
         // ── Everything below this line is UNCHANGED from the original ─

@@ -5,34 +5,12 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page9UI
+    public static class FunPage
     {
-        // ── Invisible Player ──────────────────────────────────────────
-        private static bool _invisiblePlayer = false;
-
-        // Public accessors for snapshot/save system
-        public static float CurrentPlayerScale = 1f;
-        public static int CurrentPlayerSizeLevel => _playerSizeLevel;
-
-        private static readonly float[] PlayerScales = {
-            0.10f, 0.15f, 0.20f, 0.30f, 0.40f, 0.55f, 0.70f, 0.85f, 0.92f, 1.00f,
-            1.20f, 1.50f, 1.80f, 2.20f, 2.60f, 3.00f, 3.50f, 4.00f, 5.00f, 6.00f
-        };
-        private static int _playerSizeLevel = 10;
         private static Text _playerSizeLvlVal;
         private static UnityEngine.UI.Button _playerSizeMinus, _playerSizePlus;
-        public static bool IsInvisiblePlayer => _invisiblePlayer;
-        private static Renderer[] _hiddenPlayerRenderers = null;
         private static Image _invisTrack; private static RectTransform _invisKnob;
         private static Text _invisVal;
-
-        // ── Moon Mode ─────────────────────────────────────────────────
-        private static bool _moonModeActive = false;
-        private static Image _moonBg, _moonBdr;
-        private static Text _moonTxt;
-        private static int _savedGravityLevel = -1;
-        private static int _savedTravelLevel = -1;
-        private static int _savedDampingLevel = -1;
 
         // ── Set Player Name ───────────────────────────────────────
         private static string _nameBuffer = "";
@@ -53,37 +31,29 @@ namespace DescendersModMenu.UI
         private static Image _flyTrack; private static RectTransform _flyKnob; private static Text _flyVal;
         private static Image _mirrorTrack; private static RectTransform _mirrorKnob; private static Text _mirrorVal;
 
+        // ── Moon Mode UI refs ─────────────────────────────────────────
+        private static Image _moonBg, _moonBdr;
+        private static Text _moonTxt;
+
         // ── Row GO refs for highlight ─────────────────────────────────
         private static GameObject _invisPlayerRow, _mirrorRow, _flyRow, _drunkRow;
 
-        // ── Default scale capture ─────────────────────────────────────
-        private static Vector3 _defaultPlayerScale = Vector3.one;
-        private static bool _playerScaleCaptured = false;
 
         public static void CaptureSceneDefaults()
         {
-            _playerScaleCaptured = false;
-            try
-            {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-                Transform cy = player.transform.Find("Cyclist");
-                if ((object)cy != null) { _defaultPlayerScale = cy.localScale; _playerScaleCaptured = true; }
-            }
-            catch { }
+            PlayerSize.CaptureDefaults();
         }
 
         public static bool IsAnyActive =>
-            _invisiblePlayer || _moonModeActive ||
+            InvisiblePlayer.Enabled || MoonMode.IsActive || PlayerSize.IsModified ||
             MirrorMode.Enabled || FlyMode.Enabled || DrunkMode.Enabled ||
             CameraShake.Enabled;
 
         public static void GlobalReset()
         {
-            if (_invisiblePlayer) { ToggleInvisible(false); _invisiblePlayer = false; }
-            if (_moonModeActive) ToggleMoonMode();
-            _playerSizeLevel = 10;
-            ResetPlayerScaleToDefault();
+            if (InvisiblePlayer.Enabled) InvisiblePlayer.SetEnabled(false);
+            if (MoonMode.IsActive) MoonMode.Toggle();
+            PlayerSize.ApplyLevel(10);
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -131,14 +101,14 @@ namespace DescendersModMenu.UI
                 var psr = UIHelpers.StatRow("Size", pg9);
                 _playerSizeMinus = UIHelpers.SmallBtn(psr.transform, "◀", () =>
                 {
-                    if (_playerSizeLevel > 1) { _playerSizeLevel--; ApplyPlayerSizeLevel(_playerSizeLevel); RefreshAll(); }
+                    if (PlayerSize.Level > 1) { PlayerSize.Level--; PlayerSize.ApplyLevel(PlayerSize.Level); RefreshAll(); }
                 });
-                _playerSizeLvlVal = UIHelpers.Txt("PsL", psr.transform, _playerSizeLevel.ToString(), 13,
+                _playerSizeLvlVal = UIHelpers.Txt("PsL", psr.transform, PlayerSize.Level.ToString(), 13,
                     FontStyle.Bold, TextAnchor.MiddleCenter, UIHelpers.Accent);
                 _playerSizeLvlVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 32;
                 _playerSizePlus = UIHelpers.SmallBtn(psr.transform, "▶", () =>
                 {
-                    if (_playerSizeLevel < 20) { _playerSizeLevel++; ApplyPlayerSizeLevel(_playerSizeLevel); RefreshAll(); }
+                    if (PlayerSize.Level < 20) { PlayerSize.Level++; PlayerSize.ApplyLevel(PlayerSize.Level); RefreshAll(); }
                 });
                 UIHelpers.InfoBox(pg9, "10 = default size. Lower numbers shrink the player, higher numbers grow them.");
 
@@ -168,7 +138,7 @@ namespace DescendersModMenu.UI
                 _moonBg = mmBtn.AddComponent<Image>(); _moonBg.sprite = UIHelpers.BtnSp;
                 _moonBg.type = Image.Type.Sliced; _moonBg.color = UIHelpers.NeonBlue;
                 var mbtn = mmBtn.AddComponent<Button>();
-                mbtn.onClick.AddListener(() => { ToggleMoonMode(); RefreshAll(); });
+                mbtn.onClick.AddListener(() => { MoonMode.Toggle(); RefreshAll(); });
                 var mcb = mbtn.colors;
                 mcb.normalColor = Color.white; mcb.highlightedColor = new Color(1, 1, 1, 1.15f);
                 mcb.pressedColor = new Color(.7f, .7f, .7f, 1); mcb.colorMultiplier = 1; mcb.fadeDuration = .08f;
@@ -187,13 +157,13 @@ namespace DescendersModMenu.UI
                 // ── MULTIPLAYER ───────────────────────────────────────
                 UIHelpers.SectionHeader("MULTIPLAYER", pg9);
                 var gsr = UIHelpers.StatRow("Giant Everyone", pg9);
-                UIHelpers.ActionBtnOrange(gsr.transform, "Colossal", () => SetAllPlayersScale(6.0f), 62);
-                UIHelpers.ActionBtnOrange(gsr.transform, "Giant", () => SetAllPlayersScale(3.5f), 52);
-                UIHelpers.ActionBtn(gsr.transform, "Big", () => SetAllPlayersScale(1.5f), 42);
-                UIHelpers.ActionBtn(gsr.transform, "Default", () => SetAllPlayersScale(1.0f), 58);
-                UIHelpers.ActionBtn(gsr.transform, "Small", () => SetAllPlayersScale(0.6f), 48);
-                UIHelpers.ActionBtn(gsr.transform, "Tiny", () => SetAllPlayersScale(0.2f), 44);
-                UIHelpers.ActionBtn(gsr.transform, "Micro", () => SetAllPlayersScale(0.05f), 48);
+                UIHelpers.ActionBtnOrange(gsr.transform, "Colossal", () => GiantEveryone.SetScale(6.0f), 62);
+                UIHelpers.ActionBtnOrange(gsr.transform, "Giant", () => GiantEveryone.SetScale(3.5f), 52);
+                UIHelpers.ActionBtn(gsr.transform, "Big", () => GiantEveryone.SetScale(1.5f), 42);
+                UIHelpers.ActionBtn(gsr.transform, "Default", () => GiantEveryone.SetScale(1.0f), 58);
+                UIHelpers.ActionBtn(gsr.transform, "Small", () => GiantEveryone.SetScale(0.6f), 48);
+                UIHelpers.ActionBtn(gsr.transform, "Tiny", () => GiantEveryone.SetScale(0.2f), 44);
+                UIHelpers.ActionBtn(gsr.transform, "Micro", () => GiantEveryone.SetScale(0.05f), 48);
 
                 UIHelpers.Divider(pg9);
 
@@ -247,8 +217,7 @@ namespace DescendersModMenu.UI
                 _invisVal.gameObject.AddComponent<LayoutElement>().preferredWidth = 28;
                 UIHelpers.Toggle(ir.transform, "InT", () =>
                 {
-                    _invisiblePlayer = !_invisiblePlayer;
-                    ToggleInvisible(_invisiblePlayer);
+                    InvisiblePlayer.Toggle();
                     RefreshAll();
                 }, out _invisTrack, out _invisKnob);
 
@@ -331,7 +300,7 @@ namespace DescendersModMenu.UI
                     Id = "DrunkMode",
                     DisplayName = "Drunk Mode",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "DrunkMode", "Drunk Mode",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "DrunkMode", "Drunk Mode",
                         () => DrunkMode.Enabled, () => DrunkMode.Toggle(), () => RefreshAll()),
                     IsActive = () => DrunkMode.Enabled
                 });
@@ -340,7 +309,7 @@ namespace DescendersModMenu.UI
                     Id = "FlyMode",
                     DisplayName = "Fly Mode",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "FlyMode", "Fly Mode",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "FlyMode", "Fly Mode",
                         () => FlyMode.Enabled, () => FlyMode.Toggle(), () => RefreshAll()),
                     IsActive = () => FlyMode.Enabled
                 });
@@ -349,7 +318,7 @@ namespace DescendersModMenu.UI
                     Id = "MirrorMode",
                     DisplayName = "Mirror Mode",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "MirrorMode", "Mirror Mode",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "MirrorMode", "Mirror Mode",
                         () => MirrorMode.Enabled, () => MirrorMode.Toggle(), () => RefreshAll()),
                     IsActive = () => MirrorMode.Enabled
                 });
@@ -358,7 +327,7 @@ namespace DescendersModMenu.UI
                     Id = "CameraShake",
                     DisplayName = "Camera Shake",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildToggleSlider(p, "CameraShake", "Camera Shake",
+                    BuildControls = (p) => FavsPage.BuildToggleSlider(p, "CameraShake", "Camera Shake",
                         () => CameraShake.Enabled, () => CameraShake.Toggle(),
                         () => CameraShake.Level, () => CameraShake.Increase(), () => CameraShake.Decrease(),
                         10, () => (CameraShake.Level - 1) / 9f, () => RefreshAll(),
@@ -370,30 +339,30 @@ namespace DescendersModMenu.UI
                     Id = "PlayerSize",
                     DisplayName = "Player Size",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildStepper(p, "PlayerSize", "Player Size",
-                        () => _playerSizeLevel,
-                        () => { if (_playerSizeLevel > 1) { _playerSizeLevel--; ApplyPlayerSizeLevel(_playerSizeLevel); } },
-                        () => { if (_playerSizeLevel < 20) { _playerSizeLevel++; ApplyPlayerSizeLevel(_playerSizeLevel); } },
+                    BuildControls = (p) => FavsPage.BuildStepper(p, "PlayerSize", "Player Size",
+                        () => PlayerSize.Level,
+                        () => { if (PlayerSize.Level > 1) { PlayerSize.Level--; PlayerSize.ApplyLevel(PlayerSize.Level); } },
+                        () => { if (PlayerSize.Level < 20) { PlayerSize.Level++; PlayerSize.ApplyLevel(PlayerSize.Level); } },
                         1, 20, () => RefreshAll(), 10),
-                    IsActive = () => _playerSizeLevel != 10
+                    IsActive = () => PlayerSize.Level != 10
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
                     Id = "InvisiblePlayer",
                     DisplayName = "Invisible Player",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "InvisiblePlayer", "Invisible Player",
-                        () => _invisiblePlayer, () => { _invisiblePlayer = !_invisiblePlayer; ToggleInvisible(_invisiblePlayer); }, () => RefreshAll()),
-                    IsActive = () => _invisiblePlayer
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "InvisiblePlayer", "Invisible Player",
+                        () => InvisiblePlayer.Enabled, () => { InvisiblePlayer.Toggle(); }, () => RefreshAll()),
+                    IsActive = () => InvisiblePlayer.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
                     Id = "MoonMode",
                     DisplayName = "Moon Mode",
                     TabBadge = "FUN",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "MoonMode", "Moon Mode",
-                        () => _moonModeActive, () => ToggleMoonMode(), () => RefreshAll()),
-                    IsActive = () => _moonModeActive
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "MoonMode", "Moon Mode",
+                        () => MoonMode.IsActive, () => MoonMode.Toggle(), () => RefreshAll()),
+                    IsActive = () => MoonMode.IsActive
                 });
                 FavouritesManager.Register(new ModFavEntry
                 {
@@ -402,10 +371,10 @@ namespace DescendersModMenu.UI
                     TabBadge = "FUN",
                     BuildControls = (p) => {
                         var row = UIHelpers.StatRow("Giant Everyone", p);
-                        UIHelpers.ActionBtnOrange(row.transform, "Colossal", () => SetAllPlayersScale(6.0f), 62);
-                        UIHelpers.ActionBtnOrange(row.transform, "Giant", () => SetAllPlayersScale(3.5f), 52);
-                        UIHelpers.ActionBtn(row.transform, "Default", () => SetAllPlayersScale(1.0f), 58);
-                        UIHelpers.ActionBtn(row.transform, "Tiny", () => SetAllPlayersScale(0.2f), 44);
+                        UIHelpers.ActionBtnOrange(row.transform, "Colossal", () => GiantEveryone.SetScale(6.0f), 62);
+                        UIHelpers.ActionBtnOrange(row.transform, "Giant", () => GiantEveryone.SetScale(3.5f), 52);
+                        UIHelpers.ActionBtn(row.transform, "Default", () => GiantEveryone.SetScale(1.0f), 58);
+                        UIHelpers.ActionBtn(row.transform, "Tiny", () => GiantEveryone.SetScale(0.2f), 44);
                     },
                     IsActive = () => false
                 });
@@ -431,122 +400,15 @@ namespace DescendersModMenu.UI
                 RefreshAll();
                 UIHelpers.AddScrollForwarders(pg9);
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page9UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("FunPage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 
-        // ── Moon Mode ─────────────────────────────────────────────────
-        private static void ToggleMoonMode()
-        {
-            try
-            {
-                if (!_moonModeActive)
-                {
-                    _savedGravityLevel = Gravity.Level;
-                    _savedTravelLevel = Suspension.TravelLevel;
-                    _savedDampingLevel = Suspension.DampingLevel;
-                    Gravity.SetLevel(1);
-                    Suspension.SetTravelLevel(10);
-                    Suspension.SetDampingLevel(1);
-                    _moonModeActive = true;
-                }
-                else
-                {
-                    Gravity.SetLevel(_savedGravityLevel > 0 ? _savedGravityLevel : 5);
-                    Suspension.SetTravelLevel(_savedTravelLevel > 0 ? _savedTravelLevel : 5);
-                    Suspension.SetDampingLevel(_savedDampingLevel > 0 ? _savedDampingLevel : 5);
-                    _moonModeActive = false;
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleMoonMode: " + ex.Message); }
-        }
 
-        // ── Player scale ──────────────────────────────────────────────
-        private static void SetPlayerScale(float scale)
-        {
-            try
-            {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-                Transform cyclist = player.transform.Find("Cyclist");
-                if ((object)cyclist == null) return;
-                if (!_playerScaleCaptured) { _defaultPlayerScale = cyclist.localScale; _playerScaleCaptured = true; }
-                cyclist.localScale = new Vector3(scale, scale, scale);
-                CurrentPlayerScale = scale;
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] SetPlayerScale: " + ex.Message); }
-        }
 
-        private static void ResetPlayerScaleToDefault()
-        {
-            try
-            {
-                CurrentPlayerScale = 1f;
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-                Transform cyclist = player.transform.Find("Cyclist");
-                if ((object)cyclist != null) cyclist.localScale = _defaultPlayerScale;
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] ResetPlayerScale: " + ex.Message); }
-        }
 
-        // Called by reapply system
-        public static void ApplyPlayerScale(float scale) { SetPlayerScale(scale); } // kept for compat
 
-        public static void ApplyPlayerSizeLevel(int level)
-        {
-            _playerSizeLevel = Mathf.Clamp(level, 1, 20);
-            if (_playerSizeLevel == 10) ResetPlayerScaleToDefault();
-            else SetPlayerScale(PlayerScales[_playerSizeLevel - 1]);
-        }
-        public static void SetInvisiblePlayer(bool v) { if (v != _invisiblePlayer) { _invisiblePlayer = v; ToggleInvisible(v); } }
 
-        private static void SetAllPlayersScale(float scale)
-        {
-            try
-            {
-                GameObject[] all = GameObject.FindObjectsOfType<GameObject>();
-                for (int i = 0; i < all.Length; i++)
-                {
-                    if (all[i].name == "Player_Networked")
-                    {
-                        Transform cyclist = all[i].transform.Find("Cyclist");
-                        if ((object)cyclist != null) cyclist.localScale = new Vector3(scale, scale, scale);
-                    }
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] SetAllPlayersScale: " + ex.Message); }
-        }
-
-        // ── Invisible Player ──────────────────────────────────────────
-        private static void ToggleInvisible(bool invisible)
-        {
-            try
-            {
-                GameObject player = GameObject.Find("Player_Human");
-                if ((object)player == null) return;
-                Transform cyclist = player.transform.Find("Cyclist");
-                if ((object)cyclist == null) return;
-                if (invisible)
-                {
-                    Renderer[] all = cyclist.GetComponentsInChildren<Renderer>(true);
-                    var toHide = new System.Collections.Generic.List<Renderer>();
-                    for (int i = 0; i < all.Length; i++) if (all[i].enabled) toHide.Add(all[i]);
-                    _hiddenPlayerRenderers = toHide.ToArray();
-                    for (int i = 0; i < _hiddenPlayerRenderers.Length; i++) _hiddenPlayerRenderers[i].enabled = false;
-                }
-                else
-                {
-                    if ((object)_hiddenPlayerRenderers != null)
-                    {
-                        for (int i = 0; i < _hiddenPlayerRenderers.Length; i++)
-                            if ((object)_hiddenPlayerRenderers[i] != null) _hiddenPlayerRenderers[i].enabled = true;
-                        _hiddenPlayerRenderers = null;
-                    }
-                }
-            }
-            catch (System.Exception ex) { MelonLogger.Error("[Silly] ToggleInvisible: " + ex.Message); }
-        }
 
         // ── Identity keyboard tick ───────────────────────────────
         // Called from ModEntry.OnUpdate every frame while menu is open.
@@ -611,18 +473,18 @@ namespace DescendersModMenu.UI
         public static void RefreshAll()
         {
             // Player size level
-            if (_playerSizeLvlVal) _playerSizeLvlVal.text = _playerSizeLevel.ToString();
-            if ((object)_playerSizeMinus != null) _playerSizeMinus.interactable = _playerSizeLevel > 1;
-            if ((object)_playerSizePlus != null) _playerSizePlus.interactable = _playerSizeLevel < 20;
+            if (_playerSizeLvlVal) _playerSizeLvlVal.text = PlayerSize.Level.ToString();
+            if ((object)_playerSizeMinus != null) _playerSizeMinus.interactable = PlayerSize.Level > 1;
+            if ((object)_playerSizePlus != null) _playerSizePlus.interactable = PlayerSize.Level < 20;
 
-            if (_invisVal) { _invisVal.text = _invisiblePlayer ? "ON" : "OFF"; _invisVal.color = _invisiblePlayer ? UIHelpers.OnColor : UIHelpers.OffColor; }
-            UIHelpers.SetToggle(_invisTrack, _invisKnob, _invisiblePlayer);
-            UIHelpers.SetRowActive(_invisPlayerRow, _invisiblePlayer);
+            if (_invisVal) { _invisVal.text = InvisiblePlayer.Enabled ? "ON" : "OFF"; _invisVal.color = InvisiblePlayer.Enabled ? UIHelpers.OnColor : UIHelpers.OffColor; }
+            UIHelpers.SetToggle(_invisTrack, _invisKnob, InvisiblePlayer.Enabled);
+            UIHelpers.SetRowActive(_invisPlayerRow, InvisiblePlayer.Enabled);
 
             // Moon Mode
-            if (_moonTxt) { _moonTxt.text = _moonModeActive ? "MOON MODE ACTIVE" : "ACTIVATE MOON MODE"; _moonTxt.color = new Color(0, 0, 0, 1); }
-            if (_moonBg) _moonBg.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
-            if (_moonBdr) _moonBdr.color = _moonModeActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
+            if (_moonTxt) { _moonTxt.text = MoonMode.IsActive ? "MOON MODE ACTIVE" : "ACTIVATE MOON MODE"; _moonTxt.color = new Color(0, 0, 0, 1); }
+            if (_moonBg) _moonBg.color = MoonMode.IsActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
+            if (_moonBdr) _moonBdr.color = MoonMode.IsActive ? UIHelpers.OnColor : UIHelpers.NeonBlue;
 
             bool mmOn = MirrorMode.Enabled;
             if (_mirrorVal) { _mirrorVal.text = mmOn ? "ON" : "OFF"; _mirrorVal.color = mmOn ? UIHelpers.OnColor : UIHelpers.OffColor; }

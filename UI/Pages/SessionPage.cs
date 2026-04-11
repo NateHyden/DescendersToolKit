@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class PageSessionUI
+    public static class SessionPage
     {
         private static Text _sessionTimeVal;
         private static Text _topSpeedVal;
@@ -155,20 +155,20 @@ namespace DescendersModMenu.UI
 
                 FavouritesManager.Register(new ModFavEntry {
                     Id = "ShowHUD", DisplayName = "Show HUD", TabBadge = "SESSION",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "ShowHUD", "Show HUD",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "ShowHUD", "Show HUD",
                         () => SessionHUD.Enabled, () => { SessionHUD.Enabled = !SessionHUD.Enabled; }, () => RefreshAll()),
                     IsActive = () => SessionHUD.Enabled
                 });
                 FavouritesManager.Register(new ModFavEntry {
                     Id = "SpeedrunTimer", DisplayName = "Speedrun Timer", TabBadge = "SESSION",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "SpeedrunTimer", "Speedrun Timer",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "SpeedrunTimer", "Speedrun Timer",
                         () => SpeedrunTimer.Enabled, () => SpeedrunTimer.Toggle(), () => RefreshAll()),
                     IsActive = () => SpeedrunTimer.Enabled
                 });
 
                 UIHelpers.AddScrollForwarders(c);
             }
-            catch (System.Exception ex) { MelonLogger.Error("PageSessionUI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("SessionPage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 

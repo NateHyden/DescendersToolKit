@@ -5,7 +5,7 @@ using DescendersModMenu.Mods;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page14UI
+    public static class GhostPage
     {
         private static Image _enableTrack; private static RectTransform _enableKnob;
         private static Text _statusText = null;
@@ -125,7 +125,7 @@ namespace DescendersModMenu.UI
                 FavouritesManager.RegisterStarButton("GhostReplay", UIHelpers.StarBtn(enableRow.transform, "GhostReplay", () => FavouritesManager.Toggle("GhostReplay")));
                 FavouritesManager.Register(new ModFavEntry {
                     Id = "GhostReplay", DisplayName = "Ghost Replay", TabBadge = "TOOLS",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "GhostReplay", "Ghost Replay",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "GhostReplay", "Ghost Replay",
                         () => GhostReplay.Enabled, () => GhostReplay.Toggle(), () => RefreshAll()),
                     IsActive = () => GhostReplay.Enabled
                 });
@@ -133,7 +133,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.AddScrollForwarders(c);
                 RefreshAll();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page14UI: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("GhostPage: " + ex.Message); }
         }
 
         private static void AddInstruction(Transform parent, string num, string text)

@@ -157,13 +157,13 @@ namespace DescendersModMenu
             SkyColours.CaptureSceneDefaults();
             GraphicsSettings.CaptureDefaultQuality();
             TimeOfDay.CaptureSceneDefault();
-            try { UI.Page8UI.CaptureSceneDefaults(); } catch { }
-            try { UI.Page9UI.CaptureSceneDefaults(); } catch { }
+            try { UI.BikePage.CaptureSceneDefaults(); } catch { }
+            try { UI.FunPage.CaptureSceneDefaults(); } catch { }
             GhostReplay.OnSceneInitialized();
             MapChanger.OnSceneInitialized();
             ExplodingProps.OnSceneInitialized(sceneName);
             if (buildindex == 1) MapChanger.BuildMapList();
-            try { UI.PageSessionUI.RefreshAll(); } catch { }
+            try { UI.SessionPage.RefreshAll(); } catch { }
         }
 
         // ================================================================
@@ -239,18 +239,18 @@ namespace DescendersModMenu
             int sT = Suspension.TravelLevel, sS = Suspension.StiffnessLevel, sD = Suspension.DampingLevel;
             bool suspNeed = sT != 5 || sS != 5 || sD != 5;
             bool wasNoSpeedCap = NoSpeedCap.Enabled;
-            float bikeScale = Page8UI.CurrentBikeScale;
+            float bikeScale = BikeSize.CurrentScale;
             bool bikeScaleNeed = bikeScale != 1f;
-            float playerScale = Page9UI.CurrentPlayerScale;
+            float playerScale = PlayerSize.CurrentScale;
             bool playerScaleNeed = playerScale != 1f;
-            bool wasInvisBike = Page8UI.IsInvisibleBike;
-            bool wasInvisPlayer = Page9UI.IsInvisiblePlayer;
-            bool wasWheelSize = Page8UI.IsWheelSizeEnabled;
-            int wheelSizeMode = Page8UI.CurrentWheelSizeMode;
-            int wheelSizeLevel = Page8UI.CurrentWheelSizeLevel;
-            bool wasIndividualWheel = Page8UI.IsIndividualWheelMode;
-            int frontWheelLv = Page8UI.CurrentFrontWheelLevel;
-            int rearWheelLv = Page8UI.CurrentRearWheelLevel;
+            bool wasInvisBike = InvisibleBike.Enabled;
+            bool wasInvisPlayer = InvisiblePlayer.Enabled;
+            bool wasWheelSize = WheelSize.IsEnabled;
+            int wheelSizeMode = WheelSize.Mode;
+            int wheelSizeLevel = WheelSize.Level;
+            bool wasIndividualWheel = WheelSize.IsIndividualMode;
+            int frontWheelLv = WheelSize.FrontLevel;
+            int rearWheelLv = WheelSize.RearLevel;
             bool wasSuspHUD = SuspensionHUD.Enabled;
             bool wasBrakeFade = BrakeFade.Enabled;
             int brakeBalanceLv = BrakeFade.BalanceLevel;
@@ -312,7 +312,7 @@ namespace DescendersModMenu
             CenterOfMass.Reset(); ScoreManager.ResetMultiplier();
             FOV.Reset(); Acceleration.Reset(); MaxSpeedMultiplier.Reset();
             Movement.Reset(); LandingImpact.Reset();
-            NoBail.ClearCache(); Page8UI.ResetWheelSize();
+            NoBail.ClearCache(); WheelSize.Reset();
             if (NoSpeedCap.Enabled) NoSpeedCap.Toggle(); // Reset to OFF before immediate restore
             if (NoBail.Enabled) NoBail.Toggle(); // Reset to OFF before immediate restore
             BikeTorch.Reset(); CameraShake.Reset(); NearMissSensitivity.Reset();
@@ -430,12 +430,12 @@ namespace DescendersModMenu
                     if (_reapplyExplodingProps) { _reapplyExplodingProps = false; try { ExplodingProps.Toggle(); ok++; MelonLogger.Msg("[Reapply]   + ExplodingProps"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! ExplodingProps: " + ex.Message); } }
                     if (_reapplyCOMNeeded) { _reapplyCOMNeeded = false; try { CenterOfMass.SetLR(_reapplyCOMx); CenterOfMass.SetFB(_reapplyCOMz); CenterOfMass.SetUD(_reapplyCOMy); ok++; MelonLogger.Msg("[Reapply]   + COM"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! COM: " + ex.Message); } }
                     if (_reapplySuspNeeded) { _reapplySuspNeeded = false; try { Suspension.SetTravelLevel(_reapplySuspTravel); Suspension.SetStiffnessLevel(_reapplySuspStiff); Suspension.SetDampingLevel(_reapplySuspDamp); ok++; MelonLogger.Msg("[Reapply]   + Suspension"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! Suspension: " + ex.Message); } }
-                    if (_reapplyBikeScaleNeeded) { _reapplyBikeScaleNeeded = false; try { Page8UI.ApplyBikeScale(_reapplyBikeScale); ok++; MelonLogger.Msg("[Reapply]   + BikeScale=" + _reapplyBikeScale); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! BikeScale: " + ex.Message); } }
-                    if (_reapplyPlayerScaleNeeded) { _reapplyPlayerScaleNeeded = false; try { Page9UI.ApplyPlayerScale(_reapplyPlayerScale); ok++; MelonLogger.Msg("[Reapply]   + PlayerScale=" + _reapplyPlayerScale); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! PlayerScale: " + ex.Message); } }
-                    if (_reapplyInvisibleBike) { _reapplyInvisibleBike = false; try { Page8UI.SetInvisibleBike(true); ok++; MelonLogger.Msg("[Reapply]   + InvisibleBike"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! InvisibleBike: " + ex.Message); } }
-                    if (_reapplyInvisiblePlayer) { _reapplyInvisiblePlayer = false; try { Page9UI.SetInvisiblePlayer(true); ok++; MelonLogger.Msg("[Reapply]   + InvisiblePlayer"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! InvisiblePlayer: " + ex.Message); } }
-                    if (_reapplyWheelSize) { _reapplyWheelSize = false; try { Page8UI.ApplyWheelSizeFromSave(true, _reapplyWheelSizeLevel, _reapplyWheelSizeMode); ok++; MelonLogger.Msg("[Reapply]   + WheelSize level=" + _reapplyWheelSizeLevel); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! WheelSize: " + ex.Message); } }
-                    if (_reapplyIndividualWheel) { _reapplyIndividualWheel = false; try { Page8UI.ApplyIndividualWheelFromSave(_reapplyFrontWheelLevel, _reapplyRearWheelLevel); ok++; MelonLogger.Msg("[Reapply]   + IndividualWheel F=" + _reapplyFrontWheelLevel + " R=" + _reapplyRearWheelLevel); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! IndividualWheel: " + ex.Message); } }
+                    if (_reapplyBikeScaleNeeded) { _reapplyBikeScaleNeeded = false; try { BikeSize.Apply(_reapplyBikeScale); ok++; MelonLogger.Msg("[Reapply]   + BikeScale=" + _reapplyBikeScale); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! BikeScale: " + ex.Message); } }
+                    if (_reapplyPlayerScaleNeeded) { _reapplyPlayerScaleNeeded = false; try { PlayerSize.Apply(_reapplyPlayerScale); ok++; MelonLogger.Msg("[Reapply]   + PlayerScale=" + _reapplyPlayerScale); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! PlayerScale: " + ex.Message); } }
+                    if (_reapplyInvisibleBike) { _reapplyInvisibleBike = false; try { InvisibleBike.SetEnabled(true); ok++; MelonLogger.Msg("[Reapply]   + InvisibleBike"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! InvisibleBike: " + ex.Message); } }
+                    if (_reapplyInvisiblePlayer) { _reapplyInvisiblePlayer = false; try { InvisiblePlayer.SetEnabled(true); ok++; MelonLogger.Msg("[Reapply]   + InvisiblePlayer"); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! InvisiblePlayer: " + ex.Message); } }
+                    if (_reapplyWheelSize) { _reapplyWheelSize = false; try { WheelSize.ApplyFromSave(true, _reapplyWheelSizeLevel, _reapplyWheelSizeMode); ok++; MelonLogger.Msg("[Reapply]   + WheelSize level=" + _reapplyWheelSizeLevel); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! WheelSize: " + ex.Message); } }
+                    if (_reapplyIndividualWheel) { _reapplyIndividualWheel = false; try { WheelSize.ApplyIndividualFromSave(_reapplyFrontWheelLevel, _reapplyRearWheelLevel); ok++; MelonLogger.Msg("[Reapply]   + IndividualWheel F=" + _reapplyFrontWheelLevel + " R=" + _reapplyRearWheelLevel); } catch (System.Exception ex) { fail++; MelonLogger.Error("[Reapply]   ! IndividualWheel: " + ex.Message); } }
 
                     MelonLogger.Msg("[Reapply] === DONE: " + ok + " applied, " + fail + " failed ===");
 
@@ -462,24 +462,24 @@ namespace DescendersModMenu
 
             try
             {
-                if (Input.GetKeyDown(KeyCode.F3)) { GhostReplay.Toggle(); Page14UI.RefreshAll(); }
-                if (Input.GetKeyDown(KeyCode.F4)) { GhostReplay.SaveRun(); Page14UI.RefreshAll(); }
+                if (Input.GetKeyDown(KeyCode.F3)) { GhostReplay.Toggle(); GhostPage.RefreshAll(); }
+                if (Input.GetKeyDown(KeyCode.F4)) { GhostReplay.SaveRun(); GhostPage.RefreshAll(); }
                 if (Input.GetKeyDown(KeyCode.JoystickButton8))
                 {
                     if (SurvivalMode.Enabled && SurvivalMode.IsGameOver) SurvivalMode.ResetRun();
-                    else { GhostReplay.SetSpawnMarker(); Page14UI.RefreshAll(); }
+                    else { GhostReplay.SetSpawnMarker(); GhostPage.RefreshAll(); }
                 }
                 if (Input.GetKeyDown(KeyCode.JoystickButton9))
                 {
                     float now = Time.realtimeSinceStartup;
                     float gap = now - _lastRStickClick; _lastRStickClick = now;
-                    if (gap < 0.4f) { GhostReplay.Toggle(); Page14UI.RefreshAll(); _lastRStickClick = -999f; }
+                    if (gap < 0.4f) { GhostReplay.Toggle(); GhostPage.RefreshAll(); _lastRStickClick = -999f; }
                     else { _pendingRStickSave = true; _rStickSaveTime = now + 0.4f; }
                 }
                 if (_pendingRStickSave && Time.realtimeSinceStartup >= _rStickSaveTime)
                 {
                     _pendingRStickSave = false;
-                    if (GhostReplay.IsRecording && GhostReplay.RecordedFrames >= 30) { GhostReplay.SaveRun(); Page14UI.RefreshAll(); }
+                    if (GhostReplay.IsRecording && GhostReplay.RecordedFrames >= 30) { GhostReplay.SaveRun(); GhostPage.RefreshAll(); }
                 }
                 if (Input.GetKeyDown(KeyCode.F6)) MenuUI.ToggleMenu();
             }
@@ -494,13 +494,13 @@ namespace DescendersModMenu
             try { MirrorMode.Tick(); } catch { }
             try { FlyMode.Tick(); } catch { }
             try { DrunkMode.Tick(); } catch { }
-            try { Page11UI.Tick(); } catch { }
-            try { Page12UI.Tick(); } catch { }
-            try { Page3UI.Tick(); } catch { }
-            if (!Page11UI.IsRenaming && !Page12UI.IsChatFocused && !Page15UI.IsSeedFocused && !PageModesUI.IsTAInputFocused)
-                try { Page9UI.IdentityTick(); } catch { }
+            try { OutfitPage.Tick(); } catch { }
+            try { ChatPage.Tick(); } catch { }
+            try { InfoPage.Tick(); } catch { }
+            if (!OutfitPage.IsRenaming && !ChatPage.IsChatFocused && !MapPage.IsSeedFocused && !ModesPage.IsTAInputFocused)
+                try { FunPage.IdentityTick(); } catch { }
             try { SessionTrackers.CheckpointTick(); } catch { }
-            try { PageModesUI.Tick(); } catch { }
+            try { ModesPage.Tick(); } catch { }
             try { AvalancheMode.Tick(); } catch { }
             try { PoliceChaseMode.Tick(); } catch { }
             try { TrickAttackMode.Tick(); } catch { }
@@ -508,8 +508,8 @@ namespace DescendersModMenu
             try { SurvivalMode.Tick(); } catch { }
             try { GhostReplay.Tick(); } catch { }
             try { MapChanger.Tick(); } catch { }
-            try { Page15UI.SeedTick(); } catch { }
-            try { Page14UI.Tick(); } catch { }
+            try { MapPage.SeedTick(); } catch { }
+            try { GhostPage.Tick(); } catch { }
             try { SlowMoOnBail.Tick(); } catch { }
             try { ScoreManager.Tick(); } catch { }
             try { ModDetection.TagLocalPlayer(); } catch { }
@@ -535,7 +535,7 @@ namespace DescendersModMenu
             try { FOV.Apply(); } catch (System.Exception ex) { MelonLogger.Error("FOV.Apply: " + ex.Message); }
             try { SkyColours.Tick(); } catch (System.Exception ex) { MelonLogger.Error("SkyColours.Tick: " + ex.Message); }
             try { DrunkMode.LateTick(); } catch { }
-            try { Page8UI.WheelSizeTick(); } catch { }
+            try { WheelSize.Tick(); } catch { }
             try { WideTyres.Tick(); } catch { }
             try { BikeDamage.Tick(); } catch { }
         }

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page10UI
+    public static class GraphicsPage
     {
         private static Image _bloomTrack; private static RectTransform _bloomKnob; private static Text _bloomVal;
         private static Image _aoTrack; private static RectTransform _aoKnob; private static Text _aoVal;
@@ -104,7 +104,7 @@ namespace DescendersModMenu.UI
                     Id = "UIRemover",
                     DisplayName = "Hide Game HUD",
                     TabBadge = "GFX",
-                    BuildControls = (p) => PageFavsUI.BuildSimpleToggle(p, "UIRemover", "Hide Game HUD",
+                    BuildControls = (p) => FavsPage.BuildSimpleToggle(p, "UIRemover", "Hide Game HUD",
                         () => UIRemover.Enabled, () => UIRemover.Toggle(), () => RefreshAll()),
                     IsActive = () => UIRemover.Enabled
                 });
@@ -115,7 +115,7 @@ namespace DescendersModMenu.UI
 
                 RefreshAll();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page10UI.CreatePage: " + ex.Message); return null; }
+            catch (System.Exception ex) { MelonLogger.Error("GraphicsPage.CreatePage: " + ex.Message); return null; }
             return pg;
         }
 

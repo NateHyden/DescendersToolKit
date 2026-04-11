@@ -5,7 +5,7 @@ using DescendersModMenu.Mods;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page15UI
+    public static class MapPage
     {
         private static Transform _listRoot = null;
         private static Text _statusText = null;
@@ -61,7 +61,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("Page15UI.CreatePage: " + ex.Message);
+                MelonLogger.Error("MapPage.CreatePage: " + ex.Message);
             }
         }
 
@@ -196,7 +196,7 @@ namespace DescendersModMenu.UI
             }
             catch (System.Exception ex)
             {
-                MelonLogger.Error("Page15UI.RebuildList: " + ex.Message);
+                MelonLogger.Error("MapPage.RebuildList: " + ex.Message);
             }
         }
 

@@ -5,7 +5,7 @@ using DescendersModMenu.Mods;
 
 namespace DescendersModMenu.UI
 {
-    public static class Page13UI
+    public static class AvalanchePage
     {
         // Toggle refs
         private static Image _enableTrack; private static RectTransform _enableKnob;
@@ -174,7 +174,7 @@ namespace DescendersModMenu.UI
                 UIHelpers.AddScrollForwarders(c);
                 RefreshAll();
             }
-            catch (System.Exception ex) { MelonLogger.Error("Page13UI: " + ex.Message); }
+            catch (System.Exception ex) { MelonLogger.Error("AvalanchePage: " + ex.Message); }
         }
 
         // ── Cycle row: Label  [<]  Value  [>] ─────────────────────────

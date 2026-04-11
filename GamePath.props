@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <!--
-      Edit the path below to match your Descenders install location.
-
-      Common locations:
-        Steam default  : C:\Program Files (x86)\Steam\steamapps\common\Descenders
-        Custom Steam   : D:\SteamLibrary\steamapps\common\Descenders
-        Xbox / Game Pass: C:\XboxGames\Descenders\Content
-
-      This file is committed to the repo as a starting point.
-      Change the path below for your machine — do not commit your personal path back.
-    -->
-    <DescendersPath>C:\Program Files (x86)\Steam\steamapps\common\Descenders</DescendersPath>
+    <DescendersPath>D:\SteamLibrary\steamapps\common\Descenders</DescendersPath>
   </PropertyGroup>
 </Project>
