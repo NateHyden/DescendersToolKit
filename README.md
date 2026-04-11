@@ -17,9 +17,28 @@ Physics tweaks, bike tuning, world controls, score tools, session trackers, ghos
 3. Open `DescendersToolKit.sln` in Visual Studio
 4. Build — the DLL copies to your `Mods` folder automatically
 
-> **Common paths**
-> Steam default: `C:\Program Files (x86)\Steam\steamapps\common\Descenders`
-> Custom Steam: `D:\SteamLibrary\steamapps\common\Descenders`
+> **Common install locations**
+>
+> | Platform | Path |
+> |---|---|
+> | Steam (default) | `C:\Program Files (x86)\Steam\steamapps\common\Descenders` |
+> | Steam (custom library) | `D:\SteamLibrary\steamapps\common\Descenders` |
+> | Xbox / Game Pass | `C:\XboxGames\Descenders\Content` |
+>
+> Not sure where your install is? In Steam, right-click Descenders → **Manage** → **Browse local files** and copy the path from Explorer.
+
+---
+
+## Xbox / Game Pass Users
+
+Descenders ToolKit works on the Xbox PC (Game Pass) version of Descenders, but requires a few extra steps due to Windows App Store permissions.
+
+1. MelonLoader cannot be installed directly into the default `WindowsApps` folder as it is permission-locked by Windows
+2. In the Xbox app, go to Descenders → **Manage** → **Files** → **Change drive** and move the game to a drive you own (e.g. `D:\`)
+3. Point MelonLoader at `Descenders.exe` manually using the **Add Game** option in the MelonLoader installer
+4. Set `<DescendersPath>` in `GamePath.props` to wherever you moved the game
+
+> ⚠️ The Xbox / Game Pass version is largely untested. Most features work but some behaviour may differ from the Steam version.
 
 ---
 
