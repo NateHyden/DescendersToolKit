@@ -1,12 +1,25 @@
-# Descenders Mod Menu / Descenders Toolkit
+# Descenders Mod Menu / Descenders ToolKit
 
 **v3.9.0** — The most complete mod menu for Descenders. 70+ mods, 6 game modes, ghost replay, map changer, outfit presets, favourites, mod chat and full scene persistence — all in one clean sidebar overlay.
 
-> Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded as Descenders Toolkit.
+> Previously known as Descenders Mod Menu — now rebuilt, rebranded and expanded as Descenders ToolKit.
 
 Physics tweaks, bike tuning, world controls, score tools, session trackers, ghost replay, game modes, map changer, outfit presets, favourites, mod chat and plenty of chaos — all in one place. Works online and offline.
 
 **Download:** [Nexus Mods](https://www.nexusmods.com/descenders/mods/7) · [GitHub Releases](https://github.com/NateHyden/DescendersModMenu/releases) · [Discord](https://discord.gg/rHvCrBdqaR)
+
+---
+
+## Building from Source
+
+1. Clone the repository
+2. Open `GamePath.props` in the project root and set `<DescendersPath>` to your Descenders install folder
+3. Open `DescendersToolKit.sln` in Visual Studio
+4. Build — the DLL copies to your `Mods` folder automatically
+
+> **Common paths**
+> Steam default: `C:\Program Files (x86)\Steam\steamapps\common\Descenders`
+> Custom Steam: `D:\SteamLibrary\steamapps\common\Descenders`
 
 ---
 
